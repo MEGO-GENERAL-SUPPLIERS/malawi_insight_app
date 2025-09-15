@@ -5,11 +5,11 @@ import {
   WifiLowIcon,
   WifiHighIcon,
   WifiIcon,
-  ComputerIcon,
   DatabaseZapIcon,
-  ScreenShareOffIcon,
   GlobeLockIcon,
   PlaneIcon,
+  ServerIcon,
+  ServerOffIcon,
 } from "lucide-react";
 import { checkHealthAsync } from "~/services/healthCheckService";
 
@@ -213,16 +213,16 @@ const ServerNetworkIndicator: React.FC<Props> = ({
   const renderServerIcon = () => {
     if (status.server === "checking") {
       return (
-        <ScreenShareOffIcon
+        <ServerOffIcon
           className={`w-5 h-5 ${StatusColor.serverChecking}`}
           data-alt={blinkAltSlow}
         />
       );
     }
     return status.server ? (
-      <ComputerIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
+      <ServerIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
     ) : (
-      <ScreenShareOffIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
+      <ServerOffIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
     );
   };
 
