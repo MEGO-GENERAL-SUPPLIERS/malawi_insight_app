@@ -6,6 +6,20 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import React, { useEffect } from "react";
+
+import { useHealthCheckWorker } from "./hooks/useHealthCheckWorker";
+
+// Custom theme
+import { lightTheme, darkTheme } from "~/theme";
+
+// Toastify
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+
+// Material UI imports
+import { CssBaseline } from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
 
 import type { Route } from "./+types/root";
 import "./app.css";
@@ -23,9 +37,21 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
+// Create a theme (light/dark or custom)
+// const theme = createTheme({
+//   palette: {
+//     mode: "light", // change to "dark" if you want dark mode
+//   },
+// });
+
 export function Layout({ children }: { children: React.ReactNode }) {
+  useHealthCheckWorker();
+  
   return (
-    <html lang={typeof window !== "undefined" ? navigator.language : "en"} suppressHydrationWarning>
+    <html
+      lang={typeof window !== "undefined" ? navigator.language : "en"}
+      suppressHydrationWarning
+    >
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -33,7 +59,25 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        {children}
+        <ThemeProvider theme={lightTheme}>
+          <CssBaseline />
+          {children}
+
+          {/* Toastify still works alongside MUI */}
+          <ToastContainer
+            position="top-center"
+            autoClose={3500}
+            hideProgressBar={false}
+            newestOnTop={true}
+            closeOnClick
+            rtl={false}
+            pauseOnFocusLoss
+            draggable
+            pauseOnHover
+            theme="colored"
+          />
+        </ThemeProvider>
+
         <ScrollRestoration />
         <Scripts />
       </body>

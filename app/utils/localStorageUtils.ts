@@ -1,5 +1,5 @@
 // localStorageUtils.ts
-import { type IAppStorage } from "~/interfaces/localStorageInterfaces";
+import { type IAppStorage } from "~/types/interfaces/ILocalStorageInterfaces";
 
 // Application main name
 export const APP_NAME = "malawi_insight";
@@ -11,16 +11,27 @@ export const LOCAL_STORAGE_KEYS = {
   API: "api",
   SERVER: "server",
   NETWORK: "network",
-  APP: APP_NAME,
+  // APP_NAME: APP_NAME,
+  APP: "app"
 };
 
 // Default structure for the app object
 export const DEFAULT_APP_STRUCTURE: IAppStorage = {
   user: {
     id: "",
-    role: "",
+    person_id: "",
+    first_name: "",
+    other_names: "",
+    last_name: "",
+    full_name: "",
+    gender: "",
+    date_of_birth: "",
+    national_id: "",
+    status: "",
     inactivity_duration: 30, // minutes
     auto_logout_count: 30,   // seconds
+    roles: [],
+    privileges: []
   },
   device: {
     brand: "",
@@ -35,20 +46,39 @@ export const DEFAULT_APP_STRUCTURE: IAppStorage = {
     type: "",
   },
   api: {
-    protocol: "https",
+    protocol: "http",
     server: "localhost",
-    port: "3000",
+    port: "5203",
     base: "api/v1",
+    timeout: 30000,
     token: "",
     refresh_token: ""
   },
-  server: { retry: 2 },
-  network: { retry: 2 },
+  app: {
+    ui: {
+      sidebar_show: "",
+      navbar_autohide: "",
+      footer_show: ""
+    }
+  },
+  server: {
+    retry: 2,
+    available: false,
+    database_status: "unknown", // e.g. "up", "down"
+    last_check: null,           // timestamp of last check
+    status: "disconnected",     // "connected" | "connecting" | "disconnected"
+  },
+  network: {
+    retry: 2,
+    last_latency: null,
+    last_check: null,
+    check_time: 15000, // ms between checks
+    strength: "unknown", // "none" | "weak" | "fair" | "good" | "excellent"
+  }
 };
 
 // ================= Utility Functions =================
 export const localStorageUtils = {
-  /** Deep merge source into target without overwriting existing keys */
   deepMerge(target: any, source: any): any {
     const result = { ...target };
     for (let key in source) {
@@ -61,59 +91,49 @@ export const localStorageUtils = {
           result[key] !== null
         ) {
           result[key] = localStorageUtils.deepMerge(result[key], source[key]);
-        } else if (result[key] === undefined) {
-          // Only add missing keys
-          result[key] = source[key];
+        } else {
+          result[key] = source[key]; // overwrite with new value
         }
       }
     }
     return result;
   },
 
-  /** Create a localStorage key if it does not exist */
-  createLocalStorageItem(key: string, value: any) {
-    if (!localStorage.getItem(key)) {
-      localStorage.setItem(key, JSON.stringify(value));
-    }
-    return localStorage.getItem(key);
-  },
-
-  /** Get parsed item from localStorage */
   getLocalStorageItem(key: string) {
     const item = localStorage.getItem(key);
     return item ? JSON.parse(item) : null;
   },
 
-  /** Add or update an object in localStorage */
-  addOrUpdateLocalStorageObject(key: string, newValues: any) {
-    let existingObject = localStorageUtils.getLocalStorageItem(key) || {};
-    const merged = localStorageUtils.deepMerge(newValues, existingObject);
-    localStorage.setItem(key, JSON.stringify(merged));
+  /** Overwrite or add new values for the APP_NAME object */
+  addOrUpdateLocalStorageObject(newValues: Partial<IAppStorage>) {
+    const existing: IAppStorage = localStorageUtils.ensureLocalAppStructure();
+    const merged = localStorageUtils.deepMerge(existing, newValues);
+    localStorage.setItem(APP_NAME, JSON.stringify(merged));
     return merged;
   },
 
-  /** Update a specific property in nested object */
-  updateNestedValue(
-    key: string,
-    topLevelKey: string,
-    childKey: string,
-    newValue: any
-  ) {
-    let data = localStorageUtils.getLocalStorageItem(key) || {};
-    if (data[topLevelKey] && data[topLevelKey].hasOwnProperty(childKey)) {
-      data[topLevelKey][childKey] = newValue;
-      localStorage.setItem(key, JSON.stringify(data));
-      console.log(`Updated ${topLevelKey}.${childKey} = ${newValue}`);
-    } else {
-      console.error(`Invalid key combination: ${topLevelKey}.${childKey}`);
+  /** Ensure APP_NAME object exists and fill missing keys with default structure */
+  ensureLocalAppStructure(): IAppStorage {
+    if (typeof window === "undefined") {
+      // Running on server, return default structure
+      return DEFAULT_APP_STRUCTURE;
     }
-  },
 
-  /** Ensure the main app object exists and fill missing defaults */
-  ensureLocalAppStructure(customDefault = DEFAULT_APP_STRUCTURE) {
-    let existingData = localStorageUtils.getLocalStorageItem(APP_NAME) || {};
-    const mergedData = localStorageUtils.deepMerge(customDefault, existingData);
+    // Try to read from localStorage
+    const existingData = localStorageUtils.getLocalStorageItem(APP_NAME);
+
+    if (!existingData) {
+      // Key does not exist, create it
+      localStorage.setItem(APP_NAME, JSON.stringify(DEFAULT_APP_STRUCTURE));
+      return DEFAULT_APP_STRUCTURE;
+    }
+
+    // Merge existing data with default to ensure missing keys are added
+    const mergedData: IAppStorage = localStorageUtils.deepMerge(DEFAULT_APP_STRUCTURE, existingData);
+
+    // Persist merged result
     localStorage.setItem(APP_NAME, JSON.stringify(mergedData));
+
     return mergedData;
-  },
+  }
 };
