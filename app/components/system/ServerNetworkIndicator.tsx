@@ -10,6 +10,7 @@ import {
   PlaneIcon,
   ServerIcon,
   ServerOffIcon,
+  ServerCrashIcon,
 } from "lucide-react";
 import { checkHealthAsync } from "~/services/healthCheckService";
 
@@ -32,8 +33,8 @@ const StatusColor = {
 
   // blinking states
   networkChecking: "animate-pulse text-cyan-400 data-[alt=true]:text-cyan-700",
-  serverChecking: "animate-pulse text-orange-600 data-[alt=true]:text-red-500",
-  databaseChecking: "animate-pulse text-orange-600 data-[alt=true]:text-red-500",
+  serverChecking: "animate-pulse text-orange-400 data-[alt=true]:text-orange-500",
+  databaseChecking: "animate-pulse text-orange-400 data-[alt=true]:text-orange-500",
 } as const;
 
 const StatusText: Record<string, string> = {
@@ -102,7 +103,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
   // slow toggle (server/db - 15s)
   useEffect(() => {
     if (status.server === "checking" || status.database === "checking") {
-      const timer = setInterval(() => setBlinkAltSlow(prev => !prev), 15000);
+      const timer = setInterval(() => setBlinkAltSlow(prev => !prev), 5000);
       return () => clearInterval(timer);
     }
   }, [status.server, status.database]);
@@ -157,6 +158,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
 
     const netStrength = await checkLatency();
     const healthResponse = await checkHealthAsync();
+    console.log("fetchAsync", healthResponse);
     const health = healthResponse.data;
 
     setStatus({
@@ -213,7 +215,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
   const renderServerIcon = () => {
     if (status.server === "checking") {
       return (
-        <ServerOffIcon
+        <ServerCrashIcon
           className={`w-5 h-5 ${StatusColor.serverChecking}`}
           data-alt={blinkAltSlow}
         />
