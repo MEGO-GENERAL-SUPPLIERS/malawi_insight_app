@@ -13,8 +13,8 @@ import {
 } from "@mui/material";
 import { Menu as MenuIcon, Zap, Settings as SettingsIcon, LogOut, User2Icon } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
-import { Link, Navigate, replace, useNavigate } from "react-router-dom";
-import { localStorageUtils } from "~/utils/localStorageUtils";
+import { Link } from "react-router-dom";
+import { useAuth } from "~/hooks/useAuth";
 
 interface NavbarProps {
   mobileOpen: boolean; // now passed in
@@ -25,32 +25,13 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
-  
+  const { logout } = useAuth();
   
   const { sidebarMinimised, drawerOpen, setDrawerOpen } = useQuickAccess();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
   
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
-  
-  // Logout logic
-  const navigate = useNavigate();
-  const handleLogout = () => {
-    localStorageUtils.ensureLocalAppStructure();
-    localStorageUtils.addOrUpdateLocalStorageObject({
-      user: {
-        id: "",
-        person_id: "",
-        roles: [],
-        logged_in: false
-      },
-      api: {
-        token: ""
-      }
-    });
-
-    navigate("/auth", { replace: true });
-  };
 
   return (
     <AppBar
@@ -114,7 +95,7 @@ const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
           <MenuItem component={Link} to="/app/settings" onClick={handleCloseUserMenu}>
             <SettingsIcon fontSize="small" style={{ marginRight: 8 }} /> Settings
           </MenuItem>
-          <MenuItem onClick={() => { handleCloseUserMenu(); handleLogout(); }}>
+          <MenuItem onClick={() => { handleCloseUserMenu(); logout(); }}>
             <LogOut fontSize="small" style={{ marginRight: 8, color: "red" }} /> Logout
           </MenuItem>
         </MuiMenu>

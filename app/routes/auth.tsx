@@ -9,7 +9,7 @@ import SuperUserModal from "~/components/system/SuperUserModal";
 import ApiConfigModal from "~/components/system/ApiConfigModal";
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
-import { isAuthenticated } from "~/utils/authUtils";
+import { useAuth } from "~/hooks/useAuth";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,17 +26,17 @@ const Auth = () => {
   const [superUsername, setSuperUsername] = useState("");
   const [superEmail, setSuperEmail] = useState("");
   const [superPassword, setSuperPassword] = useState("");
-
+  const { isAuthenticated, loading, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (isAuthenticated()) {
+    if (!loading && isAuthenticated) {
       navigate("/app/dashboard", { replace: true });
     }
-  }, [navigate]);
+  }, [isAuthenticated, loading, navigate]);
 
   useEffect(() => {
-    const appData: IAppStorage = localStorageUtils.ensureLocalAppStructure();
+    localStorageUtils.ensureLocalAppStructure();
   }, []);
 
   // Initialize rememberMe
@@ -114,7 +114,15 @@ const Auth = () => {
       }
 
       handleLoginSuccess(response.data);
-      toast.info("Logging in...");
+      toast.info("Logged in...", {
+        position: "top-right",
+        autoClose: 1000, // 1 second
+        hideProgressBar: true,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false,
+        progress: undefined,
+      });
       navigate("/app/dashboard");
 
     } catch(error) {
@@ -155,6 +163,7 @@ const Auth = () => {
     };
 
     localStorageUtils.addOrUpdateLocalStorageObject({ user, api });
+    setIsAuthenticated(true);
     console.log("Login info cached in localStorage successfully");
   };
 
