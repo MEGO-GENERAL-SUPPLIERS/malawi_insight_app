@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Outlet } from "react-router-dom";
+import { Outlet, useNavigation } from "react-router-dom";
 import Navbar from "~/components/layouts/Navbar";
 import SideMenu from "~/components/layouts/SideMenu";
 import Footer from "~/components/layouts/Footer";
@@ -8,6 +8,7 @@ import { localStorageUtils } from "~/utils/localStorageUtils";
 import { type IAppStorage } from "~/types/interfaces/ILocalStorageInterfaces";
 import { useTheme, useMediaQuery } from "@mui/material";
 import QuickAccessPanel from "./QuickAccessPanel";
+import PageLoader from "~/components/layouts/PageLoader";
 
 const MainLayout: React.FC = () => {
   const savedAppState: IAppStorage["app"] =
@@ -15,9 +16,11 @@ const MainLayout: React.FC = () => {
       ui: { sidebar_show: "false", navbar_autohide: "false", footer_show: "true" },
     };
     
-  const [navbarAutoHide, setNavbarAutoHide] = useState(savedAppState.ui.navbar_autohide === "true");
-  const [footerVisible, setFooterVisible] = useState(savedAppState.ui.footer_show === "true");
+  const [navbarAutoHide, _setNavbarAutoHide] = useState(savedAppState.ui.navbar_autohide === "true");
+  const [footerVisible, _setFooterVisible] = useState(savedAppState.ui.footer_show === "true");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const navigation = useNavigation();
+  const isLoading = navigation.state === "loading";
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
@@ -55,6 +58,9 @@ const MainLayout: React.FC = () => {
 
         {/* Navbar */}
         <Navbar mobileOpen={mobileOpen} setMobileOpen={setMobileOpen} navbarAutoHide={navbarAutoHide} />
+
+        {/* PageLoader during route transitions */}
+        <PageLoader loading={isLoading} text="Loading..." />
 
         {/* Main Content */}
         <div className="flex-1 flex flex-col pt-16">
