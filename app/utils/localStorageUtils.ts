@@ -61,6 +61,9 @@ export const DEFAULT_APP_STRUCTURE: IAppStorage = {
       sidebar_show: "",
       navbar_autohide: "",
       footer_show: ""
+    },
+    theme: {
+      theme: "light"
     }
   },
   server: {
@@ -132,6 +135,13 @@ export const localStorageUtils = {
 
     // Merge existing data with default to ensure missing keys are added
     const mergedData: IAppStorage = localStorageUtils.deepMerge(DEFAULT_APP_STRUCTURE, existingData);
+
+    // -------------------- THEME CHECK --------------------
+    if (!mergedData.app?.theme?.theme) {
+      const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+      mergedData.app.theme.theme = prefersDark ? "dark" : "light";
+    }
+    // -----------------------------------------------------
 
     // Persist merged result
     localStorage.setItem(APP_NAME, JSON.stringify(mergedData));

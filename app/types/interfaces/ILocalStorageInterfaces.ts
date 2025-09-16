@@ -46,6 +46,7 @@ export interface IApp{
     navbar_autohide?: string; // "true" or "false"
     footer_show?: string;     // "true" or "false"
   };
+  theme: ITheme;
 };
 
 
@@ -64,6 +65,10 @@ export interface INetwork {
   last_latency?: any;
   last_check?: string | null;
   strength?: "offline" | "unknown" | "none" | "weak" | "slow" | "fair" | "average" | "good" | "excellent"; 
+}
+
+export interface ITheme {
+  theme: 'light' | 'dark';
 }
 
 export interface IAppStorage {

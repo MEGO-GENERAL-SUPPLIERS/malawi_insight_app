@@ -11,7 +11,8 @@ import React from "react";
 import { useHealthCheckWorker } from "./hooks/useHealthCheckWorker";
 
 // Custom theme
-import { lightTheme } from "~/theme";
+import { lightTheme, darkTheme } from "~/theme";
+import { localStorageUtils } from "./utils/localStorageUtils";
 
 // Toastify
 import { ToastContainer } from "react-toastify";
@@ -38,6 +39,8 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const storage = localStorageUtils.ensureLocalAppStructure();
+  const currentTheme = storage.app.theme.theme === "dark" ? darkTheme : lightTheme;
   useHealthCheckWorker();
 
   return (
@@ -52,7 +55,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <ThemeProvider theme={lightTheme}>
+        <ThemeProvider theme={currentTheme}>
           <CssBaseline />
 
           {typeof window !== "undefined" && (
