@@ -12,7 +12,7 @@ import {
   useTheme
 } from "@mui/material";
 import { Menu as MenuIcon, Zap, Settings as SettingsIcon, LogOut, User2Icon } from "lucide-react";
-import { useQuickAccess } from "~/components/layouts/QuickAccessContext";
+import { useQuickAccess } from "~/context/QuickAccessContext";
 import { Link } from "react-router-dom";
 
 interface NavbarProps {
@@ -93,8 +93,8 @@ const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
           <MenuItem component={Link} to="/app/settings" onClick={handleCloseUserMenu}>
             <SettingsIcon fontSize="small" style={{ marginRight: 8 }} /> Settings
           </MenuItem>
-          <MenuItem onClick={handleCloseUserMenu}>
-            <LogOut fontSize="small" style={{ marginRight: 8, color: "text-red-500" }} /> Logout
+          <MenuItem onClick={() => { handleCloseUserMenu(); }}>
+            <LogOut fontSize="small" style={{ marginRight: 8, color: "red" }} /> Logout
           </MenuItem>
         </MuiMenu>
       </Toolbar>

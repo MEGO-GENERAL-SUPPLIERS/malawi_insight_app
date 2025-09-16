@@ -6,12 +6,12 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
-import React, { useEffect } from "react";
+import React from "react";
 
 import { useHealthCheckWorker } from "./hooks/useHealthCheckWorker";
 
 // Custom theme
-import { lightTheme, darkTheme } from "~/theme";
+import { lightTheme } from "~/theme";
 
 // Toastify
 import { ToastContainer } from "react-toastify";
@@ -37,16 +37,9 @@ export const links: Route.LinksFunction = () => [
   },
 ];
 
-// Create a theme (light/dark or custom)
-// const theme = createTheme({
-//   palette: {
-//     mode: "light", // change to "dark" if you want dark mode
-//   },
-// });
-
 export function Layout({ children }: { children: React.ReactNode }) {
   useHealthCheckWorker();
-  
+
   return (
     <html
       lang={typeof window !== "undefined" ? navigator.language : "en"}
@@ -61,9 +54,11 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider theme={lightTheme}>
           <CssBaseline />
-          {children}
 
-          {/* Toastify still works alongside MUI */}
+          {typeof window !== "undefined" && (
+              <Outlet />
+          )}
+
           <ToastContainer
             position="top-center"
             autoClose={3500}

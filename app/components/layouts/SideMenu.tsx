@@ -25,7 +25,7 @@ import {
   Maximize2Icon,
   Minimize2Icon,
 } from "lucide-react";
-import { useQuickAccess } from "~/components/layouts/QuickAccessContext";
+import { useQuickAccess } from "~/context/QuickAccessContext";
 
 interface SideMenuProps {
   mobileOpen: boolean;

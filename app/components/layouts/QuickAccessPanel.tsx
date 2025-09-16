@@ -2,7 +2,7 @@
 import React from "react";
 import { Drawer, Box, Typography, IconButton, Switch, FormControlLabel } from "@mui/material";
 import { X } from "lucide-react";
-import { useQuickAccess } from "./QuickAccessContext";
+import { useQuickAccess } from "~/context/QuickAccessContext";
 
 const QuickAccessPanel: React.FC = () => {
   const {

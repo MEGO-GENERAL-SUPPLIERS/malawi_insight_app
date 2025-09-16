@@ -3,7 +3,7 @@ import { Outlet } from "react-router-dom";
 import Navbar from "~/components/layouts/Navbar";
 import SideMenu from "~/components/layouts/SideMenu";
 import Footer from "~/components/layouts/Footer";
-import { QuickAccessProvider } from "~/components/layouts/QuickAccessContext";
+import { QuickAccessProvider } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { type IAppStorage } from "~/types/interfaces/ILocalStorageInterfaces";
 import { useTheme, useMediaQuery } from "@mui/material";
@@ -66,7 +66,7 @@ const MainLayout: React.FC = () => {
           {footerVisible && <Footer />}
         </div>
       </div>
-      
+
       {/*Quick Access Panel*/}
       <QuickAccessPanel />
     </QuickAccessProvider>

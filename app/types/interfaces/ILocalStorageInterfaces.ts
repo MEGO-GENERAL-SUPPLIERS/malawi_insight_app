@@ -13,6 +13,7 @@ export interface IUser{
   auto_logout_count?: number; //seconds
   roles?: string[];
   privileges?: string[];
+  token?: string;
 }
 
 export interface IDevice {
