@@ -9,6 +9,7 @@ import SuperUserModal from "~/components/system/SuperUserModal";
 import ApiConfigModal from "~/components/system/ApiConfigModal";
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
+import { isAuthenticated } from "~/utils/authUtils";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -27,6 +28,12 @@ const Auth = () => {
   const [superPassword, setSuperPassword] = useState("");
 
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isAuthenticated()) {
+      navigate("/app/dashboard", { replace: true });
+    }
+  }, [navigate]);
 
   useEffect(() => {
     const appData: IAppStorage = localStorageUtils.ensureLocalAppStructure();

@@ -62,8 +62,8 @@ const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
         backgroundColor: "rgba(255,255,255,0.9)",
         borderBottom: "1px solid rgba(0,0,0,0.1)",
         borderRadius: 0,
-        left: isMobile ? 0 : sidebarMinimised ? 64 : 256,
-        width: isMobile ? "100%" : `calc(100% - ${sidebarMinimised ? 64 : 256}px)`,
+        left: isMobile ? 0 : sidebarMinimised ? 64 : 242,
+        width: isMobile ? "100%" : `calc(100% - ${sidebarMinimised ? 64 : 242}px)`,
         transition: "left 0.3s, width 0.3s",
         zIndex: 1201,
       }}

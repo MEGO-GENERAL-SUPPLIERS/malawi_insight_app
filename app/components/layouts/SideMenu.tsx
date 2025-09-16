@@ -52,7 +52,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
   ];
 
   const effectiveMinimised = isMobile ? false : sidebarMinimised;
-  const drawerWidth = effectiveMinimised ? 64 : 256;
+  const drawerWidth = effectiveMinimised ? 64 : 242;
 
   const handleBottomMenuToggle = (event: React.MouseEvent<HTMLElement>) => {
     setBottomMenuAnchor(bottomMenuAnchor ? null : event.currentTarget);
@@ -92,9 +92,11 @@ const SideMenu: React.FC<SideMenuProps> = ({
       }}
     >
       {/* Logo */}
-      <Box display="flex" alignItems="center" p={2} borderBottom="1px solid rgba(148,163,184,0.3)">
-        <img src="/public/img/rtc-logo.png" className="w-12 mr-3" />
-        {!effectiveMinimised && <Box className="font-bold text-lg ml-3">Malawi Insight</Box>}
+      <Box display="flex" alignItems="center" p={1} borderBottom="1px solid rgba(148,163,184,0.3)">
+        <div className="border p-3 rounded-5 bg-white/50 dark:bg-white/90 mr-2">
+          <img src="/public/img/rtc-logo.png" className="w-12" />
+        </div>
+        {!effectiveMinimised && <Box className="font-bold text-lg ml-2">Malawi Insight</Box>}
       </Box>
 
       {/* Menu Items */}
