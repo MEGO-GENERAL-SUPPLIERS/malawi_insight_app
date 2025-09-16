@@ -137,7 +137,9 @@ const Auth = () => {
       national_id: authData.nationalId ?? "",
       status: authData.status,
       roles: authData.roles ?? [],
-      privileges: authData.privileges ?? []
+      privileges: authData.privileges ?? [],
+      logged_in: true,
+      last_login: new Date().toISOString()
     };
 
     const api: Partial<IApi> = {

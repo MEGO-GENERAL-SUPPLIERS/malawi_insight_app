@@ -31,7 +31,9 @@ export const DEFAULT_APP_STRUCTURE: IAppStorage = {
     inactivity_duration: 30, // minutes
     auto_logout_count: 30,   // seconds
     roles: [],
-    privileges: []
+    privileges: [],
+    logged_in: false,
+    last_login: ""
   },
   device: {
     brand: "",

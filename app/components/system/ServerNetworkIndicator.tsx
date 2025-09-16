@@ -8,9 +8,8 @@ import {
   DatabaseZapIcon,
   GlobeLockIcon,
   PlaneIcon,
-  ServerIcon,
-  ServerOffIcon,
-  ServerCrashIcon,
+  ArrowUpDownIcon,
+  RefreshCwOffIcon,
 } from "lucide-react";
 import { checkHealthAsync } from "~/services/healthCheckService";
 
@@ -32,7 +31,7 @@ const StatusColor = {
   databaseUp: "text-green-600",
 
   // blinking states
-  networkChecking: "animate-pulse text-cyan-400 data-[alt=true]:text-cyan-700",
+  networkChecking: "animate-pulse text-orange-400 data-[alt=true]:text-orange-700",
   serverChecking: "animate-pulse text-orange-400 data-[alt=true]:text-orange-500",
   databaseChecking: "animate-pulse text-orange-400 data-[alt=true]:text-orange-500",
 } as const;
@@ -215,16 +214,16 @@ const ServerNetworkIndicator: React.FC<Props> = ({
   const renderServerIcon = () => {
     if (status.server === "checking") {
       return (
-        <ServerCrashIcon
+        <RefreshCwOffIcon
           className={`w-5 h-5 ${StatusColor.serverChecking}`}
           data-alt={blinkAltSlow}
         />
       );
     }
     return status.server ? (
-      <ServerIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
+      <ArrowUpDownIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
     ) : (
-      <ServerOffIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
+      <RefreshCwOffIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
     );
   };
 
