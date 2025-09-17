@@ -9,7 +9,7 @@ import {
   GlobeLockIcon,
   PlaneIcon,
   ArrowUpDownIcon,
-  RefreshCwOffIcon,
+  ServerCrashIcon,
 } from "lucide-react";
 import { checkHealthAsync } from "~/services/healthCheckService";
 
@@ -214,7 +214,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
   const renderServerIcon = () => {
     if (status.server === "checking") {
       return (
-        <RefreshCwOffIcon
+        <ServerCrashIcon
           className={`w-5 h-5 ${StatusColor.serverChecking}`}
           data-alt={blinkAltSlow}
         />
@@ -223,7 +223,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
     return status.server ? (
       <ArrowUpDownIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
     ) : (
-      <RefreshCwOffIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
+      <ServerCrashIcon className={`w-5 h-5 ${StatusColor.serverDown}`} />
     );
   };
 
