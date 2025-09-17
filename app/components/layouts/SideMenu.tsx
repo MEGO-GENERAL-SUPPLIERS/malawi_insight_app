@@ -17,7 +17,6 @@ import {
 import {
   LayoutDashboard,
   Settings as SettingsIcon,
-  RefreshCcwDotIcon,
   RotateCw,
   UserCircle2Icon,
   FolderOpenIcon,
@@ -25,6 +24,7 @@ import {
   Menu,
   Maximize2Icon,
   Minimize2Icon,
+  FolderSyncIcon,
 } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -32,14 +32,14 @@ import { localStorageUtils } from "~/utils/localStorageUtils";
 interface SideMenuProps {
   mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
-  defaultMinimised?: boolean;
+  _defaultMinimised?: boolean;
   isMobile?: boolean;
 }
 
 const SideMenu: React.FC<SideMenuProps> = ({
   mobileOpen,
   setMobileOpen,
-  defaultMinimised = false,
+  _defaultMinimised = false,
   isMobile = false,
 }) => {
   const { sidebarMinimised, setSidebarMinimised } = useQuickAccess();
@@ -197,7 +197,11 @@ const SideMenu: React.FC<SideMenuProps> = ({
       >
         {/* Show burger menu only when sidebar is minimised (desktop) */}
         {effectiveMinimised && !isMobile && (
-          <IconButton sx={{ color: "white" }} onClick={handleBottomMenuToggle} size="large">
+          <IconButton
+            sx={{ color: "white" }}
+            onClick={handleBottomMenuToggle}
+            size="large"
+          >
             <Menu />
           </IconButton>
         )}
@@ -206,19 +210,90 @@ const SideMenu: React.FC<SideMenuProps> = ({
         {(!effectiveMinimised || isMobile) && (
           <>
             {!isMobile && (
-              <IconButton sx={{ color: "white" }} onClick={() => setSidebarMinimised(!sidebarMinimised)} size="large">
+              <IconButton
+                sx={{ color: "white" }}
+                onClick={() => setSidebarMinimised(!sidebarMinimised)}
+                size="large"
+              >
                 <Minimize2Icon />
               </IconButton>
             )}
-            <IconButton sx={{ color: "white" }} onClick={() => { handleMenuClick(); setBottomMenuAnchor(null); } } size="large">
-              <RefreshCcwDotIcon />
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={() => {
+                handleMenuClick();
+                setBottomMenuAnchor(null);
+              }}
+              size="large"
+            >
+              <FolderSyncIcon />
             </IconButton>
-            <IconButton sx={{ color: "white" }} onClick={() => { handleMenuClick(); setBottomMenuAnchor(null); } } size="large">
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={() => {
+                handleMenuClick();
+                setBottomMenuAnchor(null);
+              }}
+              size="large"
+            >
               <RotateCw />
             </IconButton>
           </>
         )}
       </Box>
+
+      {/* Popper menu for minimised sidebar */}
+      <Popper
+        open={Boolean(bottomMenuAnchor)}
+        anchorEl={bottomMenuAnchor}
+        placement="top-end"
+        sx={{ zIndex: 1300 }} // ensures it overlays UI
+      >
+        <ClickAwayListener onClickAway={() => setBottomMenuAnchor(null)}>
+          <Paper
+            elevation={4}
+            sx={{
+              p: 1,
+              background: "rgba(15,23,42,0.95)", // dark slate bg
+              color: "white",
+              display: "flex",
+              gap: 1,
+            }}
+          >
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={() => {
+                setSidebarMinimised(!sidebarMinimised);
+                setBottomMenuAnchor(null);
+              }}
+              size="large"
+            >
+              <Maximize2Icon />
+            </IconButton>
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={() => {
+                handleMenuClick();
+                setBottomMenuAnchor(null);
+              }}
+              size="large"
+            >
+              <FolderSyncIcon />
+            </IconButton>
+            <IconButton
+              sx={{ color: "white" }}
+              onClick={() => {
+                handleMenuClick();
+                setBottomMenuAnchor(null);
+              }}
+              size="large"
+            >
+              <RotateCw />
+            </IconButton>
+          </Paper>
+        </ClickAwayListener>
+      </Popper>
+
     </Drawer>
   );
 };
