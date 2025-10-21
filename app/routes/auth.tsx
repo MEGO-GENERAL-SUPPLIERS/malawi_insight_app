@@ -1,15 +1,15 @@
 import React, { useState, useEffect } from "react";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, XCircle, CogIcon } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, CogIcon } from "lucide-react";
 import { localStorageUtils } from "../utils/localStorageUtils";
 import { type IAppStorage, type IUser, type IApi } from "~/types/interfaces/ILocalStorageInterfaces";
 import { useNavigate } from "react-router";
 import { authenticateUser, checkSuperUser, createSuperUser } from "~/services/authService";
-import { toast } from "react-toastify";
 import SuperUserModal from "~/components/system/SuperUserModal";
 import ApiConfigModal from "~/components/system/ApiConfigModal";
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
 import { useAuth } from "~/hooks/useAuth";
+import { ToastAlertComponentController } from "~/components/controllers/ToastComponentController";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -75,7 +75,14 @@ const Auth = () => {
 
   const handleCreateSuperUser = async () => {
     if (!superFirstName || !superLastName || !superUsername || !superEmail || !superPassword) {
-      toast.error("Please fill in all fields", { icon: <XCircle /> });
+      ToastAlertComponentController.show({
+        type: "error",
+        message: "Please fill in all fields", 
+        icon: "XCircle",
+        autoHideDuration: 3500,
+        positionY: "top",
+        positionX: "center"
+    });
       return;
     }
 
@@ -90,10 +97,17 @@ const Auth = () => {
     setIsLoading(false);
 
     if (result.success) {
-      toast.success("Super User created successfully");
+      ToastAlertComponentController.show({
+        type: "info",
+        message: "Super User created successfully"
+      });
       setShowSuperModal(false);
     } else {
-      toast.error(result.message || "Failed to create super user", { icon: <XCircle /> });
+      ToastAlertComponentController.show({
+        type: "error",
+        message: result.message || "Failed to create super user", 
+        icon: "XCircle"
+      });
     }
   };
 
@@ -105,32 +119,36 @@ const Auth = () => {
       const response: IApiResponse<IAuthResponse> = await authenticateUser(email, password);
 
       if (!response.success || !response.data) {
-        toast.error(response.message || "Login failed. Please try again.", {
-          icon: <XCircle className="w-5 h-5 text-white" />,
-          position: "top-center",
-          autoClose: 4500,
+        ToastAlertComponentController.show({
+          type: "error",
+          message: response.message || "Login failed. Please try again.", 
+          icon: "XCircle",
+          positionY: "top",
+          positionX: "center",
+          autoHideDuration: 4500,
         });
         return;
       }
 
       handleLoginSuccess(response.data);
-      toast.info("Logged in...", {
-        position: "top-right",
-        autoClose: 1000, // 1 second
-        hideProgressBar: true,
-        closeOnClick: true,
-        pauseOnHover: false,
-        draggable: false,
-        progress: undefined,
+      ToastAlertComponentController.show({
+        type: "info",
+        message: "Logged in...", 
+        positionY: "top",
+        positionX: "center",
+        autoHideDuration: 1000 // 1 second
       });
       navigate("/app/dashboard");
 
     } catch(error) {
       console.log("Unexpected Error", error)
-      toast.error("An unexpected error occurred", {
-        icon: <XCircle className="w-5 h-5 text-white" />,
-        position: "top-center",
-        autoClose: 4500,
+      ToastAlertComponentController.show({
+        type: "error", 
+        message: "An unexpected error occurred",
+        icon: "XCircle",
+        positionY: "top",
+        positionX: "center",
+        autoHideDuration: 4500,
       });
     } finally {
       setIsLoading(false);
@@ -297,6 +315,8 @@ const Auth = () => {
         isOpen={showConfigModal}
         onClose={() => setShowConfigModal(false)}
       />
+
+      <ToastAlertComponentController.render />
     </div>
     
   );

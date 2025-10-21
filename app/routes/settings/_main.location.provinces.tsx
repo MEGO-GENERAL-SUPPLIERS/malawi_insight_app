@@ -28,13 +28,13 @@ const Provinces = () => {
 
       <button
         onClick={handleOpenModal}
-        className="px-4 py-2 bg-blue-600 text-white rounded"
+        className="btn btn-success"
       >
-        Open Modal
+        Add Province
       </button>
       <button
         onClick={handleGetData}
-        className="px-4 py-2 bg-gray-600 text-white rounded"
+        className="btn btn-default"
       >
         Get Modal Data
       </button>

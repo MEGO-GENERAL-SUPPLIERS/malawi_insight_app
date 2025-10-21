@@ -40,7 +40,7 @@ export const links: Route.LinksFunction = () => [
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const storage = localStorageUtils.ensureLocalAppStructure();
-  const currentTheme = storage.app.theme.theme === "dark" ? darkTheme : lightTheme;
+  const currentTheme = storage.app.theme?.theme === "dark" ? darkTheme : lightTheme;
   useHealthCheckWorker();
 
   return (

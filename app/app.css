@@ -104,6 +104,30 @@
   @apply px-6 py-3;
 }
 
+.btn-primary{
+  @apply bg-emerald-600 hover:bg-emerald-700 focus:bg-emerald-800;
+}
+
+.btn-outline-primary{
+  @apply border-2 text-emerald-600 border-emerald-600 hover:bg-emerald-600 hover:text-white focus:bg-emerald-700;
+}
+
+.btn-secondary{
+  @apply bg-slate-600 hover:bg-slate-700 focus:bg-slate-800;
+}
+
+.btn-outline-secondary{
+  @apply border-2 text-slate-600 border-slate-600 hover:bg-slate-600 hover:text-white focus:bg-slate-700;
+}
+
+.btn-default{
+  @apply bg-slate-300 hover:bg-slate-400 focus:bg-slate-500;
+}
+
+.btn-outline-default{
+  @apply border-2 text-slate-400 border-slate-500 hover:bg-slate-600 hover:text-white focus:bg-slate-500;
+}
+
 .btn-success{
   @apply bg-emerald-600 hover:bg-emerald-700 focus:bg-emerald-800;
 }
@@ -134,6 +158,14 @@
 
 .btn-outline-info{
   @apply border-2 text-cyan-600 border-cyan-600 hover:bg-cyan-600 hover:text-white focus:bg-cyan-700;
+}
+
+.btn-default{
+  @apply bg-gray-600 hover:bg-gray-700 focus:bg-gray-800;
+}
+
+.btn-outline-default{
+  @apply border-2 text-gray-600 border-gray-600 hover:bg-gray-600 hover:text-white focus:bg-gray-700;
 }
 
 .btn-full{
