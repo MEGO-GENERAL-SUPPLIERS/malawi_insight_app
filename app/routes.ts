@@ -7,11 +7,20 @@ export const appRoutes: RouteConfig = [
   // Routes wrapped in MainLayout
   route("/app", "routes/_main.tsx", [
     route("dashboard", "routes/_main.dashboard.tsx"),
-    route("templates", "routes/_main.templates.tsx"),
-    route("reports", "routes/_main.reports.tsx"),
-    route("settings", "routes/_main.settings.tsx"),
     route("help", "routes/_main.help.tsx"),
     route("profile", "routes/_main.profile.tsx"),
+    /*Settings*/
+    route("settings", "routes/_main.settings.tsx"),
+    route("settings/locations", "routes/settings/_main.locations.tsx"),
+    route("settings/locations/provinces", "routes/settings/_main.location.provinces.tsx"),
+    route("settings/locations/districts", "routes/settings/_main.location.districts.tsx"),
+    route("settings/locations/facilities", "routes/settings/_main.location.facilities.tsx"),
+    /*Programs*/
+    route("programs", "routes/_main.programs.tsx"),
+    /*SI Unit*/
+    route("strategic_info", "routes/_main.strategic_info.tsx"),
+    route("strategic_info/templates", "routes/strategic_info/_main.templates.tsx"),
+    route("strategic_info/reports", "routes/strategic_info/_main.reports.tsx")
   ]),
 
   // Other routes...
@@ -22,11 +31,16 @@ export const routes = {
   auth: "/",
   app: {
     dashboard: "/app/dashboard",
-    templates: "/app/templates",
-    reports: "/app/reports",
-    settings: "/app/settings",
+    programs: "/app/programs",
     help: "/app/help",
     profile: "/app/profile",
+    /*Settings*/
+    settings: "/app/settings",
+    settings_locations: "/app/settings/locations",
+    /*SI Unit*/
+    strategic_info: "/app/strategic_info",
+    strategic_info_templates: "/app/strategic_info/templates",
+    strategic_info_reports: "/app/strategic_info/reports",
   },
 } as const;
 

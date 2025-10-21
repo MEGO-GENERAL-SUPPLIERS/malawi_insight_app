@@ -46,7 +46,7 @@ export interface IApp{
     navbar_autohide?: string; // "true" or "false"
     footer_show?: string;     // "true" or "false"
   };
-  theme: ITheme;
+  theme?: ITheme;
 };
 
 

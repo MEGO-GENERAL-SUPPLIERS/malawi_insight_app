@@ -52,7 +52,7 @@ const MainLayout: React.FC = () => {
         <SideMenu
           mobileOpen={mobileOpen}
           setMobileOpen={setMobileOpen}
-          defaultMinimised={true}  // Always minimised on mobile
+          _defaultMinimised={true}  // Always minimised on mobile
           isMobile={isMobile}       // Inform SideMenu of mobile view
         />
 
@@ -65,7 +65,7 @@ const MainLayout: React.FC = () => {
         {/* Main Content */}
         <div className="flex-1 flex flex-col pt-16">
           <main className="flex-1 p-2 overflow-y-auto">
-            <div className="max-w-7xl mx-1">
+            <div className="w-full px-1.5">
               <Outlet />
             </div>
           </main>

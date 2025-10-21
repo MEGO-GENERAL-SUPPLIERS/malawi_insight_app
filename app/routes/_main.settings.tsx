@@ -4,8 +4,11 @@ import React from 'react';
 import MenuCardGrid from '~/components/system/MenuCardGrid';
 import PageHeaderTitle from '~/components/system/PageHeaderTitle';
 import { type IMenuCard } from '~/types/interfaces/IMenuCard';
+import { useNavigate } from 'react-router-dom';
 
 const Settings: React.FC = () => {
+  const navigate = useNavigate();
+
   const settingsCards: IMenuCard[] = [
     {
       icon: 'Wifi',
@@ -15,6 +18,14 @@ const Settings: React.FC = () => {
       colors: ['from-cyan-400', 'to-blue-500'],
       privileges: []
     }, 
+    {
+      icon: 'MapPinned',
+      name: 'Locations Settings',
+      description: 'Manage System locations',
+      route: '/app/settings/locations',
+      colors: ['from-purple-400', 'to-pink-500'],
+      privileges: []
+    },
     {
       icon: 'Shield',
       name: 'Role & Permissions',
@@ -67,12 +78,12 @@ const Settings: React.FC = () => {
 
   const handleCardClick = (route: string) => {
     console.log(`Navigating to: ${route}`);
-    // Implement navigation logic here (react-router, next/router, etc.)
+    navigate(route);
   };
 
   return (
     <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-7xl mx-auto">
+      <div className="max-w-8xl mx-auto">
         <PageHeaderTitle
           icon="Cog"
           title="Settings"

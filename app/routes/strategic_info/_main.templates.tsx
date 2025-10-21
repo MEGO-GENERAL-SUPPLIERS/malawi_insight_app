@@ -1,7 +1,7 @@
 // routes/_main.templates.tsx
 
 import React from 'react';
-import PageHeaderTitle from '../components/system/PageHeaderTitle';
+import PageHeaderTitle from '../../components/system/PageHeaderTitle';
 import MenuCardGrid from '~/components/system/MenuCardGrid';
 import { type IMenuCard } from '~/types/interfaces/IMenuCard';
 
@@ -71,8 +71,8 @@ const Templates: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 p-2">
-      <div className="max-w-7xl ml-0">
+    <div className="min-h-screen bg-gray-50 p-1">
+      <div className="max-w-8xl ml-0">
         <PageHeaderTitle
           icon="Files"
           title="Template Management"

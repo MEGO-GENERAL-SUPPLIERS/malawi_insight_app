@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   AppBar,
   Toolbar,
@@ -11,27 +11,50 @@ import {
   useMediaQuery,
   useTheme
 } from "@mui/material";
-import { Menu as MenuIcon, Zap, Settings as SettingsIcon, LogOut, User2Icon } from "lucide-react";
+import { Menu as MenuIcon, Zap, Settings as SettingsIcon, LogOut, User2Icon, ArrowLeft } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
-import { Link } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "~/hooks/useAuth";
 
 interface NavbarProps {
-  mobileOpen: boolean; // now passed in
+  mobileOpen: boolean;
   setMobileOpen: (open: boolean) => void;
   navbarAutoHide: boolean;
+  disableBackRoutes?: string[]; // Routes where back button should be disabled
 }
 
-const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
+const Navbar: React.FC<NavbarProps> = ({ 
+  mobileOpen, 
+  setMobileOpen,
+  disableBackRoutes = ["/app", "/app/dashboard", "/app/programs", "/app/strategic_info", "/app/settings", "/app/profile"] // Default routes where back is disabled
+}) => {
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
   const { logout } = useAuth();
+  const navigate = useNavigate();
+  const location = useLocation();
   
   const { sidebarMinimised, drawerOpen, setDrawerOpen } = useQuickAccess();
   const [anchorElUser, setAnchorElUser] = useState<null | HTMLElement>(null);
+  const [isBackDisabled, setIsBackDisabled] = useState(false);
   
   const handleOpenUserMenu = (event: React.MouseEvent<HTMLElement>) => setAnchorElUser(event.currentTarget);
   const handleCloseUserMenu = () => setAnchorElUser(null);
+
+  // Check if current route should disable back button
+  useEffect(() => {
+    const currentPath = location.pathname;
+    const shouldDisable = disableBackRoutes.some(route => 
+      currentPath === route || currentPath === route + "/"
+    );
+    setIsBackDisabled(shouldDisable);
+  }, [location.pathname, disableBackRoutes]);
+
+  const handleBack = () => {
+    if (!isBackDisabled) {
+      navigate(-1);
+    }
+  };
 
   return (
     <AppBar
@@ -60,7 +83,30 @@ const Navbar: React.FC<NavbarProps> = ({ mobileOpen, setMobileOpen }) => {
             <MenuIcon />
           </IconButton>
         )}
-
+        
+        {/* Back button */}
+        {!isMobile && (
+          <Tooltip title={isBackDisabled ? "Cannot go back" : "Go back"}>
+            <span>
+              <IconButton
+                color="inherit"
+                onClick={handleBack}
+                disabled={isBackDisabled}
+                size="large"
+                sx={{
+                  opacity: isBackDisabled ? 0.3 : 1,
+                  cursor: isBackDisabled ? "not-allowed" : "pointer",
+                  "&:hover": {
+                    backgroundColor: isBackDisabled ? "transparent" : "rgba(0,0,0,0.04)"
+                  }
+                }}
+              >
+                <ArrowLeft />
+              </IconButton>
+            </span>
+          </Tooltip>
+        )}
+        
         <Box flex={1} />
 
         {/* Quick Access & Profile */}

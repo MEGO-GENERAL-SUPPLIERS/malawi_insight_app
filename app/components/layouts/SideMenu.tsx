@@ -25,6 +25,8 @@ import {
   Maximize2Icon,
   Minimize2Icon,
   FolderSyncIcon,
+  Boxes,
+  SquareLibrary,
 } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -48,8 +50,8 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
   const menuItems = [
     { label: "Dashboard", icon: LayoutDashboard, link: "/app/dashboard" },
-    { label: "Templates", icon: FolderOpenIcon, link: "/app/templates" },
-    { label: "Reports", icon: ChartPieIcon, link: "/app/reports" },
+    { label: "Programs", icon: Boxes, link: "/app/programs"},
+    { label: "SI Unit", icon: SquareLibrary, link: "/app/strategic_info" },
     { label: "Settings", icon: SettingsIcon, link: "/app/settings" },
     { label: "My Profile", icon: UserCircle2Icon, link: "/app/profile" },
   ];
