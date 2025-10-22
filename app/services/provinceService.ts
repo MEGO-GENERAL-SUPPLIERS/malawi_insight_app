@@ -20,3 +20,51 @@ export const fetchProvinces = async (params: Record<string, any> = {}): Promise<
     };
   }
 };
+
+export const addProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+  try {
+    const response = await apiClient.post<IProvince>(
+      "/provinces",
+      params
+    );
+    return response; // already IApiResponse<IAuthResponse>
+  } catch {
+    return {
+      success: false,
+      message: "Failed to fetch provinces",
+      data: null,
+    };
+  }
+};
+
+export const deleteProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+  try {
+    const response = await apiClient.post<IProvince>(
+      "/provinces/delete",
+      params
+    );
+    return response; // already IApiResponse<IAuthResponse>
+  } catch {
+    return {
+      success: false,
+      message: "Failed to fetch provinces",
+      data: null,
+    };
+  }
+};
+
+export const updateProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+  try {
+    const response = await apiClient.post<IProvince>(
+      "/provinces/delete",
+      params
+    );
+    return response; // already IApiResponse<IAuthResponse>
+  } catch {
+    return {
+      success: false,
+      message: "Failed to fetch provinces",
+      data: null,
+    };
+  }
+};

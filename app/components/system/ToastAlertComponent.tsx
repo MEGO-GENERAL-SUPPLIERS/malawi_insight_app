@@ -1,18 +1,17 @@
 import React, { useState, useImperativeHandle, forwardRef } from "react";
-import { Snackbar, Alert, type AlertColor, Slide, Fade, Grow, Zoom, type SlideProps } from "@mui/material";
+import { Snackbar, Slide, Fade, Grow, Zoom, type SlideProps } from "@mui/material";
 import * as LucideIcons from "lucide-react";
 import * as MuiIcons from "@mui/icons-material";
 
 export interface ToastAlertProps {
-  type?: AlertColor; // "error" | "warning" | "info" | "success"
+  type?: "error" | "warning" | "info" | "success";
   message: string;
   autoHideDuration?: number;
   positionX?: "left" | "center" | "right";
   positionY?: "top" | "bottom";
-  variant?: "standard" | "filled" | "outlined";
-  icon?: string; 
+  icon?: string;
   animation?: "fade" | "slide" | "grow" | "zoom";
-  slideDirection?: "up" | "down" | "left" | "right";    
+  slideDirection?: "up" | "down" | "left" | "right";
 }
 
 export interface ToastAlertHandle {
@@ -23,9 +22,6 @@ export interface ToastAlertHandle {
 interface ToastQueueItem extends ToastAlertProps {
   id: string;
 }
-
-// Slide default
-const DefaultSlideTransition = (props: SlideProps) => <Slide {...props} direction="down" />;
 
 const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
   const [queue, setQueue] = useState<ToastQueueItem[]>([]);
@@ -48,7 +44,6 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
     return (LucideIcons as any)[name] || (MuiIcons as any)[name] || undefined;
   };
 
-  // Resolve transition component dynamically
   const resolveTransition = (animation?: string, slideDirection: "left" | "right" | "up" | "down" = "up") => {
     switch (animation) {
       case "slide":
@@ -61,6 +56,13 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
       default:
         return Fade;
     }
+  };
+
+  const typeToGradient = {
+    success: "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white",
+    error: "bg-gradient-to-r from-red-600 to-red-500 text-white",
+    warning: "bg-gradient-to-r from-yellow-600 to-orange-500 text-white",
+    info: "bg-gradient-to-r from-blue-600 to-blue-500 text-white",
   };
 
   return (
@@ -79,23 +81,15 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
               vertical: toast.positionY ?? "top",
               horizontal: toast.positionX ?? "center",
             }}
-            TransitionComponent={TransitionComponent as any} // cast to any to bypass TS
-            TransitionProps={{ timeout: 300 }} // optional duration
-            sx={{
-              ...(toast.positionY === "top" && toast.positionX === "center" && { top: "10%" }),
-              ...(toast.positionY === "bottom" && toast.positionX === "center" && { bottom: "10%" }),
-              mb: 1,
-            }}
+            TransitionComponent={TransitionComponent as any}
+            TransitionProps={{ timeout: 300 }}
           >
-            <Alert
-              onClose={handleClose(toast.id)}
-              severity={toast.type ?? "info"}
-              variant={toast.variant ?? "filled"}
-              icon={IconComponent ? <IconComponent /> : undefined}
-              sx={{ width: "100%" }}
+            <div
+              className={`flex items-center gap-2 px-4 py-3 rounded-md shadow-lg ${typeToGradient[toast.type ?? "info"]}`}
             >
-              {toast.message}
-            </Alert>
+              {IconComponent && <IconComponent className="w-6 h-6" />}
+              <span className="font-medium">{toast.message}</span>
+            </div>
           </Snackbar>
         );
       })}

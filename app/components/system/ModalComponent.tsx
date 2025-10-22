@@ -1,5 +1,11 @@
-import React, { useState, forwardRef, useImperativeHandle, type ReactNode } from "react";
-import { Modal, Box, Typography, IconButton, Button } from "@mui/material";
+import React, {
+  useState,
+  forwardRef,
+  useImperativeHandle,
+  type ReactNode,
+  useCallback,
+} from "react";
+import { Modal, Box, Typography, IconButton } from "@mui/material";
 import * as LucideIcons from "lucide-react";
 import * as MuiIcons from "@mui/icons-material";
 import clsx from "clsx";
@@ -9,7 +15,7 @@ type ModalSize = "xs" | "sm" | "md" | "lg" | "xl" | "full";
 
 export interface ModalButton {
   label: string;
-  className?: string; // Tailwind or any CSS
+  className?: string;
   onClick?: (data?: any) => void;
 }
 
@@ -19,8 +25,8 @@ export interface ReusableModalProps {
   size?: ModalSize;
   blur?: number;
   backdropOpacity?: number;
-  dismissable?: boolean; // default false
-  headerClass?: string; // Tailwind / CSS for header
+  dismissable?: boolean;
+  headerClass?: string;
   showCloseButton?: boolean;
   customButtons?: ModalButton[];
   children?: ReactNode;
@@ -46,7 +52,7 @@ export const ModalComponent = forwardRef(({
   size = "md",
   blur = 1,
   backdropOpacity = 0.4,
-  dismissable = false, // default to false
+  dismissable = false,
   headerClass = "",
   showCloseButton = true,
   customButtons = [],
@@ -55,18 +61,22 @@ export const ModalComponent = forwardRef(({
 }: ReusableModalProps, ref) => {
   const [open, setOpen] = useState(false);
   const [slotData, setSlotData] = useState<any>(null);
+  const [instanceId, setInstanceId] = useState<number>(Date.now());
 
+  // Expose functions to parent
   useImperativeHandle(ref, () => ({
     openModal: () => setOpen(true),
-    closeModal: () => setOpen(false),
-    getSlotData: () => slotData
+    closeModal: handleClose,
+    getSlotData: () => slotData,
   }));
 
-  const handleClose = () => {
+  const handleClose = useCallback(() => {
     setOpen(false);
     setSlotData(null);
+    // Generate a new ID so React remounts the children fresh
+    setInstanceId(Date.now());
     onClose?.();
-  };
+  }, [onClose]);
 
   const handleButtonClick = (btn: ModalButton) => {
     btn.onClick?.(slotData);
@@ -114,31 +124,47 @@ export const ModalComponent = forwardRef(({
       >
         {/* Header */}
         <Box
-          className={clsx(headerClass)} // Tailwind or CSS for background
-          sx={{ display: "flex", alignItems: "center", justifyContent: "space-between", p: 2, borderBottom: "1px solid #eee" }}
+          className={clsx(headerClass)}
+          sx={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-between",
+            p: 2,
+            borderBottom: "1px solid #eee",
+          }}
         >
           <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
             {IconComponent && <IconComponent />}
             <Typography variant="h6">{title}</Typography>
           </Box>
           {showCloseButton && (
-            <IconButton onClick={handleClose} sx={{ cursor: "pointer" }}>
+            <IconButton onClick={handleClose}>
               <X />
             </IconButton>
           )}
         </Box>
 
-        {/* Body */}
-        <Box sx={{ p: 2, overflowY: "auto" }}>
-          {children && React.isValidElement<SlotDataChildProps>(children) && React.cloneElement(children, { setSlotData })}
+        {/* Body (remounts when instanceId changes) */}
+        <Box key={instanceId} sx={{ p: 2, overflowY: "auto" }}>
+          {children &&
+            React.isValidElement<SlotDataChildProps>(children) &&
+            React.cloneElement(children, { setSlotData })}
         </Box>
 
         {/* Footer */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", gap: 1, p: 2, borderTop: "1px solid #eee" }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "flex-end",
+            gap: 1,
+            p: 2,
+            borderTop: "1px solid #eee",
+          }}
+        >
           {customButtons.map((btn, idx) => (
             <button
               key={idx}
-              className={clsx("px-4 py-2 rounded", btn.className)} // Tailwind friendly
+              className={clsx("px-4 py-2 rounded", btn.className)}
               onClick={() => handleButtonClick(btn)}
             >
               {btn.label}
@@ -146,7 +172,7 @@ export const ModalComponent = forwardRef(({
           ))}
           {showCloseButton && (
             <button
-              className="px-4 py-2 rounded border cursor-pointer border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              className="px-4 py-2 rounded border cursor-pointer btn-danger btn hover:bg-red-500 hover:text-white"
               onClick={handleClose}
             >
               Close

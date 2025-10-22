@@ -3,121 +3,215 @@ import { ModalComponent, type ModalButton } from "~/components/system/ModalCompo
 import ProvinceAddForm from "~/components/forms/province.add";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
+import { AlertComponentController } from "~/components/controllers/AlertComponentController";
+import { addProvince, updateProvince, deleteProvince } from "~/services/provinceService";
+import { CircularProgress, Box, Typography } from "@mui/material";
+import { AlertTriangle, PlusCircle } from "lucide-react";
+import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 
 const Provinces = () => {
   const modalRef = useRef<any>(null);
+  const formRef = useRef<any>(null);
   const [tableData, setTableData] = useState<IProvince[]>([
     { id: 1, country_id: 1, name: "Northern Region", code: "NR", void: 0 },
     { id: 2, country_id: 1, name: "Central Region", code: "CR", void: 0 }
   ]);
+  const [loading, setLoading] = useState(false);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [editRow, setEditRow] = useState<IProvince | null>(null);
 
-  const [editingRow, setEditingRow] = useState<IProvince | null>(null);
-
-  const handleOpenModal = (rowData?: IProvince) => {
-    setEditingRow(rowData ?? null); // if rowData exists, we are editing
+  const handleOpenModal = (row?: IProvince) => {
+    if (row) {
+      setEditRow(row);
+      formRef.current?.setFormData?.(row);
+    } else {
+      setEditRow(null);
+      formRef.current?.resetForm?.();
+    }
     modalRef.current?.openModal();
   };
 
-  const handleGetData = () => {
-    const data = modalRef.current?.getSlotData?.();
-    console.log("Slotted component data:", data ?? "No data");
+  const handleCloseModal = () => {
+    setLoading(false);
+    setErrorMessage(null);
+    setEditRow(null);
+    modalRef.current?.closeModal();
   };
 
-  const customButtons: ModalButton[] = [
-    {
-      label: "Submit",
-      className: "btn btn-success",
-      onClick: (data) => {
-        console.log("Submit clicked with data:", data);
-        // Optional: Add or update tableData here
-        if (editingRow) {
-          // Update existing row
-          setTableData((prev) =>
-            prev.map((row) => (row.id === editingRow.id ? { ...row, ...data } : row))
-          );
-        } else {
-          // Add new row
-          setTableData((prev) => [
-            ...prev,
-            { id: prev.length + 1, country_id: 1, void: 0, ...data },
-          ]);
-        }
-      },
-    },
-  ];
+  const handleSubmit = async () => {
+    const data = formRef.current?.getFormData();
+    if (!data) return;
+
+    setErrorMessage(null);
+    const action = editRow ? "update" : "add";
+
+    AlertComponentController.show({
+      type: "confirm",
+      title: `Confirm`,
+      icon: `CircleQuestionMark`,
+      message: `Are you sure you want to ${action} province "${data.name}"?`,
+      buttons: [
+        {
+          label: "Proceed",
+          onClick: async () => {
+            AlertComponentController.dismiss();
+            setLoading(true);
+
+            let response;
+            if (editRow) {
+              response = await updateProvince(data);
+            } else {
+              response = await addProvince(data);
+            }
+
+            setLoading(false);
+
+            if (response.success && response.data) {
+              ToastAlertComponentController.show({
+                type: "success",
+                message: `Province "${data.name}" ${editRow ? "updated" : "added"} successfully!`,
+                icon: "CheckCircle",
+                autoHideDuration: 3500,
+                animation: "slide",
+                slideDirection: "down"
+              });
+
+              if (editRow) {
+                setTableData((prev: any) =>
+                  prev.map((row: any) => (row.id === editRow.id ? response.data : row))
+                );
+              } else {
+                setTableData((prev: any) => [...prev, response.data]);
+              }
+
+              handleCloseModal();
+            } else {
+              setErrorMessage(response.message || `Failed to ${action} province`);
+            }
+          },
+        },
+        {
+          label: "Cancel",
+          autoClose: true,
+          className: "btn btn-danger",
+          onClick: () => {},
+        },
+      ],
+    });
+  };
+
+  const handleEditRow = (row: IProvince) => handleOpenModal(row);
+
+  const handleDeleteRow = (row: IProvince) => {
+    AlertComponentController.dismiss();
+    AlertComponentController.show({
+      type: "confirm",
+      title: "Confirm Delete",
+      message: `Are you sure you want to delete "${row.name}"?`,
+      buttons: [
+        {
+          label: "Proceed",
+          className: "btn btn-success",
+          onClick: async () => {
+            const response = await deleteProvince(row);
+            if (response.success) {
+              ToastAlertComponentController.show({
+                type: "success",
+                message: `Province "${row.name}" deleted successfully!`,
+                icon: "CheckCircle",
+                animation: "slide",
+                slideDirection: "down",
+                autoHideDuration: 3500
+              });
+              setTableData((prev) => prev.filter((r) => r.id !== row.id));
+            } else {
+              ToastAlertComponentController.show({
+                type: "error",
+                message: `Failed to delete "${row.name}".`,
+                icon: "XCircle",
+                animation: "slide",
+                slideDirection: "down",
+                autoHideDuration: 3500
+              });
+            }
+          },
+        },
+        {
+          label: "Cancel",
+          className: "btn btn-danger",
+          autoClose: true,
+          onClick: () => {},
+        },
+      ],
+    });
+  };
 
   const columns = useMemo<MRT_ColumnDef<IProvince>[]>(() => [
     {
       accessorKey: "name",
       header: "Name",
-      muiTableHeadCellProps: { style: { color: 'green'} },
-      enableHiding: false
+      muiTableHeadCellProps: { style: { color: "green" } },
+    },
+    {
+      accessorKey: "code",
+      header: "Code",
+      muiTableHeadCellProps: { style: { color: "green" } },
     },
     {
       accessorKey: "void",
       header: "Status",
-      muiTableHeadCellProps: { style: { color: 'green'} },
-      Cell: ({ cell }) => (cell.getValue() === 0 ? "Active" : "Inactive")
+      muiTableHeadCellProps: { style: { color: "green" } },
+      Cell: ({ cell }) => (cell.getValue() === 0 ? "Active" : "Inactive"),
     },
     {
-    id: "actions",                        // special id
-    header: "Actions",
-    size: 150,
-    enableColumnActions: false,
-    enableSorting: false,
-    position: "last",                     // ✅ ensures far-right placement
-    Cell: ({ row }) => (
-      <div className="flex gap-2">
-        <button
-          className="btn btn-secondary btn-sm"
-          onClick={() => handleEditRow(row.original) }
-        >
-          Edit
-        </button>
-        <button
-          className="btn btn-danger btn-sm"
-          onClick={() => handleDeleteRow(row.original) }
-        >
-          Delete
-        </button>
-      </div>
-    )
-  }
+      id: "actions",
+      header: "Actions",
+      size: 150,
+      enableColumnActions: false,
+      enableSorting: false,
+      position: "last",
+      Cell: ({ row }) => (
+        <div className="flex gap-2">
+          <button
+            className="btn btn-secondary btn-sm"
+            onClick={() => handleEditRow(row.original)}
+          >
+            Edit
+          </button>
+          <button
+            className="btn btn-danger btn-sm"
+            onClick={() => handleDeleteRow(row.original)}
+          >
+            Delete
+          </button>
+        </div>
+      ),
+    },
   ], []);
 
-  const handleAddRow = (data: any) => {
-    console.log(`✅ Add`, data);
-    alert(`✅ Add ${data}`);
-  };
-
-  const handleEditRow = (data: any) => {
-    console.log(`✅ Edit`,  data);
-    alert(`✅ Edit ${data}`);
-  };
-
-  const handleDeleteRow = (data: any) => {
-    console.log(`✅ Deletr `, data);
-    alert(`✅ Delete ${data}`);
-  };
+  const customButtons: ModalButton[] = [
+    {
+      label: editRow ? "Update" : "Submit",
+      className: "btn btn-success",
+      onClick: handleSubmit,
+    },
+  ];
 
   return (
     <section className="space-y-4 p-4">
       <h5 className="text-lg font-semibold">Provinces</h5>
 
       <div className="flex gap-2 mb-2">
-        <button onClick={() => handleOpenModal()} className="btn btn-success">
-          Add Province
-        </button>
-        <button onClick={handleGetData} className="btn btn-default">
-          Get Modal Data
+        <button onClick={() => handleOpenModal()} className="btn btn-success flex flex-gap-2">
+          <PlusCircle />
+          <span className="pt-0.5 pl-2">Add Province</span>
         </button>
       </div>
 
       <MaterialReactTable
         data={tableData}
         columns={columns}
-        enableColumnActions={true}
-        mrtTheme={(theme) => ({ baseBackgroundColor: theme.palette.background.default })}
+        enableColumnActions
       />
 
       <ModalComponent
@@ -128,11 +222,39 @@ const Provinces = () => {
         blur={1}
         backdropOpacity={0.4}
         dismissable={false}
-        showCloseButton={true}
+        showCloseButton
         customButtons={customButtons}
+        onClose={handleCloseModal}
       >
-        <ProvinceAddForm />
+        <div className="relative">
+          {(loading || errorMessage) && (
+            <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
+              {loading && <CircularProgress size={60} />}
+              {errorMessage && (
+                <div className="flex items-center gap-2 text-red-600">
+                  <AlertTriangle size={24} />
+                  <Typography className="font-medium">{errorMessage}</Typography>
+                </div>
+              )}
+            </Box>
+          )}
+
+          <ProvinceAddForm 
+            ref={formRef} 
+            initialData={
+              editRow
+              ? {
+                country_id: editRow.country_id ?? 1, // fallback if null/undefined
+                name: editRow.name ?? "",
+                code: editRow.code ?? "",
+              }
+              : undefined            
+          } 
+        />
+        </div>
       </ModalComponent>
+
+      <ToastAlertComponentController.render />
     </section>
   );
 };

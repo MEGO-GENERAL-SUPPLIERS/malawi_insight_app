@@ -1,10 +1,11 @@
 import React from "react";
-import { createRoot } from "react-dom/client";
+import { createRoot, type Root } from "react-dom/client";
 import AlertComponent, { type AlertType, type AlertButton } from "~/components/system/AlertComponent";
 
 interface AlertOptions {
   type?: AlertType;
   title?: string;
+  icon?: string;
   message: string | React.ReactNode;
   buttons?: AlertButton[];
   dismissable?: boolean;
@@ -13,6 +14,8 @@ interface AlertOptions {
 }
 
 export class AlertComponentController {
+  private static root: Root | null = null;
+
   /**
    * Show alert and return a Promise with the button clicked index
    */
@@ -25,14 +28,14 @@ export class AlertComponentController {
         document.body.appendChild(container);
       }
 
-      const root = createRoot(container);
+      AlertComponentController.root = createRoot(container);
 
       const close = (buttonIndex: number | null = null) => {
-        root.unmount();
+        AlertComponentController.root?.unmount();
+        AlertComponentController.root = null;
         resolve(buttonIndex);
       };
 
-      // Wrap buttons to auto-close and resolve promise
       const buttons = options.buttons?.map((btn, index) => ({
         ...btn,
         autoClose: true,
@@ -42,7 +45,7 @@ export class AlertComponentController {
         },
       }));
 
-      root.render(
+      AlertComponentController.root.render(
         <AlertComponent
           open={true}
           title={options.title}
@@ -56,5 +59,15 @@ export class AlertComponentController {
         />
       );
     });
+  }
+
+  /**
+   * Dismiss the currently open alert
+   */
+  static dismiss() {
+    if (AlertComponentController.root) {
+      AlertComponentController.root.unmount();
+      AlertComponentController.root = null;
+    }
   }
 }

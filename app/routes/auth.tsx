@@ -9,7 +9,7 @@ import ApiConfigModal from "~/components/system/ApiConfigModal";
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
 import { useAuth } from "~/hooks/useAuth";
-import { ToastAlertComponentController } from "~/components/controllers/ToastComponentController";
+import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
