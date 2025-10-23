@@ -34,7 +34,6 @@ export default class ApiClient {
   }
 
   private handleSuccess<T>(data: any, message = "Request successful"): IApiResponse<T> {
-    // If response is already IApiResponse, return it as is
     if (this.isIApiResponse<T>(data)) {
       return data;
     }
@@ -43,10 +42,13 @@ export default class ApiClient {
 
   private handleError<T>(error: any): IApiResponse<T> {
     let message = "An error occurred";
+    let status = 0;
 
     if (axios.isAxiosError(error)) {
+      status = error.response?.status || 0;
       if (error.response) {
-        message = error.response.data?.message || error.response.statusText;
+        // Use backend message if available
+        message = error.response.data?.message || error.response.statusText || message;
       } else if (error.request) {
         message = "No response received from server";
       } else {
@@ -56,7 +58,12 @@ export default class ApiClient {
       message = String(error);
     }
 
-    return { success: false, message, data: null as unknown as T };
+    return {
+      success: false,
+      message,
+      data: null as unknown as T,
+      metadata: { status }, // Pass status so service can detect 401, 403 etc
+    };
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<IApiResponse<T>> {

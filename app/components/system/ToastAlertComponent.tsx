@@ -28,8 +28,13 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
 
   useImperativeHandle(ref, () => ({
     show: (options: ToastAlertProps) => {
-      const id = `${Date.now()}-${Math.random()}`;
-      setQueue((prev) => [...prev, { ...options, id }]);
+      // Avoid duplicate messages
+      setQueue((prev) => {
+        const exists = prev.find((t) => t.message === options.message && t.type === options.type);
+        if (exists) return prev;
+        const id = `${Date.now()}-${Math.random()}`;
+        return [...prev, { ...options, id }];
+      });
     },
     hide: () => setQueue((prev) => prev.slice(1)),
   }));

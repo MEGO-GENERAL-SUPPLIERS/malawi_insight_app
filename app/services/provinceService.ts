@@ -1,21 +1,23 @@
 // services/provinceService.ts
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
+import { formatError } from "~/utils/servicesUtils";
 import ApiClient from "./apiClient";
 
 const apiClient = new ApiClient();
 
-export const fetchProvinces = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+export const fetchProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
   try {
-    const response = await apiClient.get<IProvince>(
-      "/provinces",
+    console.log("params", params);
+    const response = await apiClient.post<IProvince>(
+      "/provinces/fetch",
       params
     );
-    return response; // already IApiResponse<IAuthResponse>
-  } catch {
+    return formatError(response); // already IApiResponse<IAuthResponse>
+  } catch(error: any) {
     return {
       success: false,
-      message: "Failed to fetch provinces",
+      message: `Failed to fetch provinces: ${error.message}`,
       data: null,
     };
   }
@@ -27,7 +29,7 @@ export const addProvince = async (params: Record<string, any> = {}): Promise<IAp
       "/provinces",
       params
     );
-    return response; // already IApiResponse<IAuthResponse>
+    return formatError(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,
@@ -43,7 +45,7 @@ export const deleteProvince = async (params: Record<string, any> = {}): Promise<
       "/provinces/delete",
       params
     );
-    return response; // already IApiResponse<IAuthResponse>
+    return formatError(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,
@@ -56,10 +58,10 @@ export const deleteProvince = async (params: Record<string, any> = {}): Promise<
 export const updateProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
   try {
     const response = await apiClient.post<IProvince>(
-      "/provinces/delete",
+      "/provinces/update",
       params
     );
-    return response; // already IApiResponse<IAuthResponse>
+    return formatError(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,

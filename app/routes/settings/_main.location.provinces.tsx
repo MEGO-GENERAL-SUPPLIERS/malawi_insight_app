@@ -1,10 +1,10 @@
-import React, { useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState, useEffect } from "react";
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import ProvinceAddForm from "~/components/forms/province.add";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
-import { addProvince, updateProvince, deleteProvince } from "~/services/provinceService";
+import { addProvince, updateProvince, deleteProvince, fetchProvince } from "~/services/provinceService";
 import { CircularProgress, Box, Typography } from "@mui/material";
 import { AlertTriangle, PlusCircle } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
@@ -12,13 +12,42 @@ import { ToastAlertComponentController } from "~/components/controllers/ToastAle
 const Provinces = () => {
   const modalRef = useRef<any>(null);
   const formRef = useRef<any>(null);
-  const [tableData, setTableData] = useState<IProvince[]>([
-    { id: 1, country_id: 1, name: "Northern Region", code: "NR", void: 0 },
-    { id: 2, country_id: 1, name: "Central Region", code: "CR", void: 0 }
-  ]);
+  const [tableData, setTableData] = useState<IProvince[]>([]);
   const [loading, setLoading] = useState(false);
+  const [fetching, setFetching] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [editRow, setEditRow] = useState<IProvince | null>(null);
+
+  // Fetch provinces on mount
+  useEffect(() => {
+    const loadProvinces = async () => {
+      try {
+        setFetching(true);
+        const response = await fetchProvince();
+        if (response.success && Array.isArray(response.data)) {
+          setTableData(response.data);
+        } else {
+          ToastAlertComponentController.show({
+            type: "error",
+            message: response.message || "Failed to load provinces",
+            icon: "XCircle",
+            autoHideDuration: 3500
+          });
+        }
+      } catch (_error: any) {
+        ToastAlertComponentController.show({
+          type: "error",
+          message: `Error fetching provinces: ${_error.message}`,
+          icon: "XCircle",
+          autoHideDuration: 3500
+        });
+      } finally {
+        setFetching(false);
+      }
+    };
+
+    loadProvinces();
+  }, []);
 
   const handleOpenModal = (row?: IProvince) => {
     if (row) {
@@ -31,11 +60,11 @@ const Provinces = () => {
     modalRef.current?.openModal();
   };
 
-  const handleCloseModal = () => {
+  const handleCloseModal = (fromModal: boolean = false) => {
     setLoading(false);
     setErrorMessage(null);
     setEditRow(null);
-    modalRef.current?.closeModal();
+    if (!fromModal) modalRef.current?.closeModal();
   };
 
   const handleSubmit = async () => {
@@ -129,8 +158,6 @@ const Provinces = () => {
                 type: "error",
                 message: `Failed to delete "${row.name}".`,
                 icon: "XCircle",
-                animation: "slide",
-                slideDirection: "down",
                 autoHideDuration: 3500
               });
             }
@@ -147,21 +174,15 @@ const Provinces = () => {
   };
 
   const columns = useMemo<MRT_ColumnDef<IProvince>[]>(() => [
-    {
-      accessorKey: "name",
-      header: "Name",
+    { accessorKey: "name", header: "Name", muiTableHeadCellProps: { style: { color: "green" } } },
+    { accessorKey: "code", header: "Code", muiTableHeadCellProps: { style: { color: "green" } } },
+    { accessorKey: "void", 
+      header: "Status", 
       muiTableHeadCellProps: { style: { color: "green" } },
-    },
-    {
-      accessorKey: "code",
-      header: "Code",
-      muiTableHeadCellProps: { style: { color: "green" } },
-    },
-    {
-      accessorKey: "void",
-      header: "Status",
-      muiTableHeadCellProps: { style: { color: "green" } },
-      Cell: ({ cell }) => (cell.getValue() === 0 ? "Active" : "Inactive"),
+      Cell: ({ cell }) => {
+        const value = cell.getValue() as string | number | null;
+        return [0, null, ""].includes(value) ? "Active" : "Inactive";
+      }
     },
     {
       id: "actions",
@@ -172,29 +193,15 @@ const Provinces = () => {
       position: "last",
       Cell: ({ row }) => (
         <div className="flex gap-2">
-          <button
-            className="btn btn-secondary btn-sm"
-            onClick={() => handleEditRow(row.original)}
-          >
-            Edit
-          </button>
-          <button
-            className="btn btn-danger btn-sm"
-            onClick={() => handleDeleteRow(row.original)}
-          >
-            Delete
-          </button>
+          <button className="btn btn-secondary btn-sm" onClick={() => handleEditRow(row.original)}>Edit</button>
+          <button className="btn btn-danger btn-sm" onClick={() => handleDeleteRow(row.original)}>Delete</button>
         </div>
       ),
     },
   ], []);
 
   const customButtons: ModalButton[] = [
-    {
-      label: editRow ? "Update" : "Submit",
-      className: "btn btn-success",
-      onClick: handleSubmit,
-    },
+    { label: editRow ? "Update" : "Submit", className: "btn btn-success", onClick: handleSubmit },
   ];
 
   return (
@@ -202,17 +209,19 @@ const Provinces = () => {
       <h5 className="text-lg font-semibold">Provinces</h5>
 
       <div className="flex gap-2 mb-2">
-        <button onClick={() => handleOpenModal()} className="btn btn-success flex flex-gap-2">
+        <button onClick={() => handleOpenModal()} className="btn btn-success flex gap-2 items-center">
           <PlusCircle />
-          <span className="pt-0.5 pl-2">Add Province</span>
+          <span>Add Province</span>
         </button>
       </div>
 
-      <MaterialReactTable
-        data={tableData}
-        columns={columns}
-        enableColumnActions
-      />
+      {fetching ? (
+        <Box className="flex justify-center items-center py-10">
+          <CircularProgress size={60} />
+        </Box>
+      ) : (
+        <MaterialReactTable data={tableData} columns={columns} enableColumnActions />
+      )}
 
       <ModalComponent
         ref={modalRef}
@@ -226,31 +235,33 @@ const Provinces = () => {
         customButtons={customButtons}
         onClose={handleCloseModal}
       >
-        <div className="relative">
-          {(loading || errorMessage) && (
-            <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
-              {loading && <CircularProgress size={60} />}
-              {errorMessage && (
-                <div className="flex items-center gap-2 text-red-600">
-                  <AlertTriangle size={24} />
-                  <Typography className="font-medium">{errorMessage}</Typography>
-                </div>
-              )}
-            </Box>
-          )}
+        <div>
+          <div className="relative">
+            {(loading || errorMessage) && (
+              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
+                {loading && <CircularProgress size={24} />}
+                {errorMessage && (
+                  <div className="flex items-center gap-2 text-red-600">
+                    <AlertTriangle size={24} />
+                    <Typography className="font-medium">{errorMessage}</Typography>
+                  </div>
+                )}
+              </Box>
+            )}
+          </div>
 
-          <ProvinceAddForm 
-            ref={formRef} 
-            initialData={
-              editRow
-              ? {
-                country_id: editRow.country_id ?? 1, // fallback if null/undefined
-                name: editRow.name ?? "",
-                code: editRow.code ?? "",
+            <ProvinceAddForm
+              ref={formRef}
+              initialData={
+                editRow
+                  ? {
+                      country_id: editRow.country_id ?? 1,
+                      name: editRow.name ?? "",
+                      code: editRow.code ?? "",
+                    }
+                  : undefined
               }
-              : undefined            
-          } 
-        />
+            />
         </div>
       </ModalComponent>
 

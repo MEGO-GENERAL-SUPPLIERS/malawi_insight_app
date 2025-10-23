@@ -8,23 +8,25 @@ interface ProvinceFormProps {
     name: string;
     code: string;
   };
+  // ✅ Added so ModalComponent can inject safely
+  setSlotData?: (data: any) => void;
 }
 
-interface ProvinceFormHandle {
+export interface ProvinceFormHandle {
   getFormData: () => { country_id: number; name: string; code: string };
   resetForm: () => void;
   setFormData: (data: { country_id: number; name: string; code: string }) => void;
 }
 
 const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
-  ({ initialData }, ref) => {
+  ({ initialData, setSlotData }, ref) => {
     const [formData, setFormDataState] = useState({
       country_id: 1,
       name: "",
       code: "",
     });
 
-    // If initialData changes, update the form automatically (edit mode)
+    // 🔹 Auto-update form when editing existing record
     useEffect(() => {
       if (initialData) {
         setFormDataState(initialData);
@@ -35,15 +37,20 @@ const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
       e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
     ) => {
       const { name, value } = e.target;
-      setFormDataState((prev) => ({ ...prev, [name]: value }));
+      const newData = { ...formData, [name]: value };
+      setFormDataState(newData);
+      setSlotData?.(newData); // update slot data in parent
     };
 
     const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
       const { name, value } = e.target;
       const newValue = isNaN(Number(value)) ? value : Number(value);
-      setFormDataState((prev) => ({ ...prev, [name]: newValue }));
+      const newData = { ...formData, [name]: newValue };
+      setFormDataState(newData);
+      setSlotData?.(newData);
     };
 
+    // 🔹 Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
       getFormData: () => formData,
       resetForm: () =>
@@ -52,8 +59,7 @@ const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
           name: "",
           code: "",
         }),
-      setFormData: (data: { country_id: number; name: string; code: string }) =>
-        setFormDataState(data),
+      setFormData: (data) => setFormDataState(data),
     }));
 
     return (
