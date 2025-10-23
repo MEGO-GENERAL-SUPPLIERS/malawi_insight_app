@@ -4,6 +4,7 @@ import type { SelectChangeEvent } from "@mui/material/Select";
 
 interface ProvinceFormProps {
   initialData?: {
+    id: number;
     country_id: number;
     name: string;
     code: string;
@@ -15,12 +16,13 @@ interface ProvinceFormProps {
 export interface ProvinceFormHandle {
   getFormData: () => { country_id: number; name: string; code: string };
   resetForm: () => void;
-  setFormData: (data: { country_id: number; name: string; code: string }) => void;
+  setFormData: (data: { id: number; country_id: number; name: string; code: string }) => void;
 }
 
 const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
   ({ initialData, setSlotData }, ref) => {
     const [formData, setFormDataState] = useState({
+      id: 0,
       country_id: 1,
       name: "",
       code: "",
@@ -55,6 +57,7 @@ const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
       getFormData: () => formData,
       resetForm: () =>
         setFormDataState({
+          id: 0,
           country_id: 1,
           name: "",
           code: "",

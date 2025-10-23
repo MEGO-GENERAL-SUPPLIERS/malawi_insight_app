@@ -139,6 +139,11 @@ export const localStorageUtils = {
     // -------------------- THEME CHECK --------------------
     if (!mergedData.app?.theme?.theme) {
       const prefersDark = window.matchMedia?.("(prefers-color-scheme: dark)").matches;
+      
+      // Ensure theme object exists
+      mergedData.app.theme = mergedData.app.theme || { theme: "light" };
+      
+      // Set theme based on preference
       mergedData.app.theme.theme = prefersDark ? "dark" : "light";
     }
     // -----------------------------------------------------

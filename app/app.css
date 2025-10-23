@@ -93,7 +93,7 @@
 }
 
 .btn-md{
-  @apply px-3 py-2;
+  @apply px-2 py-1;
 }
 
 .btn-lg{

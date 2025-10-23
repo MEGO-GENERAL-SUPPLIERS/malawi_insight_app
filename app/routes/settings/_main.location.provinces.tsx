@@ -6,8 +6,9 @@ import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { addProvince, updateProvince, deleteProvince, fetchProvince } from "~/services/provinceService";
 import { CircularProgress, Box, Typography } from "@mui/material";
-import { AlertTriangle, PlusCircle } from "lucide-react";
+import { AlertTriangle, PlusCircle, RefreshCw } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
+import { localStorageUtils } from "~/utils/localStorageUtils";
 
 const Provinces = () => {
   const modalRef = useRef<any>(null);
@@ -132,6 +133,10 @@ const Provinces = () => {
   const handleEditRow = (row: IProvince) => handleOpenModal(row);
 
   const handleDeleteRow = (row: IProvince) => {
+    // Get current user from localStorage
+    const appStorage = localStorageUtils.ensureLocalAppStructure();
+    const userId = appStorage.user?.id || "";
+
     AlertComponentController.dismiss();
     AlertComponentController.show({
       type: "confirm",
@@ -142,7 +147,14 @@ const Provinces = () => {
           label: "Proceed",
           className: "btn btn-success",
           onClick: async () => {
-            const response = await deleteProvince(row);
+            const requestPayload = {
+              ...row,
+              void_by: userId,
+              void_reason: "administration",
+            };
+
+            const response = await deleteProvince(requestPayload);
+
             if (response.success) {
               ToastAlertComponentController.show({
                 type: "success",
@@ -152,6 +164,7 @@ const Provinces = () => {
                 slideDirection: "down",
                 autoHideDuration: 3500
               });
+
               setTableData((prev) => prev.filter((r) => r.id !== row.id));
             } else {
               ToastAlertComponentController.show({
@@ -208,16 +221,58 @@ const Provinces = () => {
     <section className="space-y-4 p-4">
       <h5 className="text-lg font-semibold">Provinces</h5>
 
-      <div className="flex gap-2 mb-2">
-        <button onClick={() => handleOpenModal()} className="btn btn-success flex gap-2 items-center">
+      <div className="flex justify-between mb-2">
+        {/* Add Province button on the left */}
+        <button 
+          onClick={() => handleOpenModal()} 
+          className="btn btn-success flex gap-2 items-center"
+        >
           <PlusCircle />
           <span>Add Province</span>
+        </button>
+
+        {/* Refresh button on the far right */}
+        <button
+          onClick={async () => {
+            setFetching(true);
+            try {
+              const response = await fetchProvince();
+              if (response.success && Array.isArray(response.data)) {
+                setTableData(response.data);
+                ToastAlertComponentController.show({
+                  type: "success",
+                  message: "Provinces refreshed successfully!",
+                  icon: "CheckCircle",
+                  autoHideDuration: 2500,
+                });
+              } else {
+                ToastAlertComponentController.show({
+                  type: "error",
+                  message: response.message || "Failed to refresh provinces",
+                  icon: "XCircle",
+                  autoHideDuration: 3500,
+                });
+              }
+            } catch (err: any) {
+              ToastAlertComponentController.show({
+                type: "error",
+                message: `Error refreshing provinces: ${err.message}`,
+                icon: "XCircle",
+                autoHideDuration: 3500,
+              });
+            } finally {
+              setFetching(false);
+            }
+          }}
+          className="btn btn-secondary flex items-center justify-center"
+        >
+          <RefreshCw size={20} />
         </button>
       </div>
 
       {fetching ? (
         <Box className="flex justify-center items-center py-10">
-          <CircularProgress size={60} />
+          <CircularProgress size={36} />
         </Box>
       ) : (
         <MaterialReactTable data={tableData} columns={columns} enableColumnActions />
@@ -255,6 +310,7 @@ const Provinces = () => {
               initialData={
                 editRow
                   ? {
+                      id: editRow.id ?? 0,
                       country_id: editRow.country_id ?? 1,
                       name: editRow.name ?? "",
                       code: editRow.code ?? "",
