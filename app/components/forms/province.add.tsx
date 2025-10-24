@@ -14,7 +14,7 @@ interface ProvinceFormProps {
 }
 
 export interface ProvinceFormHandle {
-  getFormData: () => { country_id: number; name: string; code: string };
+  getFormData: () => {id: number; country_id: number; name: string; code: string };
   resetForm: () => void;
   setFormData: (data: { id: number; country_id: number; name: string; code: string }) => void;
 }

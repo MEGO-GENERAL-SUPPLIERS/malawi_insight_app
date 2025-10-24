@@ -5,10 +5,12 @@ import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { addProvince, updateProvince, deleteProvince, fetchProvince } from "~/services/provinceService";
-import { CircularProgress, Box, Typography } from "@mui/material";
-import { AlertTriangle, PlusCircle, RefreshCw } from "lucide-react";
+import { CircularProgress, Box, Tooltip } from "@mui/material";
+import { PlusCircle, RefreshCw, Map } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 import { localStorageUtils } from "~/utils/localStorageUtils";
+import { validationUtils } from "~/utils/validationUtils";
+import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 
 const Provinces = () => {
   const modalRef = useRef<any>(null);
@@ -16,7 +18,7 @@ const Provinces = () => {
   const [tableData, setTableData] = useState<IProvince[]>([]);
   const [loading, setLoading] = useState(false);
   const [fetching, setFetching] = useState(true);
-  const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
   const [editRow, setEditRow] = useState<IProvince | null>(null);
 
   // Fetch provinces on mount
@@ -51,6 +53,7 @@ const Provinces = () => {
   }, []);
 
   const handleOpenModal = (row?: IProvince) => {
+    setErrorMessage(null);
     if (row) {
       setEditRow(row);
       formRef.current?.setFormData?.(row);
@@ -71,6 +74,22 @@ const Provinces = () => {
   const handleSubmit = async () => {
     const data = formRef.current?.getFormData();
     if (!data) return;
+
+    setErrorMessage(null);
+
+    // -- Validation
+    const errors: string[] = [];
+
+    if(!data.country_id || data.country_id === 0) errors.push(`Country must be set/selected.`);
+
+    if(!data.name || !validationUtils.isAlphaNumeric(data.name)) errors.push(`Province name must be a valid text.`);
+
+    if(!data.code || !validationUtils.isAlphaNumeric(data.code)) errors.push(`Province code (short name) must be a valid text.`);
+
+    if(errors.length > 0){
+      setErrorMessage(errors);
+      return;
+    }
 
     setErrorMessage(null);
     const action = editRow ? "update" : "add";
@@ -219,55 +238,59 @@ const Provinces = () => {
 
   return (
     <section className="space-y-4 p-4">
-      <h5 className="text-lg font-semibold">Provinces</h5>
+      <h5 className="text-lg font-semibold flex gap-2"> <Map /> {"Provinces"}</h5>
 
       <div className="flex justify-between mb-2">
         {/* Add Province button on the left */}
-        <button 
-          onClick={() => handleOpenModal()} 
-          className="btn btn-success flex gap-2 items-center"
-        >
-          <PlusCircle />
-          <span>Add Province</span>
-        </button>
+        <Tooltip title="Add Province">
+          <button 
+            onClick={() => handleOpenModal()} 
+            className="btn btn-success flex gap-2 items-center"
+          >
+            <PlusCircle />
+            <span>Add Province</span>
+          </button>
+        </Tooltip>
 
         {/* Refresh button on the far right */}
-        <button
-          onClick={async () => {
-            setFetching(true);
-            try {
-              const response = await fetchProvince();
-              if (response.success && Array.isArray(response.data)) {
-                setTableData(response.data);
-                ToastAlertComponentController.show({
-                  type: "success",
-                  message: "Provinces refreshed successfully!",
-                  icon: "CheckCircle",
-                  autoHideDuration: 2500,
-                });
-              } else {
+        <Tooltip title="Refresh provinces data table">
+          <button
+            onClick={async () => {
+              setFetching(true);
+              try {
+                const response = await fetchProvince();
+                if (response.success && Array.isArray(response.data)) {
+                  setTableData(response.data);
+                  ToastAlertComponentController.show({
+                    type: "success",
+                    message: "Provinces refreshed successfully!",
+                    icon: "CheckCircle",
+                    autoHideDuration: 2500,
+                  });
+                } else {
+                  ToastAlertComponentController.show({
+                    type: "error",
+                    message: response.message || "Failed to refresh provinces",
+                    icon: "XCircle",
+                    autoHideDuration: 3500,
+                  });
+                }
+              } catch (err: any) {
                 ToastAlertComponentController.show({
                   type: "error",
-                  message: response.message || "Failed to refresh provinces",
+                  message: `Error refreshing provinces: ${err.message}`,
                   icon: "XCircle",
                   autoHideDuration: 3500,
                 });
+              } finally {
+                setFetching(false);
               }
-            } catch (err: any) {
-              ToastAlertComponentController.show({
-                type: "error",
-                message: `Error refreshing provinces: ${err.message}`,
-                icon: "XCircle",
-                autoHideDuration: 3500,
-              });
-            } finally {
-              setFetching(false);
-            }
-          }}
-          className="btn btn-secondary flex items-center justify-center"
-        >
-          <RefreshCw size={20} />
-        </button>
+            }}
+            className="btn btn-secondary flex items-center justify-center"
+          >
+            <RefreshCw size={20} />
+          </button>
+        </Tooltip>
       </div>
 
       {fetching ? (
@@ -293,13 +316,18 @@ const Provinces = () => {
         <div>
           <div className="relative">
             {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
+              <Box className="relative inset-0 flex justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
                 {loading && <CircularProgress size={24} />}
+                
                 {errorMessage && (
-                  <div className="flex items-center gap-2 text-red-600">
-                    <AlertTriangle size={24} />
-                    <Typography className="font-medium">{errorMessage}</Typography>
-                  </div>
+                  <StaticAlertComponent
+                    type="error"
+                    title="Error(s)"
+                    message={errorMessage}
+                    icon="AlertTriangle"
+                    dismissable
+                    onClose={() => setErrorMessage(null)}
+                  />
                 )}
               </Box>
             )}
