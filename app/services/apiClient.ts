@@ -1,12 +1,11 @@
-// apiClient.ts
-import axios, { type AxiosInstance, type AxiosRequestConfig } from "axios";
+// services/apiClient.ts
+import axios, { type AxiosRequestConfig } from "axios";
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { localStorageUtils, DEFAULT_APP_STRUCTURE } from "~/utils/localStorageUtils";
 
 export default class ApiClient {
-  private axiosInstance: AxiosInstance;
-
-  constructor() {
+  // Dynamically create Axios instance for each request
+  private getAxiosInstance() {
     const appStorage = localStorageUtils.ensureLocalAppStructure();
     const apiConfig = appStorage.api || DEFAULT_APP_STRUCTURE.api;
 
@@ -18,24 +17,22 @@ export default class ApiClient {
       baseURL += `/${apiConfig.base.replace(/^\/|\/$/g, "")}`;
     }
 
-    this.axiosInstance = axios.create({
+    const instance = axios.create({
       baseURL,
       timeout: apiConfig.timeout || 10000,
       headers: { "Content-Type": "application/json" },
     });
 
     if (apiConfig.token) {
-      this.axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${apiConfig.token}`;
+      instance.defaults.headers.common["Authorization"] = `Bearer ${apiConfig.token}`;
     }
-  }
 
-  private isIApiResponse<T>(obj: any): obj is IApiResponse<T> {
-    return obj && typeof obj === "object" && "success" in obj && "message" in obj && "data" in obj;
+    return instance;
   }
 
   private handleSuccess<T>(data: any, message = "Request successful"): IApiResponse<T> {
-    if (this.isIApiResponse<T>(data)) {
-      return data;
+    if (data && typeof data === "object" && "success" in data && "message" in data && "data" in data) {
+      return data as IApiResponse<T>;
     }
     return { success: true, message, data };
   }
@@ -47,7 +44,6 @@ export default class ApiClient {
     if (axios.isAxiosError(error)) {
       status = error.response?.status || 0;
       if (error.response) {
-        // Use backend message if available
         message = error.response.data?.message || error.response.statusText || message;
       } else if (error.request) {
         message = "No response received from server";
@@ -62,13 +58,14 @@ export default class ApiClient {
       success: false,
       message,
       data: null as unknown as T,
-      metadata: { status }, // Pass status so service can detect 401, 403 etc
+      metadata: { status },
     };
   }
 
   async get<T>(url: string, config?: AxiosRequestConfig): Promise<IApiResponse<T>> {
     try {
-      const response = await this.axiosInstance.get(url, config);
+      const instance = this.getAxiosInstance();
+      const response = await instance.get(url, config);
       return this.handleSuccess<T>(response.data);
     } catch (error) {
       return this.handleError<T>(error);
@@ -77,7 +74,8 @@ export default class ApiClient {
 
   async post<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<IApiResponse<T>> {
     try {
-      const response = await this.axiosInstance.post(url, data, config);
+      const instance = this.getAxiosInstance();
+      const response = await instance.post(url, data, config);
       return this.handleSuccess<T>(response.data);
     } catch (error) {
       return this.handleError<T>(error);
@@ -86,7 +84,8 @@ export default class ApiClient {
 
   async put<T>(url: string, data?: any, config?: AxiosRequestConfig): Promise<IApiResponse<T>> {
     try {
-      const response = await this.axiosInstance.put(url, data, config);
+      const instance = this.getAxiosInstance();
+      const response = await instance.put(url, data, config);
       return this.handleSuccess<T>(response.data);
     } catch (error) {
       return this.handleError<T>(error);
@@ -95,7 +94,8 @@ export default class ApiClient {
 
   async delete<T>(url: string, config?: AxiosRequestConfig): Promise<IApiResponse<T>> {
     try {
-      const response = await this.axiosInstance.delete(url, config);
+      const instance = this.getAxiosInstance();
+      const response = await instance.delete(url, config);
       return this.handleSuccess<T>(response.data);
     } catch (error) {
       return this.handleError<T>(error);
