@@ -1,12 +1,12 @@
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
-import { type IDistrict } from "~/types/interfaces/IDistrictInterdaces";
+import { type IDistrict } from "~/types/interfaces/IDistrictInterfaces";
 import { formatError } from '~/utils/servicesUtils';
 import ApiClient from "./apiClient";
-import { fetchProvince } from "./provinceService";
+import { fetchProvinces } from "./provinceService";
 
 const apiClient = new ApiClient();
 
-export const fetchDistrict = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
+export const fetchDistricts = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
   try{
     const response = await apiClient.post<IDistrict>("/districts/fetch", params); 
     return formatError(response);
@@ -59,8 +59,8 @@ export const deleteDistrict = async (params: Record<string, any> = {}): Promise<
 };
 
 //fetch for provinces in district service 
-export const fetchDistrictProvinces = async () => {
-  const response = await fetchProvince();
+export const fetchDistrictProvinces = async (params: Record<string, any> = {}) => {
+  const response = await fetchProvinces(params);
   if(response.success && Array.isArray(response.data)){
     return response.data.map(p => ({ label: p.name, value: p.id }));
   }

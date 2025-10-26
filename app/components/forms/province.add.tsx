@@ -1,6 +1,8 @@
 import React, { useState, forwardRef, useImperativeHandle, useEffect } from "react";
-import { TextField, Select, MenuItem } from "@mui/material";
+import { TextField, Select, MenuItem, CircularProgress, Box } from "@mui/material";
 import type { SelectChangeEvent } from "@mui/material/Select";
+import { fetchCountries } from "~/services/countryService";
+import type { ICountry } from "~/types/interfaces/ICountryInterfaces";
 
 interface ProvinceFormProps {
   initialData?: {
@@ -9,12 +11,11 @@ interface ProvinceFormProps {
     name: string;
     code: string;
   };
-  // ✅ Added so ModalComponent can inject safely
   setSlotData?: (data: any) => void;
 }
 
 export interface ProvinceFormHandle {
-  getFormData: () => {id: number; country_id: number; name: string; code: string };
+  getFormData: () => { id: number; country_id: number; name: string; code: string };
   resetForm: () => void;
   setFormData: (data: { id: number; country_id: number; name: string; code: string }) => void;
 }
@@ -23,25 +24,42 @@ const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
   ({ initialData, setSlotData }, ref) => {
     const [formData, setFormDataState] = useState({
       id: 0,
-      country_id: 1,
+      country_id: 0,
       name: "",
       code: "",
     });
 
-    // 🔹 Auto-update form when editing existing record
+    const [countries, setCountries] = useState<{ label: string; value: number }[]>([]);
+    const [loadingCountries, setLoadingCountries] = useState(true);
+
+    // Load countries on mount
     useEffect(() => {
-      if (initialData) {
-        setFormDataState(initialData);
-      }
+      const loadCountries = async () => {
+        setLoadingCountries(true);
+        try {
+          const result: ICountry[] = await fetchCountries();
+          setCountries(result.map(c => ({ label: c.name, value: c.id })));
+        } catch (err) {
+          console.error("Failed to fetch countries:", err);
+          setCountries([]);
+        } finally {
+          setLoadingCountries(false);
+        }
+      };
+
+      loadCountries();
+    }, []);
+
+    // Auto-update form when editing existing record
+    useEffect(() => {
+      if (initialData) setFormDataState(initialData);
     }, [initialData]);
 
-    const handleTextChange = (
-      e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-    ) => {
+    const handleTextChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const { name, value } = e.target;
       const newData = { ...formData, [name]: value };
       setFormDataState(newData);
-      setSlotData?.(newData); // update slot data in parent
+      setSlotData?.(newData);
     };
 
     const handleSelectChange = (e: SelectChangeEvent<string | number>) => {
@@ -52,36 +70,41 @@ const ProvinceAddForm = forwardRef<ProvinceFormHandle, ProvinceFormProps>(
       setSlotData?.(newData);
     };
 
-    // 🔹 Expose methods to parent via ref
+    // Expose methods to parent via ref
     useImperativeHandle(ref, () => ({
       getFormData: () => formData,
       resetForm: () =>
-        setFormDataState({
-          id: 0,
-          country_id: 1,
-          name: "",
-          code: "",
-        }),
+        setFormDataState({ id: 0, country_id: 0, name: "", code: "" }),
       setFormData: (data) => setFormDataState(data),
     }));
 
     return (
       <form autoComplete="off">
-        <div className="flex flex-col gap-6">
-          <Select
-            label="Country"
-            name="country_id"
-            size="small"
-            fullWidth
-            value={formData.country_id}
-            onChange={handleSelectChange}
-            displayEmpty
-          >
-            <MenuItem value="">
-              <em>Select Country</em>
-            </MenuItem>
-            <MenuItem value={1}>Malawi</MenuItem>
-          </Select>
+        <div className="flex flex-col gap-8">
+          {loadingCountries ? (
+            <Box className="flex justify-center py-4">
+              <CircularProgress size={24} />
+            </Box>
+          ) : (
+            <Select
+              label="Country"
+              name="country_id"
+              size="small"
+              fullWidth
+              value={formData.country_id}
+              onChange={handleSelectChange}
+              displayEmpty
+            >
+              <MenuItem value={0}>
+                <em>Select Country</em>
+              </MenuItem>
+              {countries.map(c => (
+                <MenuItem key={c.value} value={c.value}>
+                  {c.label}
+                </MenuItem>
+              ))}
+            </Select>
+          )}
 
           <TextField
             label="Province Name"

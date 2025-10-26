@@ -1,10 +1,10 @@
 import React, { useMemo, useRef, useState, useEffect } from "react";
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import DistrictAddForm from "~/components/forms/district.add";
-import { type IDistrict } from "~/types/interfaces/IDistrictInterdaces";
+import { type IDistrict } from "~/types/interfaces/IDistrictInterfaces";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
-import { addDistrict, updateDistrict, deleteDistrict, fetchDistrict } from '~/services/districtService';
+import { addDistrict, updateDistrict, deleteDistrict, fetchDistricts } from '~/services/districtService';
 import { CircularProgress, Box, Tooltip } from '@mui/material';
 import { PlusCircle, RefreshCw, MapPin } from 'lucide-react';
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
@@ -26,15 +26,15 @@ const Districts = () => {
     const loadDistricts = async () => {
       try {
         setFetching(true);
-        const response = await fetchDistrict();
+        const response = await fetchDistricts();
         if (response.success && Array.isArray(response.data)) {
           setTableData(response.data);
         } else {
           ToastAlertComponentController.show({
             type: "error",
             icon: "XCircle",
-            message: response.message || "Failed to load districts",
-            autoHideDuration: 3500
+            message: response.message || "Failed to load districts. Select country again",
+            autoHideDuration: 5500
           });
         }
       } catch (error: any) {
@@ -42,7 +42,7 @@ const Districts = () => {
           type: "error",
           icon: "XCircle",
           message: `Error fetching districts: ${error.message}`,
-          autoHideDuration: 3500
+          autoHideDuration: 4500
         });
       } finally {
         setFetching(false);
@@ -70,7 +70,7 @@ const Districts = () => {
     setEditRow(null);
     if (!fromModal) modalRef.current?.closeModal();
   };
-
+ 
   const handleSubmit = async () => {
     const data = formRef.current?.getFormData();
     if (!data) return;
@@ -81,10 +81,10 @@ const Districts = () => {
     if (!data.province_id || data.province_id === 0)
       errors.push(`Province must be set/selected.`);
 
-    if (!data.name || !validationUtils.isAlphaNumeric(data.name))
+    if (!data.name || !validationUtils.isAlphaNumericWithSpaces(data.name))
       errors.push(`District name must be a valid text.`);
 
-    if (!data.code || !validationUtils.isAlphaNumeric(data.code))
+    if (!data.code || !validationUtils.isAlphaNumericWithSpaces(data.code))
       errors.push(`District code must be a valid text.`);
 
     if (errors.length > 0) {
@@ -208,7 +208,12 @@ const Districts = () => {
   const columns = useMemo<MRT_ColumnDef<IDistrict>[]>(() => [
     { accessorKey: `name`, header: `Name`, muiTableHeadCellProps: { style: { color: "green" } } },
     { accessorKey: `code`, header: `Code`, muiTableHeadCellProps: { style: { color: "green" } } },
-    { accessorKey: `province_name`, header: `Province`, muiTableHeadCellProps: { style: { color: "green" } } },
+    { 
+      accessorKey: `province_name`, 
+      header: `Province`, 
+      muiTableHeadCellProps: { style: { color: "green" } },
+      Cell: ({ cell }) => cell.getValue<string>() || "--",
+    },
     {
       accessorKey: `void`,
       header: `Status`,
@@ -260,7 +265,7 @@ const Districts = () => {
             onClick={async () => {
               setFetching(true);
               try {
-                const response = await fetchDistrict();
+                const response = await fetchDistricts();
                 if (response.success && Array.isArray(response.data)) {
                   setTableData(response.data);
                   ToastAlertComponentController.show({
@@ -343,6 +348,7 @@ const Districts = () => {
             initialData={
               editRow ? {
                 id: editRow.id ?? 0,
+                country_id: editRow.country_id ?? 0,
                 province_id: editRow.province_id ?? 0,
                 name: editRow.name ?? "",
                 code: editRow.code ?? ""

@@ -4,7 +4,7 @@ import ProvinceAddForm from "~/components/forms/province.add";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
-import { addProvince, updateProvince, deleteProvince, fetchProvince } from "~/services/provinceService";
+import { addProvince, updateProvince, deleteProvince, fetchProvinces } from "~/services/provinceService";
 import { CircularProgress, Box, Tooltip } from "@mui/material";
 import { PlusCircle, RefreshCw, Map } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
@@ -26,7 +26,7 @@ const Provinces = () => {
     const loadProvinces = async () => {
       try {
         setFetching(true);
-        const response = await fetchProvince();
+        const response = await fetchProvinces();
         if (response.success && Array.isArray(response.data)) {
           setTableData(response.data);
         } else {
@@ -82,9 +82,9 @@ const Provinces = () => {
 
     if(!data.country_id || data.country_id === 0) errors.push(`Country must be set/selected.`);
 
-    if(!data.name || !validationUtils.isAlphaNumeric(data.name)) errors.push(`Province name must be a valid text.`);
+    if(!data.name || !validationUtils.isAlphaNumericWithSpaces(data.name)) errors.push(`Province name must be a valid text.`);
 
-    if(!data.code || !validationUtils.isAlphaNumeric(data.code)) errors.push(`Province code (short name) must be a valid text.`);
+    if(!data.code || !validationUtils.isAlphaNumericWithSpaces(data.code)) errors.push(`Province code (short name) must be a valid text.`);
 
     if(errors.length > 0){
       setErrorMessage(errors);
@@ -258,7 +258,7 @@ const Provinces = () => {
             onClick={async () => {
               setFetching(true);
               try {
-                const response = await fetchProvince();
+                const response = await fetchProvinces();
                 if (response.success && Array.isArray(response.data)) {
                   setTableData(response.data);
                   ToastAlertComponentController.show({

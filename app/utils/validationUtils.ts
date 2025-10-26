@@ -19,6 +19,11 @@ export const validationUtils = {
     return /^[A-Za-z0-9]+$/.test(str.trim());
   },
 
+   /** ✅ Check if a string contains only letters, numbers, and spaces */
+  isAlphaNumericWithSpaces(str: string): boolean {
+    return /^[A-Za-z0-9 ]+$/.test(str.trim());
+  },
+
   /** ✅ Check if a string contains only letters (A–Z, a–z) */
   isOnlyLetters(str: string): boolean {
     return /^[A-Za-z]+$/.test(str.trim());

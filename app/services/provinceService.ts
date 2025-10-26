@@ -6,7 +6,7 @@ import ApiClient from "./apiClient";
 
 const apiClient = new ApiClient();
 
-export const fetchProvince = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+export const fetchProvinces = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
   try {
     console.log("params", params);
     const response = await apiClient.post<IProvince>(
