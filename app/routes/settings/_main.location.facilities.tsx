@@ -78,12 +78,14 @@ const Facilities = () => {
 
     // -- Validation
     const errors: string[] = [];
+    if (!data.country_id || data.country_id === 0)
+      errors.push(`Country must be set/selected.`);
 
     if (!data.province_id || data.province_id === 0)
-      errors.push(`Province must be set/selected.`);
+      errors.push(`Province must be set/selected. (Select country first)`);
 
     if (!data.district_id || data.district_id === 0)
-      errors.push(`District must be set/selected.`);
+      errors.push(`District must be set/selected. (Select province first)`);
 
     if (!data.name || !validationUtils.isAlphaNumericWithSpaces(data.name))
       errors.push(`Facility name must be a valid text.`);

@@ -142,7 +142,14 @@ const FacilityAddForm = forwardRef<DistrictFormHandle, FacilityFormProps>(
       if (initialData) {
         setFormDataState((prev) => ({ ...prev, ...initialData }));
         if (initialData.country_id) {
-          handleCountryChange(initialData.country_id, initialData.province_id);
+          handleCountryChange(initialData.country_id, initialData.province_id)
+          .then(() => {
+            if(initialData.district_id){
+              setFormDataState((prev) => (
+                {...prev, district_id: initialData.district_id }
+              ));
+            }
+          });
         }
       }
     }, [initialData]);
