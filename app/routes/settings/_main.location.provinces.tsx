@@ -206,6 +206,14 @@ const Provinces = () => {
   };
 
   const columns = useMemo<MRT_ColumnDef<IProvince>[]>(() => [
+    { 
+      accessorKey: "index", 
+      header: "#", 
+      muiTableHeadCellProps: { style: { color: "green" } },
+      Cell: ({ row }) => row.index + 1,
+      enableSorting: false,
+      size: 70 
+    },
     { accessorKey: "name", header: "Name", muiTableHeadCellProps: { style: { color: "green" } } },
     { accessorKey: "code", header: "Code", muiTableHeadCellProps: { style: { color: "green" } } },
     { accessorKey: "void", 
