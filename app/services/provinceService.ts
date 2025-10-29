@@ -1,19 +1,19 @@
 // services/provinceService.ts
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
-import { formatError } from "~/utils/servicesUtils";
+import { reformatResponse } from "~/utils/servicesUtils";
 import ApiClient from "./apiClient";
 
 const apiClient = new ApiClient();
 
-export const fetchProvinces = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince>> => {
+export const fetchProvinces = async (params: Record<string, any> = {}): Promise<IApiResponse<IProvince[]>> => {
   try {
     console.log("params", params);
-    const response = await apiClient.post<IProvince>(
+    const response = await apiClient.post<IProvince[]>(
       "/provinces/fetch",
       params
     );
-    return formatError(response); // already IApiResponse<IAuthResponse>
+    return reformatResponse(response); // already IApiResponse<IAuthResponse>
   } catch(error: any) {
     return {
       success: false,
@@ -29,7 +29,7 @@ export const addProvince = async (params: Record<string, any> = {}): Promise<IAp
       "/provinces",
       params
     );
-    return formatError(response); // already IApiResponse<IAuthResponse>
+    return reformatResponse(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,
@@ -45,7 +45,7 @@ export const deleteProvince = async (params: Record<string, any> = {}): Promise<
       "/provinces/delete",
       params
     );
-    return formatError(response); // already IApiResponse<IAuthResponse>
+    return reformatResponse(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,
@@ -61,7 +61,7 @@ export const updateProvince = async (params: Record<string, any> = {}): Promise<
       "/provinces/update",
       params
     );
-    return formatError(response); // already IApiResponse<IAuthResponse>
+    return reformatResponse(response); // already IApiResponse<IAuthResponse>
   } catch {
     return {
       success: false,
