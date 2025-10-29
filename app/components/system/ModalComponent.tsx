@@ -125,11 +125,11 @@ export const ModalComponent = forwardRef(
         <Box
           sx={{
             position: "absolute",
-            top: "35%",
+            top: "50%", // center vertically
             left: "50%",
-            transform: "translate(-50%, -50%)",
+            transform: "translate(-50%, -50%)", // true centering
             width: modalSizes[size],
-            maxHeight: "90vh",
+            maxHeight: "90vh", // ensure modal never exceeds viewport height
             bgcolor: "background.paper",
             borderRadius: 0.6,
             display: "flex",
@@ -145,6 +145,7 @@ export const ModalComponent = forwardRef(
               justifyContent: "space-between",
               p: 2,
               borderBottom: "1px solid #eee",
+              flexShrink: 0, // prevent header from shrinking when content grows
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -160,7 +161,14 @@ export const ModalComponent = forwardRef(
           </Box>
 
           {/* Body */}
-          <Box key={instanceId} sx={{ p: 2, overflowY: "auto" }}>
+          <Box
+            key={instanceId}
+            sx={{
+              p: 2,
+              overflowY: "auto", // scroll when content grows
+              flexGrow: 1,       // body grows to fill remaining space
+            }}
+          >
             {renderChildren()}
           </Box>
 
@@ -172,6 +180,7 @@ export const ModalComponent = forwardRef(
               gap: 1,
               p: 2,
               borderTop: "1px solid #eee",
+              flexShrink: 0, // prevent footer from shrinking
             }}
           >
             {customButtons.map((btn, idx) => (
