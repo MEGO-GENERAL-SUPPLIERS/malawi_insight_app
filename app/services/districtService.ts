@@ -1,15 +1,15 @@
 import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IDistrict } from "~/types/interfaces/IDistrictInterfaces";
-import { formatError } from '~/utils/servicesUtils';
+import { reformatResponse } from '~/utils/servicesUtils';
 import ApiClient from "./apiClient";
 import { fetchProvinces } from "./provinceService";
 
 const apiClient = new ApiClient();
 
-export const fetchDistricts = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
+export const fetchDistricts = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict[]>> => {
   try{
-    const response = await apiClient.post<IDistrict>("/districts/fetch", params); 
-    return formatError(response);
+    const response = await apiClient.post<IDistrict[]>("/districts/fetch", params); 
+    return reformatResponse(response);
   }catch(error: any){
     return{
       success: false,
@@ -22,7 +22,7 @@ export const fetchDistricts = async (params: Record<string, any> = {}): Promise<
 export const addDistrict = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
   try{
     const response = await apiClient.post<IDistrict>("/districts", params);
-    return formatError(response);
+    return reformatResponse(response);
   }catch(error: any){
     return{
       success: false,
@@ -35,7 +35,7 @@ export const addDistrict = async (params: Record<string, any> = {}): Promise<IAp
 export const updateDistrict = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
   try{  
     const response = await apiClient.post<IDistrict>("/districts/update", params);
-    return formatError(response);
+    return reformatResponse(response);
   }catch(error: any){
     return{
       success: false,
@@ -48,7 +48,7 @@ export const updateDistrict = async (params: Record<string, any> = {}): Promise<
 export const deleteDistrict = async (params: Record<string, any> = {}): Promise<IApiResponse<IDistrict>> => {
   try{
     const response = await apiClient.post<IDistrict>("/districts/delete", params);
-    return formatError(response);
+    return reformatResponse(response);
   }catch(error: any){
     return {
       success: false,

@@ -165,7 +165,7 @@ const DistrictAddForm = forwardRef<DistrictFormHandle, DistrictFormProps>(
             {loadingProvinces && (
               <Box className="absolute right-2 top-[35px] ">
                 <CircularProgress size={14} /> 
-                <span className="text-xs">{"loading districts..."}</span>
+                <span className="text-xs">{"loading provinces..."}</span>
               </Box>
             )}
           </FormControl>
