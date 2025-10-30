@@ -12,9 +12,9 @@ const Settings: React.FC = () => {
   const settingsCards: IMenuCard[] = [
     {
       icon: 'Wifi',
-      name: 'Network Settings',
+      name: 'Network/API Settings',
       description: 'Configure network and API settings',
-      route: '/settings/network',
+      route: '/app/settings/network',
       colors: ['from-cyan-400', 'to-blue-500'],
       privileges: []
     }, 

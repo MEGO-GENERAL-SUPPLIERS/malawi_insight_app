@@ -42,7 +42,7 @@ const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose, onUpda
       toast.success("API configuration cached successfully!");
       onClose();
     } catch (error: any) {
-      toast.error("Failed to cache API configuration.");
+      toast.error(`Failed to cache API configuration. ${error.message}`);
     } finally {
       setIsLoading(false);
     }
