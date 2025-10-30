@@ -30,7 +30,7 @@ const Settings: React.FC = () => {
       icon: 'Shield',
       name: 'Role & Permissions',
       description: 'Configure roles and permissions',
-      route: '/settings/roles',
+      route: '/app/settings/roles',
       colors: ['from-purple-400', 'to-pink-500'],
       privileges: []
     },

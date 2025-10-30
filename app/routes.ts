@@ -16,6 +16,7 @@ export const appRoutes: RouteConfig = [
     route("settings/locations/districts", "routes/settings/_main.location.districts.tsx"),
     route("settings/locations/facilities", "routes/settings/_main.location.facilities.tsx"),
     route("settings/network", "routes/settings/_main.network.tsx"),
+    route("settings/roles", "routes/settings/_main.role_management.tsx"),
     /*Programs*/
     route("programs", "routes/_main.programs.tsx"),
     /*SI Unit*/
@@ -39,6 +40,7 @@ export const routes = {
     settings: "/app/settings",
     settings_locations: "/app/settings/locations",
     settings_network: "/app/settings/network",
+    settings_roles: "/app/settings/roles",
     /*SI Unit*/
     strategic_info: "/app/strategic_info",
     strategic_info_templates: "/app/strategic_info/templates",

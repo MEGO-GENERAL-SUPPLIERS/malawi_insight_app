@@ -347,7 +347,7 @@ const Districts = () => {
         <div>
           <div className="relative">
             {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 rounded-md">
+              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
                 {loading && <div><CircularProgress size={24} /></div>}
 
                 {/* Controlled StaticAlertComponent */}

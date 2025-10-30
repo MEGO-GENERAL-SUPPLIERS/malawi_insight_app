@@ -49,10 +49,25 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
     return (LucideIcons as any)[name] || (MuiIcons as any)[name] || undefined;
   };
 
-  const resolveTransition = (animation?: string, slideDirection: "left" | "right" | "up" | "down" = "up") => {
+  const resolveTransition = (animation?: string, slideDirection: "left" | "right" | "up" | "down" = "up", positionY: "top" | "bottom" = "top" ) => {
+    if (animation === "slide") {
+      let actualDirection = slideDirection;
+
+      // Fix direction based on Snackbar position
+      if (positionY === "top") {
+        // Top toasts slide downward INTO view
+        if (slideDirection === "down") actualDirection = "down";
+        if (slideDirection === "up") actualDirection = "up";
+      } else {
+        // Bottom toasts should slide upward INTO view
+        if (slideDirection === "down") actualDirection = "up";
+        if (slideDirection === "up") actualDirection = "down";
+      }
+
+      return (props: SlideProps) => <Slide {...props} direction={actualDirection} />;
+    }
+
     switch (animation) {
-      case "slide":
-        return (props: SlideProps) => <Slide {...props} direction={slideDirection} />;
       case "grow":
         return Grow;
       case "zoom":

@@ -324,7 +324,7 @@ const Provinces = () => {
         <div>
           <div className="relative">
             {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 rounded-md">
+              <Box className="relative inset-0 flex justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 mb-4 rounded-md">
                 {loading && <CircularProgress size={24} />}
                 
                 {errorMessage && (

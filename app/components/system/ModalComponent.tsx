@@ -44,7 +44,7 @@ const modalSizes: Record<ModalSize, string | number> = {
   md: 600,
   lg: 800,
   xl: 1000,
-  full: "100%",
+  full: "100%", // base reference for full mode
 };
 
 export const ModalComponent = forwardRef(
@@ -68,7 +68,6 @@ export const ModalComponent = forwardRef(
     const [slotData, setSlotData] = useState<any>(null);
     const [instanceId, setInstanceId] = useState<number>(Date.now());
 
-    // 🔹 Safely close modal without infinite recursion
     const handleClose = useCallback(
       (silent: boolean = false) => {
         setOpen(false);
@@ -79,7 +78,6 @@ export const ModalComponent = forwardRef(
       [onClose]
     );
 
-    // 🔹 Expose modal control methods to parent
     useImperativeHandle(ref, () => ({
       openModal: () => setOpen(true),
       closeModal: (silent = false) => handleClose(silent),
@@ -91,13 +89,10 @@ export const ModalComponent = forwardRef(
     };
 
     const resolveIcon = (iconName: string) =>
-      (LucideIcons as any)[iconName] ||
-      (MuiIcons as any)[iconName] ||
-      null;
+      (LucideIcons as any)[iconName] || (MuiIcons as any)[iconName] || null;
 
     const IconComponent = icon ? resolveIcon(icon) : null;
 
-    // ✅ Inject setSlotData only into valid React components (not DOM elements)
     const renderChildren = () => {
       if (React.isValidElement(children)) {
         const childType = typeof children.type;
@@ -108,6 +103,8 @@ export const ModalComponent = forwardRef(
       }
       return children;
     };
+
+    const isFull = size === "full";
 
     return (
       <Modal
@@ -125,15 +122,19 @@ export const ModalComponent = forwardRef(
         <Box
           sx={{
             position: "absolute",
-            top: "50%", // center vertically
-            left: "50%",
-            transform: "translate(-50%, -50%)", // true centering
-            width: modalSizes[size],
-            maxHeight: "90vh", // ensure modal never exceeds viewport height
+            top: isFull ? "8px" : "50%",
+            left: isFull ? "8px" : "50%",
+            transform: isFull ? "none" : "translate(-50%, -50%)",
+            width: isFull ? "calc(100% - 16px)" : modalSizes[size],
+            height: isFull ? "calc(100vh - 16px)" : "auto",
+            maxHeight: isFull ? "none" : "90vh",
             bgcolor: "background.paper",
             borderRadius: 0.6,
             display: "flex",
             flexDirection: "column",
+            boxShadow: isFull
+              ? "0 0 12px rgba(0,0,0,0.25)"
+              : "0 4px 20px rgba(0,0,0,0.2)",
           }}
         >
           {/* Header */}
@@ -145,7 +146,7 @@ export const ModalComponent = forwardRef(
               justifyContent: "space-between",
               p: 2,
               borderBottom: "1px solid #eee",
-              flexShrink: 0, // prevent header from shrinking when content grows
+              flexShrink: 0,
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
@@ -165,8 +166,8 @@ export const ModalComponent = forwardRef(
             key={instanceId}
             sx={{
               p: 2,
-              overflowY: "auto", // scroll when content grows
-              flexGrow: 1,       // body grows to fill remaining space
+              overflowY: "auto",
+              flexGrow: 1,
             }}
           >
             {renderChildren()}
@@ -180,7 +181,7 @@ export const ModalComponent = forwardRef(
               gap: 1,
               p: 2,
               borderTop: "1px solid #eee",
-              flexShrink: 0, // prevent footer from shrinking
+              flexShrink: 0,
             }}
           >
             {customButtons.map((btn, idx) => (
