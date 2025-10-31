@@ -8,10 +8,10 @@ import { type IMenuCard } from '~/types/interfaces/IMenuCard';
 const Templates: React.FC = () => {
   const templateCards: IMenuCard[] = [
     {
-      icon: 'HeartPulse',
+      icon: 'HandHeart',
       name: 'Care and Treatment',
       description: 'Care and Treatment Tools',
-      route: '/care_and_treatment/',
+      route: '/app/programs/care_and_treatment/',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
       privileges: []
     },
@@ -19,7 +19,7 @@ const Templates: React.FC = () => {
       icon: 'Syringe',
       name: 'HTS',
       description: 'HIV Testing Services',
-      route: '/hts/',
+      route: '/app/programs/hts/',
       colors: ['from-purple-400', 'to-pink-500'], // 2-color gradient
       privileges: []
     },
@@ -27,7 +27,15 @@ const Templates: React.FC = () => {
       icon: 'Droplets',
       name: 'Viral Load',
       description: 'Viral Load Management',
-      route: '/viral_load/',
+      route: '/app/programs/viral_load/',
+      colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
+      privileges: []
+    },
+    {
+      icon: 'Hand',
+      name: 'Prevention',
+      description: 'Prevention Program',
+      route: '/app/programs/prevention/',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
       privileges: []
     },
@@ -35,7 +43,7 @@ const Templates: React.FC = () => {
       icon: 'Boxes',
       name: 'HSS',
       description: 'Health Systems Strengthing',
-      route: '/hss/',
+      route: '/app/programs/hss/',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
       privileges: []
     }

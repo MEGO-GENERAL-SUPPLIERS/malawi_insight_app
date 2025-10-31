@@ -13,6 +13,7 @@ export interface IUser{
   auto_logout_count?: number; //seconds
   roles?: string[];
   privileges?: string[];
+  locations?: any;
   logged_in?: boolean;
   last_login?: string;
 }

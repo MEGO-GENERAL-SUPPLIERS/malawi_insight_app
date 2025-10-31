@@ -32,6 +32,7 @@ export const DEFAULT_APP_STRUCTURE: IAppStorage = {
     auto_logout_count: 30,   // seconds
     roles: [],
     privileges: [],
+    locations: null,
     logged_in: false,
     last_login: ""
   },

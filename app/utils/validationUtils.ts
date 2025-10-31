@@ -34,6 +34,12 @@ export const validationUtils = {
     return /^\S+$/.test(str);
   },
 
+  /* string that is valid*/
+  isValidInput(str: string): boolean {
+    const trimmed = str.replace(/^\s*/, "").replace(/\s*$/, "");
+    return trimmed.length > 0;
+  },
+
   /** ✅ Check if a value is an integer number */
   isNumber(value: any): boolean {
     if (value === null || value === undefined) return false;

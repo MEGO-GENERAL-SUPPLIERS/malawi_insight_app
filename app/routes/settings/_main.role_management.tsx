@@ -94,11 +94,14 @@ const Roles = () => {
 
     const errors: string[] = [];
     
-    if(!data.name || !validationUtils.isAlphaNumericWithSpaces(data.name))
+    if(!data.name || !validationUtils.isValidInput(data.name))
         errors.push("Role name must be a valid text");
 
     if(!data.role_level_id)
       errors.push("Role level must be set/selected.");
+
+    if(data.privileges.length <= 0)
+      errors.push("Select at least one privilege for the new role.");
 
     const duplicateCheck = tableData.find((r) => r.name.toLowerCase() === data.name.toLowerCase() && r.void === 0 && r.id !== editRow?.id);
     if(duplicateCheck) errors.push(`Role ${data.name} already exists.`);
