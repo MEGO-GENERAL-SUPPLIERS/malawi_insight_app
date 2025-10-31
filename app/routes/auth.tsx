@@ -10,6 +10,7 @@ import { type IApiResponse } from "~/types/interfaces/IApiResponse";
 import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
 import { useAuth } from "~/hooks/useAuth";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
+import ServerNetworkIndicator from "~/components/system/ServerNetworkIndicator";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -26,6 +27,7 @@ const Auth = () => {
   const [superUsername, setSuperUsername] = useState("");
   const [superEmail, setSuperEmail] = useState("");
   const [superPassword, setSuperPassword] = useState("");
+
   const { isAuthenticated, loading, setIsAuthenticated } = useAuth();
   const navigate = useNavigate();
 
@@ -39,50 +41,55 @@ const Auth = () => {
     localStorageUtils.ensureLocalAppStructure();
   }, []);
 
-  // Initialize rememberMe
   useEffect(() => {
     const saved = localStorage.getItem("rememberMe");
     if (saved === "true") setRememberMe(true);
   }, []);
 
-  // Check for superuser
+  // 🧩 Listen for database success event from ServerNetworkIndicator
   useEffect(() => {
-    const checkSuperUserStatus = async () => {
-      const appData: IAppStorage = localStorageUtils.ensureLocalAppStructure();
+    const handleDatabaseReady = async () => {
+      console.log("✅ Database connection established — checking for Super User...");
 
-      const networkStrength = appData.network?.strength ?? "offline";
-      const serverAvailable = appData.server?.available ?? false;
+      try {
+        const result = await checkSuperUser();
 
-      // Only run the check if network + server look good
-      if (
-        ["offline", "unknown", "none"].includes(networkStrength) ||
-        !serverAvailable
-      ) {
-        console.log("Skipping superuser check: no connectivity");
-        return;
-      }
-
-      const result = await checkSuperUser();
-      if (!result.success) {
-        setShowSuperModal(true);
-      } else {
-        setShowSuperModal(false);
+        if (!result.success) {
+          console.log("❌ No superuser found — showing modal...");
+          setShowSuperModal(true);
+        } else {
+          console.log("✅ Superuser exists — skipping modal.");
+          setShowSuperModal(false);
+        }
+      } catch (error) {
+        console.error("⚠️ Failed to check superuser:", error);
       }
     };
 
-    checkSuperUserStatus();
+    window.addEventListener("database-ready", handleDatabaseReady);
+
+    return () => {
+      window.removeEventListener("database-ready", handleDatabaseReady);
+    };
   }, []);
+
+  // hanlde success redirection - liste to isAuthenticated state
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/app/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   const handleCreateSuperUser = async () => {
     if (!superFirstName || !superLastName || !superUsername || !superEmail || !superPassword) {
       ToastAlertComponentController.show({
         type: "error",
-        message: "Please fill in all fields", 
+        message: "Please fill in all fields",
         icon: "XCircle",
         autoHideDuration: 3500,
         positionY: "top",
-        positionX: "center"
-    });
+        positionX: "center",
+      });
       return;
     }
 
@@ -99,14 +106,14 @@ const Auth = () => {
     if (result.success) {
       ToastAlertComponentController.show({
         type: "info",
-        message: "Super User created successfully"
+        message: "Super User created successfully",
       });
       setShowSuperModal(false);
     } else {
       ToastAlertComponentController.show({
         type: "error",
-        message: result.message || "Failed to create super user", 
-        icon: "XCircle"
+        message: result.message || "Failed to create super user",
+        icon: "XCircle",
       });
     }
   };
@@ -114,14 +121,13 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
-
     try {
       const response: IApiResponse<IAuthResponse> = await authenticateUser(email, password);
 
       if (!response.success || !response.data) {
         ToastAlertComponentController.show({
           type: "error",
-          message: response.message || "Login failed. Please try again.", 
+          message: response.message || "Login failed. Please try again.",
           icon: "XCircle",
           positionY: "top",
           positionX: "center",
@@ -133,17 +139,17 @@ const Auth = () => {
       handleLoginSuccess(response.data);
       ToastAlertComponentController.show({
         type: "info",
-        message: "Logged in...", 
+        message: "Logged in...",
         positionY: "top",
         positionX: "center",
-        autoHideDuration: 1000 // 1 second
+        autoHideDuration: 1000,
       });
-      navigate("/app/dashboard");
+      setIsAuthenticated(true);
 
-    } catch(error) {
-      console.log("Unexpected Error", error)
+    } catch (error) {
+      console.log("Unexpected Error", error);
       ToastAlertComponentController.show({
-        type: "error", 
+        type: "error",
         message: "An unexpected error occurred",
         icon: "XCircle",
         positionY: "top",
@@ -155,6 +161,7 @@ const Auth = () => {
     }
   };
 
+
   const handleLoginSuccess = (authData: IAuthResponse) => {
     const user: Partial<IUser> = {
       id: authData.userId?.toString(),
@@ -162,9 +169,7 @@ const Auth = () => {
       first_name: authData.firstName,
       other_names: authData.otherNames ?? "",
       last_name: authData.lastName,
-      full_name: [authData.firstName, authData.otherNames, authData.lastName]
-        .filter(Boolean)
-        .join(" "),
+      full_name: [authData.firstName, authData.otherNames, authData.lastName].filter(Boolean).join(" "),
       gender: authData.gender ?? "",
       date_of_birth: authData.dateOfBirth ?? "",
       national_id: authData.nationalId ?? "",
@@ -172,12 +177,12 @@ const Auth = () => {
       roles: authData.roles ?? [],
       privileges: authData.privileges ?? [],
       logged_in: true,
-      last_login: new Date().toISOString()
+      last_login: new Date().toISOString(),
     };
 
     const api: Partial<IApi> = {
       token: authData.accessToken,
-      refresh_token: authData.refreshToken
+      refresh_token: authData.refreshToken,
     };
 
     localStorageUtils.addOrUpdateLocalStorageObject({ user, api });
@@ -186,11 +191,10 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 transition-colors duration-300 relative">
+    <div className="min-h-screen bg-gradient-to-br from-green-50 via-white to-red-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 flex items-center justify-center p-4 relative">
       {/* Main Container */}
       <div className="w-full max-w-md relative z-10">
         <div className="bg-white/80 dark:bg-gray-800/90 backdrop-blur-2xl rounded-3xl shadow-2xl border-white/20 dark:border-gray-700/30 p-8 transition-all duration-300 hover:shadow-3xl">
-          
           {/* Header */}
           <div className="text-center mb-6">
             <div className="w-50 h-20 mx-auto mb-4 rounded-xl flex items-center justify-center">
@@ -243,8 +247,8 @@ const Auth = () => {
             </div>
 
             <div className="flex">
-              {/* Remember Me */}
               <div className="flex flex-1 items-center justify-between">
+                {/* Remember Me */}
                 <label className="flex items-center cursor-pointer group">
                   <input
                     type="checkbox"
@@ -260,20 +264,23 @@ const Auth = () => {
                       rememberMe ? "bg-green-600 border-green-600" : "border-gray-300 dark:border-gray-600 group-hover:border-green-600"
                     }`}
                   >
-                    {rememberMe && <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
-                    </svg>}
+                    {rememberMe && (
+                      <svg className="w-3 h-3 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" />
+                      </svg>
+                    )}
                   </div>
-                  <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-green-600 transition-colors">
-                    Remember me
-                  </span>
+                  <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-green-600 transition-colors">Remember me</span>
                 </label>
               </div>
 
-              {/*Api Config*/}
-              <div onClick={() => setShowConfigModal(true)} className="flex text-sm text-primary-100 dark:text-gray-300 group-hover:text-primary-500 transition-colors cursor-pointer">
+              {/* Api Config */}
+              <div
+                onClick={() => setShowConfigModal(true)}
+                className="flex text-sm text-primary-100 dark:text-gray-300 group-hover:text-primary-500 transition-colors cursor-pointer"
+              >
                 <CogIcon className="h-5 w-5" />
-                Api Config
+                API Config
               </div>
             </div>
 
@@ -301,7 +308,7 @@ const Auth = () => {
         isOpen={showSuperModal}
         onClose={() => {}}
         onSubmit={handleCreateSuperUser}
-        isLoading={isLoading} // ✅ pass loading state here
+        isLoading={isLoading}
       >
         <input className="w-full p-3 border rounded" placeholder="First Name" value={superFirstName} onChange={(e) => setSuperFirstName(e.target.value)} />
         <input className="w-full p-3 border rounded" placeholder="Last Name" value={superLastName} onChange={(e) => setSuperLastName(e.target.value)} />
@@ -310,15 +317,19 @@ const Auth = () => {
         <input className="w-full p-3 border rounded" type="password" placeholder="Password" value={superPassword} onChange={(e) => setSuperPassword(e.target.value)} />
       </SuperUserModal>
 
-      {/* Config Modal */}
-      <ApiConfigModal
-        isOpen={showConfigModal}
-        onClose={() => setShowConfigModal(false)}
-      />
+      <ApiConfigModal isOpen={showConfigModal} onClose={() => setShowConfigModal(false)} />
 
       <ToastAlertComponentController.render />
+
+      {/* Bottom-right indicator */}
+      <div className="fixed bottom-4 right-4 z-50">
+        <ServerNetworkIndicator
+          showNetworkIndicator={true}
+          showServerIndicator={true}
+          showDatabaseIndicator={false}
+        />
+      </div>
     </div>
-    
   );
 };
 

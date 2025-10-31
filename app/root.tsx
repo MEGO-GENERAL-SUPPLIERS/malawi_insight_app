@@ -24,6 +24,7 @@ import { ThemeProvider } from "@mui/material/styles";
 
 import type { Route } from "./+types/root";
 import "./app.css";
+import { AuthProvider } from "./hooks/AuthProvider";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -59,7 +60,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
           <CssBaseline />
 
           {typeof window !== "undefined" && (
+            <AuthProvider>
               <Outlet />
+            </AuthProvider>
           )}
 
           <ToastContainer

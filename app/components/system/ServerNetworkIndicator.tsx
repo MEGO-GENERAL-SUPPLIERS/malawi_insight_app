@@ -1,5 +1,5 @@
 // components/ServerNetworkIndicator.tsx
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import {
   WifiOffIcon,
   WifiLowIcon,
@@ -88,29 +88,35 @@ const ServerNetworkIndicator: React.FC<Props> = ({
     database: "checking",
   });
 
-  const [blinkAlt, setBlinkAlt] = useState(false); // network fast blink
-  const [blinkAltSlow, setBlinkAltSlow] = useState(false); // server/db slow blink
+  const [blinkAlt, setBlinkAlt] = useState(false);
+  const [blinkAltSlow, setBlinkAltSlow] = useState(false);
+  const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // fast toggle (network - 0.6s)
+  // fast blink for network
   useEffect(() => {
     if (status.network === "checking") {
-      const timer = setInterval(() => setBlinkAlt(prev => !prev), 600);
+      const timer = setInterval(() => setBlinkAlt((prev) => !prev), 600);
       return () => clearInterval(timer);
     }
   }, [status.network]);
 
-  // slow toggle (server/db - 15s)
+  // slow blink for server/db
   useEffect(() => {
     if (status.server === "checking" || status.database === "checking") {
-      const timer = setInterval(() => setBlinkAltSlow(prev => !prev), 5000);
+      const timer = setInterval(() => setBlinkAltSlow((prev) => !prev), 5000);
       return () => clearInterval(timer);
     }
   }, [status.server, status.database]);
 
+  // get dynamic retry interval
   const getRetryInterval = (): number => {
     const retry = localStorage.getItem("network.retry");
-    const retryNum = retry ? parseInt(retry, 10) : 3000;
-    return isNaN(retryNum) ? 3000 : retryNum;
+    const retryNum = retry ? parseInt(retry, 10) : 2500;
+    return isNaN(retryNum) ? 2500 : retryNum;
+  };
+
+  const setRetryInterval = (ms: number) => {
+    localStorage.setItem("network.retry", ms.toString());
   };
 
   const detectAdapterStatus = (): NetworkStrength | null => {
@@ -148,7 +154,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
       return;
     }
 
-    setStatus(prev => ({
+    setStatus((prev) => ({
       ...prev,
       network: "checking",
       server: "checking",
@@ -157,23 +163,52 @@ const ServerNetworkIndicator: React.FC<Props> = ({
 
     const netStrength = await checkLatency();
     const healthResponse = await checkHealthAsync();
-    console.log("fetchAsync", healthResponse);
     const health = healthResponse.data;
+
+    const serverUp = !!health?.serverAvailable;
+    const dbUp = !!health?.databaseStatus;
 
     setStatus({
       network: netStrength,
-      server: !!health?.serverAvailable,
-      database: !!health?.databaseStatus,
+      server: serverUp,
+      database: dbUp,
     });
+
+    // ✅ Dispatch event if both are up
+    if (serverUp && dbUp) {
+      const detail = { server: true, database: true };
+      window.dispatchEvent(new CustomEvent("database-ready", { detail }));
+
+      // 🕒 Increase check interval to 15 minutes (900000 ms)
+      if (getRetryInterval() < 900000) {
+        console.log("✅ Connection stable — increasing check interval to 15 minutes.");
+        setRetryInterval(900000);
+        restartInterval(900000);
+      }
+    } else {
+      // 🧩 Connection unstable — ensure check interval stays fast (2.5 s)
+      if (getRetryInterval() !== 2500) {
+        console.log("⚠️ Connection unstable — reverting to 2.5 s interval.");
+        setRetryInterval(2500);
+        restartInterval(2500);
+      }
+    }
+  };
+
+  const restartInterval = (newInterval: number) => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
+    intervalRef.current = setInterval(fetchStatus, newInterval);
   };
 
   useEffect(() => {
     fetchStatus();
-    const interval = setInterval(fetchStatus, getRetryInterval());
+    restartInterval(getRetryInterval());
+
     window.addEventListener("online", fetchStatus);
     window.addEventListener("offline", fetchStatus);
+
     return () => {
-      clearInterval(interval);
+      if (intervalRef.current) clearInterval(intervalRef.current);
       window.removeEventListener("online", fetchStatus);
       window.removeEventListener("offline", fetchStatus);
     };
@@ -181,12 +216,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
 
   const renderNetworkIcon = () => {
     if (status.network === "checking") {
-      return (
-        <WifiIcon
-          className={`w-5 h-5 ${StatusColor.networkChecking}`}
-          data-alt={blinkAlt}
-        />
-      );
+      return <WifiIcon className={`w-5 h-5 ${StatusColor.networkChecking}`} data-alt={blinkAlt} />;
     }
 
     const networkColor = StatusColor[status.network] || StatusColor.offline;
@@ -213,12 +243,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
 
   const renderServerIcon = () => {
     if (status.server === "checking") {
-      return (
-        <ServerCrashIcon
-          className={`w-5 h-5 ${StatusColor.serverChecking}`}
-          data-alt={blinkAltSlow}
-        />
-      );
+      return <ServerCrashIcon className={`w-5 h-5 ${StatusColor.serverChecking}`} data-alt={blinkAltSlow} />;
     }
     return status.server ? (
       <ArrowUpDownIcon className={`w-5 h-5 ${StatusColor.serverUp}`} />
@@ -229,12 +254,7 @@ const ServerNetworkIndicator: React.FC<Props> = ({
 
   const renderDatabaseIcon = () => {
     if (status.database === "checking") {
-      return (
-        <DatabaseZapIcon
-          className={`w-5 h-5 ${StatusColor.databaseChecking}`}
-          data-alt={blinkAltSlow}
-        />
-      );
+      return <DatabaseZapIcon className={`w-5 h-5 ${StatusColor.databaseChecking}`} data-alt={blinkAltSlow} />;
     }
     return status.database ? (
       <DatabaseZapIcon className={`w-5 h-5 ${StatusColor.databaseUp}`} />

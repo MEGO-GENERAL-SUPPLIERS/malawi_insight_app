@@ -1,6 +1,6 @@
 // healthCheckWorker.ts
 if (typeof self !== "undefined") {
-  self.onmessage = async (event: any) => {
+  self.onmessage = async (_event: any) => {
     // Your existing health check logic here
     try {
       // example: check server/db
