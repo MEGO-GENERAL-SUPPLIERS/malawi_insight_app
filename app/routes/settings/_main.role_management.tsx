@@ -21,6 +21,7 @@ const Roles = () => {
   const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
   const [editRow, setEditRow] = useState<IRole | null>(null);
   const isMobile = useMediaQuery("(max-width:768px)");
+  const [formSlotData, setFormSlotData] = useState<IRole | null>(null);
 
   const loadRoles = async (params: Record<string, any> = {}) => {
     try{
@@ -89,24 +90,29 @@ const Roles = () => {
 
   // Handle submit
   const handleSubmit = async () => {
-    const data = formRef.current?.getFormData();
-    if(!data) return;
+    const data = formSlotData ?? formRef.current?.getFormData();
+    if (!data) return;
 
     const errors: string[] = [];
-    
-    if(!data.name || !validationUtils.isValidInput(data.name))
-        errors.push("Role name must be a valid text");
 
-    if(!data.role_level_id)
+    if (!data.name || !validationUtils.isValidInput(data.name))
+      errors.push("Role name must be a valid text");
+
+    if (!data.role_level_id)
       errors.push("Role level must be set/selected.");
 
-    if(data.privileges.length <= 0)
+    if (!data.privileges || data.privileges.length <= 0)
       errors.push("Select at least one privilege for the new role.");
 
-    const duplicateCheck = tableData.find((r) => r.name.toLowerCase() === data.name.toLowerCase() && r.void === 0 && r.id !== editRow?.id);
-    if(duplicateCheck) errors.push(`Role ${data.name} already exists.`);
+    const duplicateCheck = tableData.find(
+      (r) =>
+        r.name.toLowerCase() === data.name.toLowerCase() &&
+        r.void === 0 &&
+        r.id !== editRow?.id
+    );
+    if (duplicateCheck) errors.push(`Role ${data.name} already exists.`);
 
-    if(errors.length > 0){
+    if (errors.length > 0) {
       setErrorMessage(errors);
       return;
     }
@@ -117,7 +123,7 @@ const Roles = () => {
     AlertComponentController.show({
       type: `confirm`,
       title: `Confirm Submission`,
-      message: `Are you sure you want to ${action} role ${data.name}?`,
+      message: `Are you sure you want to ${action == "update" ? `apply these updates to the ` : "add the"} role "${data.name}"?`,
       buttons: [
         {
           label: `Proceed`,
@@ -178,7 +184,7 @@ const Roles = () => {
       type: `confirm`,
       title: `Confirm Delete`,
       icon: `TriangleAlert`,
-      message: `Are you sure you want to delete "${row.name}" ?`,
+      message: `Are you sure you want to delete "${row.name}" ? (This is irrevocable)`,
       buttons: [
         {
           label: `Proceed`,
@@ -232,7 +238,7 @@ const Roles = () => {
         muiTableHeadCellProps: { style: { color: "green" } }
       },
       {
-        accessorKey: "role_level",
+        accessorKey: "role_level_name",
         header: "Role Level",
         muiTableHeadCellProps: { style: { color: "green" } },
         Cell: ({ cell }) => cell.getValue<string>() || "--"
@@ -251,16 +257,38 @@ const Roles = () => {
         header: "Actions",
         size: 60,
         enableSorting: false,
-        Cell: ({ row }) => (
-          <div className="flex gap-2">
-            <Tooltip title="Edit role">
-              <button className="btn btn-secondary btn-sm" onClick={() => handleEditRow(row.original)}>{"Edit"}</button>
-            </Tooltip>
-            <Tooltip title="Delete/Void Role">
-              <button className="btn btn-danger btn-sm" onClick={() => handleDeleteRow(row.original)}>{"Delete"}</button>
-            </Tooltip>
-          </div>
-        )
+        Cell: ({ row }) => {
+          // Use optional chaining and fallback to empty string
+          const roleLevel = (row.getValue("role_level_name") as string | undefined)?.toLowerCase() || "";
+
+          // List of roles for which Delete should be hidden
+          const hideAction = ["super", "global"].includes(roleLevel);
+
+          return (
+            <div className="flex gap-2">
+              <Tooltip title="Edit role">
+                <button
+                  className={`btn btn-secondary btn-sm ${hideAction && "opacity-50 hover:cursor-not-allowed pointer-events-none"}`}
+                  onClick={() => !hideAction && handleEditRow(row.original)}
+                  disabled={hideAction}
+                >
+                  Edit
+                </button>
+              </Tooltip>
+
+              
+                <Tooltip title="Delete/Void Role">
+                  <button
+                    className={`btn btn-danger btn-sm ${hideAction && "opacity-50 hover:cursor-not-allowed pointer-events-none"}`}
+                    onClick={() => !hideAction && handleDeleteRow(row.original)}
+                    disabled={hideAction}
+                  >
+                    Delete
+                  </button>
+                </Tooltip>
+            </div>
+          );
+        },
       }
     ], []);
 
@@ -296,7 +324,29 @@ const Roles = () => {
           </Box>
         ) : (
           <TableContainer component={Paper}>
-            <MaterialReactTable data={tableData} columns={columns} enableColumnActions />
+            <MaterialReactTable 
+              data={tableData} 
+              columns={columns} 
+              enableColumnActions 
+              muiTableBodyRowProps={({ row }) => ({
+                sx: { cursor: row.original.description ? "pointer" : "default" },
+                children: (
+                  <Tooltip title={row.original.description || ""} arrow>
+                    <Box component="tr" sx={{ display: "table-row" }}>
+                      {row.getVisibleCells().map((cell) => (
+                        <Box
+                          key={cell.id}
+                          component="td"
+                          sx={{ padding: "8px 16px" }}
+                        >
+                          {cell.getValue?.()?.toString() ?? ""}
+                        </Box>
+                      ))}
+                    </Box>
+                  </Tooltip>
+                ),
+              })}
+          />
           </TableContainer>
         )
       }
@@ -334,7 +384,11 @@ const Roles = () => {
             </Box>
           )}
 
-          <RoleAddForm ref={formRef} initialData={editRow ?? undefined } />
+          <RoleAddForm 
+            ref={formRef} 
+            initialData={editRow ?? undefined } 
+            setSlotData={(data) => setFormSlotData(data)}
+          />
         </div>
       </ModalComponent>
 

@@ -9,3 +9,10 @@ export interface IPrivilege{
   created_at?: string; 
   updated_at?: string;
 }
+
+export interface IPrivilegeForRole{
+  id: number;
+  name: string;
+  void: number;
+  action_name?: string;
+}

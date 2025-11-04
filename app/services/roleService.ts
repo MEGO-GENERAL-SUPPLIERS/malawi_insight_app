@@ -21,7 +21,7 @@ export const fetchRoles = async (params: Record<string, any> = {}): Promise<IApi
 
 export const addRole = async (params: Record<string, any> = {}): Promise<IApiResponse<IRole>> => {
   try{
-    const response = await apiClient.post<IRole>("/roles", params);
+    const response = await apiClient.post<IRole>("/roles/add", params);
     return reformatResponse(response);
   } catch(ex: any){
     return {
