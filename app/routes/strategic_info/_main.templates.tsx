@@ -4,8 +4,11 @@ import React from 'react';
 import PageHeaderTitle from '../../components/system/PageHeaderTitle';
 import MenuCardGrid from '~/components/system/MenuCardGrid';
 import { type IMenuCard } from '~/types/interfaces/IMenuCard';
+import { useNavigate } from 'react-router-dom';
 
 const Templates: React.FC = () => {
+  const navigate = useNavigate();
+
   const templateCards: IMenuCard[] = [
     {
       icon: 'CloudUpload',
@@ -66,8 +69,7 @@ const Templates: React.FC = () => {
   ];
 
   const handleCardClick = (route: string) => {
-    console.log(`Navigating to: ${route}`);
-    // Implement navigation logic here (react-router, next/router, etc.)
+    navigate(route);
   };
 
   return (

@@ -77,7 +77,6 @@ const Settings: React.FC = () => {
   ];
 
   const handleCardClick = (route: string) => {
-    console.log(`Navigating to: ${route}`);
     navigate(route);
   };
 

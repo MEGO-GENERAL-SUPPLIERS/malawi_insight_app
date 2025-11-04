@@ -29,9 +29,9 @@ const NotFoundPage: React.FC = () => {
 
       <button
         onClick={() => navigate("/app/dashboard")}
-        className="px-6 py-2 bg-emerald-500 text-white rounded hover:bg-emerald-700 transition"
+        className="px-6 py-2 bg-emerald-500 text-white rounded hover:cursor-pointer hover:bg-emerald-700 transition"
       >
-        Go Back Home
+        Go Back to Dashboard
       </button>
     </div>
   );
