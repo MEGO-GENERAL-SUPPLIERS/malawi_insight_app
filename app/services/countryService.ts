@@ -8,7 +8,7 @@ export const fetchCountries = async (): Promise<ICountry[]> => {
   // Hardcoded country list
   const countries: ICountry[] = [
     { id: 1, name: "Malawi", iso3: "MWI" },
-    { id: 2, name: "Zambia", iso3: "MWI" }
+    { id: 2, name: "Zambia", iso3: "ZMB" }
   ];
 
   return Promise.resolve(countries);
