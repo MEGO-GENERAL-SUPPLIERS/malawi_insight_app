@@ -100,11 +100,12 @@ const Facilities = () => {
 
     setErrorMessage(null);
     const action = editRow ? "update" : "add";
-
+    
+    AlertComponentController.dismiss();
     AlertComponentController.show({
       type: "confirm",
       title: `Confirm`,
-      message: `Are you sure you want to ${action} facility "${data.name}"?`,
+      message: `Are you sure you want to ${action} facility "<strong>${data.name}</strong>"?`,
       buttons: [
         {
           label: `Proceed`,
@@ -125,7 +126,7 @@ const Facilities = () => {
             if (response.success && response.data) {
               ToastAlertComponentController.show({
                 type: `success`,
-                message: `Facility "${data.name} ${editRow ? "updated" : "added"} successfully"`,
+                message: `Facility "<strong>${data.name}</strong>" ${editRow ? "updated" : "added"} successfully`,
                 icon: `CheckCircle`,
                 autoHideDuration: 3500,
                 animation: `slide`,
@@ -166,7 +167,7 @@ const Facilities = () => {
     AlertComponentController.show({
       type: `confirm`,
       title: `Confirm Delete`,
-      message: `Are you sure you want to delete '${row.name}'`,
+      message: `Are you sure you want to delete "<strong>${row.name}</strong>"`,
       buttons: [
         {
           label: `Proceed`,

@@ -120,10 +120,11 @@ const Roles = () => {
     setErrorMessage(null);
     const action = editRow ? "update" : "add";
 
+    AlertComponentController.dismiss();
     AlertComponentController.show({
       type: `confirm`,
       title: `Confirm Submission`,
-      message: `Are you sure you want to ${action == "update" ? `apply these updates to the ` : "add the"} role "${data.name}"?`,
+      message: `Are you sure you want to ${action == "update" ? `apply these updates to the ` : "add the"} role "<strong>${data.name}</strong>"?`,
       buttons: [
         {
           label: `Proceed`,
@@ -184,13 +185,13 @@ const Roles = () => {
       type: `confirm`,
       title: `Confirm Delete`,
       icon: `TriangleAlert`,
-      message: `Are you sure you want to delete "${row.name}" ? (This is irrevocable)`,
+      message: `Are you sure you want to delete "<strong>${row.name}</strong>" ? (This is irrevocable)`,
       buttons: [
         {
           label: `Proceed`,
           className: `btn btn-success`,
           onClick: async ()=> {
-            const response = await deleteRole({...row, void_by: userId, void_reason: "administration"});
+            const response = await deleteRole({...row, void_by: userId, void_reason: "system administration"});
 
             if(response.success){
               ToastAlertComponentController.show({

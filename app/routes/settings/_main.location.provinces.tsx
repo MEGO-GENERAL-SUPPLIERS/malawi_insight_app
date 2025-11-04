@@ -98,7 +98,7 @@ const Provinces = () => {
       type: "confirm",
       title: `Confirm`,
       icon: `CircleQuestionMark`,
-      message: `Are you sure you want to ${action} province "${data.name}"?`,
+      message: `Are you sure you want to ${action} province "<strong>${data.name}</strong>"?`,
       buttons: [
         {
           label: "Proceed",
@@ -118,7 +118,7 @@ const Provinces = () => {
             if (response.success && response.data) {
               ToastAlertComponentController.show({
                 type: "success",
-                message: `Province "${data.name}" ${editRow ? "updated" : "added"} successfully!`,
+                message: `Province "<strong>${data.name}</strong>" ${editRow ? "updated" : "added"} successfully!`,
                 icon: "CheckCircle",
                 autoHideDuration: 3500,
                 animation: "slide",
@@ -160,7 +160,7 @@ const Provinces = () => {
     AlertComponentController.show({
       type: "confirm",
       title: "Confirm Delete",
-      message: `Are you sure you want to delete "${row.name}"?`,
+      message: `Are you sure you want to delete "<strong>${row.name}</strong>"? <br />(This action will remove its associated children as well and it's irrevocable)`,
       buttons: [
         {
           label: "Proceed",
@@ -169,7 +169,7 @@ const Provinces = () => {
             const requestPayload = {
               ...row,
               void_by: userId,
-              void_reason: "administration",
+              void_reason: "system administration",
             };
 
             const response = await deleteProvince(requestPayload);
