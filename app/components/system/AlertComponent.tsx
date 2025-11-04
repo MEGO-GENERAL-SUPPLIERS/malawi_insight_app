@@ -1,12 +1,12 @@
 import React from "react";
+import parse, { domToReact, Element } from "html-react-parser";
 import {
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   Typography,
-  type DialogProps,
-  Slide, Zoom
+  Zoom
 } from "@mui/material";
 import * as LucideIcons from "lucide-react";
 import * as MuiIcons from "@mui/icons-material";
@@ -35,6 +35,8 @@ export interface AlertComponentProps {
   dismissable?: boolean;
   backdropBlur?: number;
   backdropOpacity?: number;
+  isHtml?: boolean;
+  htmlStyles?: Record<string, React.CSSProperties>; // New: element-specific styles
 }
 
 const AlertComponent: React.FC<AlertComponentProps> = ({
@@ -50,6 +52,8 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
   dismissable = true,
   backdropBlur = 2,
   backdropOpacity = 0.3,
+  isHtml = true,
+  htmlStyles = {}, // Default empty
 }) => {
   const colorStyles: Record<
     AlertType,
@@ -77,6 +81,19 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
     if (btn.autoClose) onClose();
   };
 
+  const renderHtmlMessage = (html: string) =>
+    parse(html, {
+      replace: (domNode) => {
+        if (domNode instanceof Element && htmlStyles[domNode.name]) {
+          return (
+            <span style={htmlStyles[domNode.name]}>
+              {domToReact(domNode.children, { replace: undefined })}
+            </span>
+          );
+        }
+      },
+    });
+
   return (
     <Dialog
       open={open}
@@ -89,7 +106,7 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
           borderRadius: 2,
           overflow: "hidden",
           position: "relative",
-          top: "-10%", // slightly above center
+          top: "-10%",
         },
       }}
       slotProps={{
@@ -116,9 +133,18 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
       <DialogContent className="bg-white px-6 py-6">
         <div className="flex items-start gap-2 mt-4">
           {MessageIconComponent && <MessageIconComponent className="text-slate-500 mt-1" size={18} />}
-          <Typography variant="body1" className="text-slate-700 text-sm leading-relaxed mt-1">
-            {message}
-          </Typography>
+          {isHtml && typeof message === "string" ? (
+            <Typography
+              variant="body1"
+              className="text-slate-700 text-sm leading-relaxed mt-1"
+            >
+              {renderHtmlMessage(message)}
+            </Typography>
+          ) : (
+            <Typography variant="body1" className="text-slate-700 text-sm leading-relaxed mt-1">
+              {message}
+            </Typography>
+          )}
         </div>
       </DialogContent>
 
