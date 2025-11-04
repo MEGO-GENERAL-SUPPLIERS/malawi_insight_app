@@ -22,10 +22,13 @@ export const appRoutes: RouteConfig = [
     /*SI Unit*/
     route("strategic_info", "routes/_main.strategic_info.tsx"),
     route("strategic_info/templates", "routes/strategic_info/_main.templates.tsx"),
-    route("strategic_info/reports", "routes/strategic_info/_main.reports.tsx")
-  ]),
+    route("strategic_info/reports", "routes/strategic_info/_main.reports.tsx"),
 
-  // Other routes...
+  ]),
+  
+  // Catch-all route for 404 globally
+  route("*", "routes/404.tsx"),
+
 ];
 
 // Named route map (to use in <Link> etc.)
