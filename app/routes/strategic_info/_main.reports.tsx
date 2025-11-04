@@ -2,31 +2,33 @@ import React from 'react';
 import MenuCardGrid from '~/components/system/MenuCardGrid';
 import PageHeaderTitle from '~/components/system/PageHeaderTitle';
 import { type IMenuCard } from '~/types/interfaces/IMenuCard';
+import { useNavigate } from 'react-router-dom';
 
 const Reports: React.FC = () => {
-const menuCards: IMenuCard[] = [
-  {
-    icon: 'TrendingUpDown',
-    name: 'Unapproved Reports(s)',
-    description: 'Reports not yet approved at National Level',
-    route: '/strategic_info/reports',
-    colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-    privileges: []
-  },
-  {
-    icon: 'TrendingUp',
-    name: 'Reports(s)',
-    description: 'Reports approved at National Level',
-    route: '/strategic_info/reports',
-    colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-    privileges: []
-  }
-];
+  const navigate = useNavigate();
 
-const handleCardClick = (route: string) => {
-  console.log(`Navigating to: ${route}`);
-  // Implement navigation logic here (react-router, next/router, etc.)
-};
+  const menuCards: IMenuCard[] = [
+    {
+      icon: 'TrendingUpDown',
+      name: 'Unapproved Reports(s)',
+      description: 'Reports not yet approved at National Level',
+      route: '/app/strategic_info/reports',
+      colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
+      privileges: []
+    },
+    {
+      icon: 'TrendingUp',
+      name: 'Reports(s)',
+      description: 'Reports approved at National Level',
+      route: '/app/strategic_info/reports',
+      colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
+      privileges: []
+    }
+  ];
+
+  const handleCardClick = (route: string) => {
+    navigate(route);
+  };
   
   return (
     <div className="min-h-screen bg-gray-50 p-2">
