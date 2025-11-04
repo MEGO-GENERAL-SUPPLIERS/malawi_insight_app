@@ -82,17 +82,18 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
   };
 
   const renderHtmlMessage = (html: string) =>
-    parse(html, {
-      replace: (domNode) => {
-        if (domNode instanceof Element && htmlStyles[domNode.name]) {
-          return (
-            <span style={htmlStyles[domNode.name]}>
-              {domToReact(domNode.children, { replace: undefined })}
-            </span>
-          );
-        }
-      },
-    });
+  parse(html, {
+    replace: (domNode) => {
+      if (domNode instanceof Element && htmlStyles[domNode.name]) {
+        // Cast children to 'any' to satisfy TypeScript
+        return (
+          <span style={htmlStyles[domNode.name]}>
+            {domToReact(domNode.children as any, { replace: undefined })}
+          </span>
+        );
+      }
+    },
+  });
 
   return (
     <Dialog
