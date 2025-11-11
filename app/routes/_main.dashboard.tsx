@@ -1,9 +1,12 @@
-import React from 'react'
+import React, { Suspense} from 'react';
+const DashboardSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/DashboardSkeletonLoader"));
 
 const Dashboard = () => {
   return (
     <section>
-      <h5>Dashboard</h5>
+      <Suspense fallback={<DashboardSkeletonLoader />}>
+        <h5>Dashboard</h5>
+      </Suspense>
     </section>
   )
 }

@@ -85,7 +85,7 @@
 
 /*Buttons*/
 .btn{
-  @apply cursor-pointer text-white px-4 py-2 mx-0 rounded-md font-semibold;
+  @apply cursor-pointer text-white px-3 py-2 mx-0 rounded-md font-semibold;
 }
 
 .btn-sm{

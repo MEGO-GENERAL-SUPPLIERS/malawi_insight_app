@@ -139,7 +139,7 @@ const Auth = () => {
       handleLoginSuccess(response.data);
       ToastAlertComponentController.show({
         type: "info",
-        message: "Logged in...",
+        message: "Logging in...",
         positionY: "top",
         positionX: "center",
         autoHideDuration: 1000,

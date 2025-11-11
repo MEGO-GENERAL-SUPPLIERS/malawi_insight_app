@@ -1,60 +1,66 @@
+// routes.config.ts
 import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
-// React Router config (for the framework)
-export const appRoutes: RouteConfig = [
-  index("routes/auth.tsx"),
-
-  // Routes wrapped in MainLayout
-  route("/app", "routes/_main.tsx", [
-    route("dashboard", "routes/_main.dashboard.tsx"),
-    route("help", "routes/_main.help.tsx"),
-    route("profile", "routes/_main.profile.tsx"),
-    /*Settings*/
-    route("settings", "routes/_main.settings.tsx"),
-    route("settings/locations", "routes/settings/_main.locations.tsx"),
-    route("settings/locations/provinces", "routes/settings/_main.location.provinces.tsx"),
-    route("settings/locations/districts", "routes/settings/_main.location.districts.tsx"),
-    route("settings/locations/facilities", "routes/settings/_main.location.facilities.tsx"),
-    route("settings/network", "routes/settings/_main.network.tsx"),
-    route("settings/roles", "routes/settings/_main.role_management.tsx"),
-    /*Programs*/
-    route("programs", "routes/_main.programs.tsx"),
-    /*SI Unit*/
-    route("strategic_info", "routes/_main.strategic_info.tsx"),
-    route("strategic_info/templates", "routes/strategic_info/_main.templates.tsx"),
-    route("strategic_info/reports", "routes/strategic_info/_main.reports.tsx"),
-
-  ]),
-  
-  // Catch-all route for 404 globally
-  route("*", "routes/404.tsx"),
-
-];
-
-// Named route map (to use in <Link> etc.)
-export const routes = {
-  auth: "/",
+// Single source of truth
+export const routeDefinitions = {
+  auth: { path: "/", file: "routes/auth.tsx" },
   app: {
-    dashboard: "/app/dashboard",
-    programs: "/app/programs",
-    help: "/app/help",
-    profile: "/app/profile",
+    dashboard: { path: "/app/dashboard", file: "routes/_main.dashboard.tsx" },
+    programs: { path: "/app/programs", file: "routes/_main.programs.tsx" },
+    help: { path: "/app/help", file: "routes/_main.help.tsx" },
+    profile: { path: "/app/profile", file: "routes/_main.profile.tsx" },
+
     /*Settings*/
-    settings: "/app/settings",
-    settings_locations: "/app/settings/locations",
-    settings_network: "/app/settings/network",
-    settings_roles: "/app/settings/roles",
+    settings: { path: "/app/settings", file: "routes/_main.settings.tsx" },
+    settings_locations: { path: "/app/settings/locations", file: "routes/settings/_main.locations.tsx" },
+    settings_provinces: { path: "/app/settings/locations/provinces", file: "routes/settings/_main.location.provinces.tsx" },
+    settings_districts: { path: "/app/settings/locations/districts", file: "routes/settings/_main.location.districts.tsx" },
+    settings_facilities: { path: "/app/settings/locations/facilities", file: "routes/settings/_main.location.facilities.tsx" },
+    settings_network: { path: "/app/settings/network", file: "routes/settings/_main.network.tsx" },
+    settings_roles: { path: "/app/settings/roles", file: "routes/settings/_main.role_management.tsx" },
+    settings_users: { path: "/app/settings/users", file: "routes/settings/_main.user_management.tsx" },
+
     /*SI Unit*/
-    strategic_info: "/app/strategic_info",
-    strategic_info_templates: "/app/strategic_info/templates",
-    strategic_info_reports: "/app/strategic_info/reports",
+    strategic_info: { path: "/app/strategic_info", file: "routes/_main.strategic_info.tsx" },
+    strategic_info_templates: { path: "/app/strategic_info/templates", file: "routes/strategic_info/_main.templates.tsx" },
+    strategic_info_reports: { path: "/app/strategic_info/reports", file: "routes/strategic_info/_main.reports.tsx" },
   },
 } as const;
 
-// Helper if you prefer function-based lookups
-export function getRoute(name: keyof typeof routes.app | "auth") {
-  if (name === "auth") return routes.auth;
-  return routes.app[name];
+// Type for safety
+export type RouteKey = keyof typeof routeDefinitions.app | "auth";
+
+// Flexible route resolver
+export function resolveRoute(key: RouteKey | string): string {
+  // If it's a raw path string, return as-is
+  if (key.startsWith("/")) return key;
+
+  // If it's "auth", return auth path
+  if (key === "auth") return routeDefinitions.auth.path;
+
+  // Otherwise, it must be a key of app
+  return routeDefinitions.app[key as keyof typeof routeDefinitions.app].path;
 }
 
+// Generate React Router config automatically
+function generateRoutes(): RouteConfig {
+  const config: RouteConfig = [];
+
+  // Auth route
+  config.push(index(routeDefinitions.auth.file));
+
+  // App routes under main layout
+  const appChildren = Object.values(routeDefinitions.app).map(r =>
+    route(r.path.replace("/app/", ""), r.file)
+  );
+
+  config.push(route("/app", "routes/_main.tsx", appChildren));
+
+  // Catch-all 404
+  config.push(route("*", "routes/404.tsx"));
+
+  return config;
+}
+
+export const appRoutes = generateRoutes();
 export default appRoutes;

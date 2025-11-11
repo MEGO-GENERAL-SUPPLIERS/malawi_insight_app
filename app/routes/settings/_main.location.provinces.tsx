@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, Suspense } from "react";
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import ProvinceAddForm from "~/components/forms/province.add";
 import { type IProvince } from "~/types/interfaces/IProvinceInterfaces";
@@ -11,6 +11,7 @@ import { ToastAlertComponentController } from "~/components/controllers/ToastAle
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { validationUtils } from "~/utils/validationUtils";
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
+const DatatablePageSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/DatatableSkeletonLoader"));
 
 const Provinces = () => {
   const modalRef = useRef<any>(null);
@@ -247,117 +248,118 @@ const Provinces = () => {
   return (
     <section className="space-y-4 p-4">
       <h5 className="text-lg font-semibold flex gap-2"> <Map /> {"Provinces"}</h5>
+      <Suspense fallback={<DatatablePageSkeletonLoader />}>
+        <div className="flex justify-between mb-2">
+          {/* Add Province button on the left */}
+          <Tooltip title="Add Province">
+            <button 
+              onClick={() => handleOpenModal()} 
+              className="btn btn-success flex gap-2 items-center"
+            >
+              <PlusCircle />
+              <span>Add Province</span>
+            </button>
+          </Tooltip>
 
-      <div className="flex justify-between mb-2">
-        {/* Add Province button on the left */}
-        <Tooltip title="Add Province">
-          <button 
-            onClick={() => handleOpenModal()} 
-            className="btn btn-success flex gap-2 items-center"
-          >
-            <PlusCircle />
-            <span>Add Province</span>
-          </button>
-        </Tooltip>
-
-        {/* Refresh button on the far right */}
-        <Tooltip title="Refresh provinces data table">
-          <button
-            onClick={async () => {
-              setFetching(true);
-              try {
-                const response = await fetchProvinces();
-                if (response.success && Array.isArray(response.data)) {
-                  setTableData(response.data);
-                  ToastAlertComponentController.show({
-                    type: "success",
-                    message: "Provinces refreshed successfully!",
-                    icon: "CheckCircle",
-                    autoHideDuration: 2500,
-                  });
-                } else {
+          {/* Refresh button on the far right */}
+          <Tooltip title="Refresh provinces data table">
+            <button
+              onClick={async () => {
+                setFetching(true);
+                try {
+                  const response = await fetchProvinces();
+                  if (response.success && Array.isArray(response.data)) {
+                    setTableData(response.data);
+                    ToastAlertComponentController.show({
+                      type: "success",
+                      message: "Provinces refreshed successfully!",
+                      icon: "CheckCircle",
+                      autoHideDuration: 2500,
+                    });
+                  } else {
+                    ToastAlertComponentController.show({
+                      type: "error",
+                      message: response.message || "Failed to refresh provinces",
+                      icon: "XCircle",
+                      autoHideDuration: 3500,
+                    });
+                  }
+                } catch (err: any) {
                   ToastAlertComponentController.show({
                     type: "error",
-                    message: response.message || "Failed to refresh provinces",
+                    message: `Error refreshing provinces: ${err.message}`,
                     icon: "XCircle",
                     autoHideDuration: 3500,
                   });
+                } finally {
+                  setFetching(false);
                 }
-              } catch (err: any) {
-                ToastAlertComponentController.show({
-                  type: "error",
-                  message: `Error refreshing provinces: ${err.message}`,
-                  icon: "XCircle",
-                  autoHideDuration: 3500,
-                });
-              } finally {
-                setFetching(false);
-              }
-            }}
-            className="btn btn-secondary flex items-center justify-center"
-          >
-            <RefreshCw size={20} />
-          </button>
-        </Tooltip>
-      </div>
-
-      {fetching ? (
-        <Box className="flex justify-center items-center py-10">
-          <CircularProgress size={36} />
-        </Box>
-      ) : (
-        <MaterialReactTable data={tableData} columns={columns} enableColumnActions />
-      )}
-
-      <ModalComponent
-        ref={modalRef}
-        title="Province Details"
-        icon="MapPin"
-        size="md"
-        blur={1}
-        backdropOpacity={0.4}
-        dismissable={false}
-        showCloseButton
-        customButtons={customButtons}
-        onClose={handleCloseModal}
-      >
-        <div>
-          <div className="relative">
-            {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 mb-4 rounded-md">
-                {loading && <CircularProgress size={24} />}
-                
-                {errorMessage && (
-                  <StaticAlertComponent
-                    type="error"
-                    title="Error(s)"
-                    message={errorMessage}
-                    icon="AlertTriangle"
-                    dismissable
-                    onClose={() => setErrorMessage(null)}
-                  />
-                )}
-              </Box>
-            )}
-          </div>
-
-            <ProvinceAddForm
-              ref={formRef}
-              initialData={
-                editRow
-                  ? {
-                      id: editRow.id ?? 0,
-                      country_id: editRow.country_id ?? 1,
-                      name: editRow.name ?? "",
-                      code: editRow.code ?? "",
-                    }
-                  : undefined
-              }
-            />
+              }}
+              className="btn btn-secondary flex items-center justify-center"
+            >
+              <RefreshCw size={20} />
+            </button>
+          </Tooltip>
         </div>
-      </ModalComponent>
 
-      <ToastAlertComponentController.render />
+        {fetching ? (
+          <Box className="flex justify-center items-center py-10">
+            <CircularProgress size={36} />
+          </Box>
+        ) : (
+          <MaterialReactTable data={tableData} columns={columns} enableColumnActions />
+        )}
+
+        <ModalComponent
+          ref={modalRef}
+          title="Province Details"
+          icon="MapPin"
+          size="md"
+          blur={1}
+          backdropOpacity={0.4}
+          dismissable={false}
+          showCloseButton
+          customButtons={customButtons}
+          onClose={handleCloseModal}
+        >
+          <div>
+            <div className="relative">
+              {(loading || errorMessage) && (
+                <Box className="relative inset-0 flex justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-4 mb-4 rounded-md">
+                  {loading && <CircularProgress size={24} />}
+                  
+                  {errorMessage && (
+                    <StaticAlertComponent
+                      type="error"
+                      title="Error(s)"
+                      message={errorMessage}
+                      icon="AlertTriangle"
+                      dismissable
+                      onClose={() => setErrorMessage(null)}
+                    />
+                  )}
+                </Box>
+              )}
+            </div>
+
+              <ProvinceAddForm
+                ref={formRef}
+                initialData={
+                  editRow
+                    ? {
+                        id: editRow.id ?? 0,
+                        country_id: editRow.country_id ?? 1,
+                        name: editRow.name ?? "",
+                        code: editRow.code ?? "",
+                      }
+                    : undefined
+                }
+              />
+          </div>
+        </ModalComponent>
+
+        <ToastAlertComponentController.render />
+      </Suspense>  
     </section>
   );
 };

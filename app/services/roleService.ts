@@ -40,7 +40,7 @@ export const updateRole = async (params: Record<string, any> = {}): Promise<IApi
   } catch(ex: any){
     return {
       success: false,
-      message: `Failed to add role. ${ex.message}`,
+      message: `Failed to update role. ${ex.message}`,
       data: null
     };
   }

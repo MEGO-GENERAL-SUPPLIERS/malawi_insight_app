@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, Suspense } from "react";
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import DistrictAddForm from "~/components/forms/district.add";
 import { type IDistrict } from "~/types/interfaces/IDistrictInterfaces";
@@ -11,6 +11,7 @@ import { ToastAlertComponentController } from "~/components/controllers/ToastAle
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { validationUtils } from "~/utils/validationUtils";
+const DatatablePageSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/DatatableSkeletonLoader"));
 
 const Districts = () => {
   const modalRef = useRef<any>(null);
@@ -255,132 +256,134 @@ const Districts = () => {
     <section className="space-y-4 p-4">
       <h5 className="flex gap-2 text-lg font-semibold"><MapPin /> {"Districts"} </h5>
 
-      <div className="flex justify-between mb-2">
-        {/*Add District*/}
-        <Tooltip title="Add district">
-          <button
-            onClick={() => handleOpenModal()}
-            className="btn btn-success flex gap-2 items-center"
-          >
-            <PlusCircle />
-            <span>Add District</span>
-          </button>
-        </Tooltip>
+      <Suspense fallback={<DatatablePageSkeletonLoader />}>
+        <div className="flex justify-between mb-2">
+          {/*Add District*/}
+          <Tooltip title="Add district">
+            <button
+              onClick={() => handleOpenModal()}
+              className="btn btn-success flex gap-2 items-center"
+            >
+              <PlusCircle />
+              <span>Add District</span>
+            </button>
+          </Tooltip>
 
-        {/*Refresh button*/}
-        <Tooltip title="Refresh districts data table">
-          <button
-            onClick={async () => {
-              setFetching(true);
-              try {
-                const response = await fetchDistricts();
-                if (response.success && Array.isArray(response.data)) {
-                  setTableData(response.data);
-                  ToastAlertComponentController.show({
-                    type: `success`,
-                    message: `Districts refreshed successfully`,
-                    icon: `CheckCircle`,
-                    autoHideDuration: 2500
-                  });
-                } else {
+          {/*Refresh button*/}
+          <Tooltip title="Refresh districts data table">
+            <button
+              onClick={async () => {
+                setFetching(true);
+                try {
+                  const response = await fetchDistricts();
+                  if (response.success && Array.isArray(response.data)) {
+                    setTableData(response.data);
+                    ToastAlertComponentController.show({
+                      type: `success`,
+                      message: `Districts refreshed successfully`,
+                      icon: `CheckCircle`,
+                      autoHideDuration: 2500
+                    });
+                  } else {
+                    ToastAlertComponentController.show({
+                      type: `error`,
+                      message: response.message || `Failed to refresh districts`,
+                      icon: `XCircle`,
+                      autoHideDuration: 3500
+                    });
+                  }
+                } catch (err: any) {
                   ToastAlertComponentController.show({
                     type: `error`,
-                    message: response.message || `Failed to refresh districts`,
+                    message: `Error refreshing districts: ${err.message}`,
                     icon: `XCircle`,
                     autoHideDuration: 3500
                   });
+                } finally {
+                  setFetching(false);
                 }
-              } catch (err: any) {
-                ToastAlertComponentController.show({
-                  type: `error`,
-                  message: `Error refreshing districts: ${err.message}`,
-                  icon: `XCircle`,
-                  autoHideDuration: 3500
-                });
-              } finally {
-                setFetching(false);
-              }
-            }}
-            className="btn btn-secondary flex items-center justify-center"
-          >
-            <RefreshCw size={20} />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/*Loader and datatable*/}
-      {fetching ? (
-        <Box className="flex justify-center items-center py-10">
-          <CircularProgress size={36} />
-        </Box>
-      ) : (
-        <TableContainer component={Paper}>
-          <MaterialReactTable 
-            data={tableData} 
-            columns={columns} 
-            enableColumnActions={true}
-            />
-        </TableContainer>
-      )}
-
-      {(isMobile) && 
-         (
-          <Box display="grid" gap={2}>
-            Moible
-          </Box>
-        )
-      }
-
-      {/*Modal*/}
-      <ModalComponent
-        ref={modalRef}
-        title="District details"
-        icon="MapPin"
-        size="md"
-        blur={1}
-        backdropOpacity={0.4}
-        dismissable={false}
-        showCloseButton
-        customButtons={customModalButtons}
-        onClose={handleCloseModal}
-      >
-        <div>
-          <div className="relative">
-            {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
-                {loading && <div><CircularProgress size={24} /></div>}
-
-                {/* Controlled StaticAlertComponent */}
-                {errorMessage && (
-                  <StaticAlertComponent
-                    type="error"
-                    title="Error(s)"
-                    message={errorMessage}
-                    icon="AlertTriangle"
-                    dismissable
-                    onClose={() => setErrorMessage(null)}
-                  />
-                )}
-              </Box>
-            )}
-          </div>
-
-          <DistrictAddForm
-            ref={formRef}
-            initialData={
-              editRow ? {
-                id: editRow.id ?? 0,
-                country_id: editRow.country_id ?? 0,
-                province_id: editRow.province_id ?? 0,
-                name: editRow.name ?? "",
-                code: editRow.code ?? ""
-              } : undefined
-            }
-          />
+              }}
+              className="btn btn-secondary flex items-center justify-center"
+            >
+              <RefreshCw size={20} />
+            </button>
+          </Tooltip>
         </div>
-      </ModalComponent>
 
-      <ToastAlertComponentController.render />
+        {/*Loader and datatable*/}
+        {fetching ? (
+          <Box className="flex justify-center items-center py-10">
+            <CircularProgress size={36} />
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <MaterialReactTable 
+              data={tableData} 
+              columns={columns} 
+              enableColumnActions={true}
+              />
+          </TableContainer>
+        )}
+
+        {(isMobile) && 
+          (
+            <Box display="grid" gap={2}>
+              Moible
+            </Box>
+          )
+        }
+
+        {/*Modal*/}
+        <ModalComponent
+          ref={modalRef}
+          title="District details"
+          icon="MapPin"
+          size="md"
+          blur={1}
+          backdropOpacity={0.4}
+          dismissable={false}
+          showCloseButton
+          customButtons={customModalButtons}
+          onClose={handleCloseModal}
+        >
+          <div>
+            <div className="relative">
+              {(loading || errorMessage) && (
+                <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
+                  {loading && <div><CircularProgress size={24} /></div>}
+
+                  {/* Controlled StaticAlertComponent */}
+                  {errorMessage && (
+                    <StaticAlertComponent
+                      type="error"
+                      title="Error(s)"
+                      message={errorMessage}
+                      icon="AlertTriangle"
+                      dismissable
+                      onClose={() => setErrorMessage(null)}
+                    />
+                  )}
+                </Box>
+              )}
+            </div>
+
+            <DistrictAddForm
+              ref={formRef}
+              initialData={
+                editRow ? {
+                  id: editRow.id ?? 0,
+                  country_id: editRow.country_id ?? 0,
+                  province_id: editRow.province_id ?? 0,
+                  name: editRow.name ?? "",
+                  code: editRow.code ?? ""
+                } : undefined
+              }
+            />
+          </div>
+        </ModalComponent>
+
+        <ToastAlertComponentController.render />
+      </Suspense>
     </section>
   );
 };

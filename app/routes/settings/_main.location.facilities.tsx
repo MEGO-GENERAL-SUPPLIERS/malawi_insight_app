@@ -1,4 +1,4 @@
-import React, { useMemo, useRef, useState, useEffect } from "react";
+import React, { useMemo, useRef, useState, useEffect, Suspense } from "react";
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
@@ -9,8 +9,9 @@ import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { validationUtils } from "~/utils/validationUtils";
 import { addFacility, fetchFacilities, updateFacility, deleteFacility } from "~/services/facilityService";
-import FacilityAddForm from "~/components/forms/facility.add";
 import type { IFacility } from "~/types/interfaces/IFacilityInterfaces";
+const FacilityAddForm = React.lazy(() => import("~/components/forms/facility.add"));
+const DatatablePageSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/DatatableSkeletonLoader"));
 
 const Facilities = () => {
   const modalRef = useRef<any>(null);
@@ -87,7 +88,7 @@ const Facilities = () => {
     if (!data.district_id || data.district_id === 0)
       errors.push(`District must be set/selected. (Select province first)`);
 
-    if (!data.name || !validationUtils.isAlphaNumericWithSpaces(data.name))
+    if (!data.name || !validationUtils.isValidInput(data.name))
       errors.push(`Facility name must be a valid text.`);
 
     if (!data.code || !validationUtils.isAlphaNumericWithSpaces(data.code))
@@ -126,7 +127,7 @@ const Facilities = () => {
             if (response.success && response.data) {
               ToastAlertComponentController.show({
                 type: `success`,
-                message: `Facility "<strong>${data.name}</strong>" ${editRow ? "updated" : "added"} successfully`,
+                message: `Facility "${data.name}" ${editRow ? "updated" : "added"} successfully`,
                 icon: `CheckCircle`,
                 autoHideDuration: 3500,
                 animation: `slide`,
@@ -267,133 +268,135 @@ const Facilities = () => {
     <section className="space-y-4 p-4">
       <h5 className="flex gap-2 text-lg font-semibold"><HospitalIcon /> {"Facilities"} </h5>
 
-      <div className="flex justify-between mb-2">
-        {/*Add District*/}
-        <Tooltip title="Add Facility">
-          <button
-            onClick={() => handleOpenModal()}
-            className="btn btn-success flex gap-2 items-center"
-          >
-            <PlusCircle />
-            <span>Add Facility</span>
-          </button>
-        </Tooltip>
+      <Suspense fallback={<DatatablePageSkeletonLoader />}>
+        <div className="flex justify-between mb-2">
+          {/*Add District*/}
+          <Tooltip title="Add Facility">
+            <button
+              onClick={() => handleOpenModal()}
+              className="btn btn-success flex gap-2 items-center"
+            >
+              <PlusCircle />
+              <span>Add Facility</span>
+            </button>
+          </Tooltip>
 
-        {/*Refresh button*/}
-        <Tooltip title="Refresh facilities data table">
-          <button
-            onClick={async () => {
-              setFetching(true);
-              try {
-                const response = await fetchFacilities();
-                if (response.success && Array.isArray(response.data)) {
-                  setTableData(response.data);
-                  ToastAlertComponentController.show({
-                    type: `success`,
-                    message: `Facilities refreshed successfully`,
-                    icon: `CheckCircle`,
-                    autoHideDuration: 2500
-                  });
-                } else {
+          {/*Refresh button*/}
+          <Tooltip title="Refresh facilities data table">
+            <button
+              onClick={async () => {
+                setFetching(true);
+                try {
+                  const response = await fetchFacilities();
+                  if (response.success && Array.isArray(response.data)) {
+                    setTableData(response.data);
+                    ToastAlertComponentController.show({
+                      type: `success`,
+                      message: `Facilities refreshed successfully`,
+                      icon: `CheckCircle`,
+                      autoHideDuration: 2500
+                    });
+                  } else {
+                    ToastAlertComponentController.show({
+                      type: `error`,
+                      message: response.message || `Failed to refresh facilities`,
+                      icon: `XCircle`,
+                      autoHideDuration: 3500
+                    });
+                  }
+                } catch (err: any) {
                   ToastAlertComponentController.show({
                     type: `error`,
-                    message: response.message || `Failed to refresh facilities`,
+                    message: `Error refreshing facilities: ${err.message}`,
                     icon: `XCircle`,
                     autoHideDuration: 3500
                   });
+                } finally {
+                  setFetching(false);
                 }
-              } catch (err: any) {
-                ToastAlertComponentController.show({
-                  type: `error`,
-                  message: `Error refreshing facilities: ${err.message}`,
-                  icon: `XCircle`,
-                  autoHideDuration: 3500
-                });
-              } finally {
-                setFetching(false);
-              }
-            }}
-            className="btn btn-secondary flex items-center justify-center"
-          >
-            <RefreshCw size={20} />
-          </button>
-        </Tooltip>
-      </div>
-
-      {/*Loader and datatable*/}
-      {fetching ? (
-        <Box className="flex justify-center items-center py-10">
-          <CircularProgress size={36} />
-        </Box>
-      ) : (
-        <TableContainer component={Paper}>
-          <MaterialReactTable 
-            data={tableData} 
-            columns={columns} 
-            enableColumnActions={true}
-            />
-        </TableContainer>
-      )}
-
-      {(isMobile) && 
-         (
-          <Box display="grid" gap={2}>
-            Moible
-          </Box>
-        )
-      }
-
-      {/*Modal*/}
-      <ModalComponent
-        ref={modalRef}
-        title="Facility details"
-        icon="MapPin"
-        size="md"
-        blur={1}
-        backdropOpacity={0.4}
-        dismissable={false}
-        showCloseButton
-        customButtons={customModalButtons}
-        onClose={handleCloseModal}
-      >
-        <div>
-          <div className="relative">
-            {(loading || errorMessage) && (
-              <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
-                {loading && <div><CircularProgress size={24} /></div>}
-
-                {/* Controlled StaticAlertComponent */}
-                {errorMessage && (
-                  <StaticAlertComponent
-                    type="error"
-                    title="Error(s)"
-                    message={errorMessage}
-                    icon="AlertTriangle"
-                    dismissable
-                    onClose={() => setErrorMessage(null)}
-                  />
-                )}
-              </Box>
-            )}
-          </div>
-
-          <FacilityAddForm
-            ref={formRef}
-            initialData={
-              editRow ? {
-                id: editRow.id ?? 0,
-                country_id: editRow.country_id ?? 0,
-                province_id: editRow.province_id ?? 0,
-                district_id: editRow.district_id ?? 0,
-                name: editRow.name ?? "",
-                code: editRow.code ?? ""
-              } : undefined
-            }
-          />
+              }}
+              className="btn btn-secondary flex items-center justify-center"
+            >
+              <RefreshCw size={20} />
+            </button>
+          </Tooltip>
         </div>
-      </ModalComponent>
 
-      <ToastAlertComponentController.render />
+        {/*Loader and datatable*/}
+        {fetching ? (
+          <Box className="flex justify-center items-center py-10">
+            <CircularProgress size={36} />
+          </Box>
+        ) : (
+          <TableContainer component={Paper}>
+            <MaterialReactTable 
+              data={tableData} 
+              columns={columns} 
+              enableColumnActions={true}
+              />
+          </TableContainer>
+        )}
+
+        {(isMobile) && 
+          (
+            <Box display="grid" gap={2}>
+              Moible
+            </Box>
+          )
+        }
+
+        {/*Modal*/}
+        <ModalComponent
+          ref={modalRef}
+          title="Facility details"
+          icon="MapPin"
+          size="md"
+          blur={1}
+          backdropOpacity={0.4}
+          dismissable={false}
+          showCloseButton
+          customButtons={customModalButtons}
+          onClose={handleCloseModal}
+        >
+          <div>
+            <div className="relative">
+              {(loading || errorMessage) && (
+                <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
+                  {loading && <div><CircularProgress size={24} /></div>}
+
+                  {/* Controlled StaticAlertComponent */}
+                  {errorMessage && (
+                    <StaticAlertComponent
+                      type="error"
+                      title="Error(s)"
+                      message={errorMessage}
+                      icon="AlertTriangle"
+                      dismissable
+                      onClose={() => setErrorMessage(null)}
+                    />
+                  )}
+                </Box>
+              )}
+            </div>
+
+            <FacilityAddForm
+              ref={formRef}
+              initialData={
+                editRow ? {
+                  id: editRow.id ?? 0,
+                  country_id: editRow.country_id ?? 0,
+                  province_id: editRow.province_id ?? 0,
+                  district_id: editRow.district_id ?? 0,
+                  name: editRow.name ?? "",
+                  code: editRow.code ?? ""
+                } : undefined
+              }
+            />
+          </div>
+        </ModalComponent>
+
+        <ToastAlertComponentController.render />
+      </Suspense>
     </section>
   );
 };
