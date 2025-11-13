@@ -105,8 +105,9 @@ const Auth = () => {
 
     if (result.success) {
       ToastAlertComponentController.show({
-        type: "info",
+        type: "success",
         message: "Super User created successfully",
+        autoHideDuration: 3500
       });
       setShowSuperModal(false);
     } else {
