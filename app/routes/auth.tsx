@@ -11,6 +11,7 @@ import { type IAuthResponse } from "~/types/interfaces/IAuthResponse";
 import { useAuth } from "~/hooks/useAuth";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 import ServerNetworkIndicator from "~/components/system/ServerNetworkIndicator";
+import { validationUtils } from "~/utils/validationUtils";
 
 const Auth = () => {
   const [showPassword, setShowPassword] = useState(false);
@@ -18,6 +19,7 @@ const Auth = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [errorMessages, setErrorMessages] = useState<string[]>([]);
   const [showSuperModal, setShowSuperModal] = useState(false);
   const [showConfigModal, setShowConfigModal] = useState(false);
 
@@ -122,7 +124,19 @@ const Auth = () => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
+    setErrorMessages([]);
+
     try {
+      var errors: string[] = [];
+
+      if(!validationUtils.isStringWithoutSpaces(email)) errors.push("Username/Email is required.");
+      if(!validationUtils.isValidInput(password)) errors.push("Password is required.");
+
+      if(errors.length > 0){
+        setErrorMessages(errors);
+        return;
+      }
+
       const response: IApiResponse<IAuthResponse> = await authenticateUser(email, password);
 
       if (!response.success || !response.data) {
@@ -208,18 +222,26 @@ const Auth = () => {
             <p className="text-gray-600 dark:text-gray-300 text-sm">Welcome! Please sign in to continue</p>
           </div>
 
+          {errorMessages.length > 0 && (
+            <div className="pb-4 px-1 text-red-600">
+              {errorMessages.map((error, index) => (
+                <div key={index}>{error}</div>
+              ))}
+            </div>
+          )}
+
           {/* Login Form */}
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* Email */}
+            {/* Email / username */}
             <div className="relative group">
               <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
                 <Mail className="h-5 w-5 text-gray-400 group-focus-within:text-green-600 transition-colors" />
               </div>
               <input
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                placeholder="Email address"
+                placeholder="Username / Email address"
                 className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
                 required
               />

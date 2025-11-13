@@ -47,14 +47,14 @@ export const updateUser = async (params: Record<string, any> = {}): Promise<IApi
 };
 
 
-export const deleteRole = async (params: Record<string, any> = {}): Promise<IApiResponse<IUser>> => {
+export const deleteUser = async (params: Record<string, any> = {}): Promise<IApiResponse<IUser>> => {
   try{
     const response = await apiClient.post<IUser>("/users/delete", params);
     return reformatResponse(response);
   }catch(e: any){
     return{
       success: false,
-      message: `Failed to delete user: ${e.message}`,
+      message: `Failed to delete/void user: ${e.message}`,
       data: null
     };
   }

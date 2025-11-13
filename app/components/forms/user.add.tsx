@@ -109,7 +109,7 @@ const UserAddForm = forwardRef<UserAddFormHandle, UserAddFormProps>(({ user }, r
   // Determine which fields are visible
   const visibleFields = useMemo(() => {
     const rl = roleLevelName;
-    if (rl === "global") return { roles: false, province: false, district: false, facility: false };
+    if (rl === "global") return { roles: true, province: false, district: false, facility: false };
     if (rl === "hq" || rl === "province") return { roles: true, province: true, district: false, facility: false };
     if (rl === "district") return { roles: true, province: true, district: !!locations.provinces.length, facility: false };
     if (rl === "facility") return { roles: true, province: true, district: !!locations.provinces.length, facility: !!locations.districts.length };

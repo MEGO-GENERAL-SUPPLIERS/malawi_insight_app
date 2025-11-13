@@ -10,8 +10,8 @@ import {
 } from "material-react-table";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 import { CircularProgress, Box, Tooltip, IconButton } from "@mui/material";
-import { PlusCircle, RefreshCw, Pencil } from "lucide-react";
-import { fetchUsers, addUser, updateUser } from "~/services/userService";
+import { PlusCircle, RefreshCw, Pencil, Trash2Icon } from "lucide-react";
+import { fetchUsers, addUser, updateUser, deleteUser } from "~/services/userService";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { validationUtils } from "~/utils/validationUtils";
@@ -82,20 +82,67 @@ const Users: React.FC = () => {
 
   const openEditModal = (row: IUser) => {
     setEditRow(row);
-    modalRef.current?.open();
+    modalRef.current?.openModal();
   };
 
+  const handleDelete = (row: IUser) => {
+    const localStg = localStorageUtils.ensureLocalAppStructure();
+    const localUser = localStg?.user; 
+
+    AlertComponentController.dismiss();
+    AlertComponentController.show({
+      type: `confirm`,
+      title: `Confirm Delete`,
+      message: `Are you sure you want to delete/void ${row.first_name} ${row.other_names || ""} ${row.last_name} account? <br /><span className="text-red-500">(This action is irrevocable)!</span>`,
+      buttons: [
+        {
+          label: `Proceed`,
+          className: `btn btn-success`,
+          onClick: async () => {
+            const response = await deleteUser({...row, void_by: localUser?.id, void_reason: "system administration"});
+
+            if(response.success){
+              ToastAlertComponentController.show({
+                type: `success`,
+                message: `${row.first_name} ${row.other_names || ""} ${row.last_name}'s account deleted successfully`,
+                icon: `CheckCircle`,
+                animation: `slide`,
+                slideDirection: `down`
+              });
+              
+              setTableData((prev) => prev.filter((r) => r.id !== row.id ));
+            } else {
+              ToastAlertComponentController.show({
+                type: `error`,
+                message:  `Failed to delete ${row.first_name} ${row.other_names || ""} ${row.last_name}'s`,
+                icon: `XCircle`
+              });
+            }
+          }  
+        },
+        {
+          label: `Cancel`,
+          className: `btn btn-danger`,
+          autoClose: true,
+          onClick: ()=> {}
+        }
+      ]
+    });
+  }
+
   const handleCloseModal = () => {
-    modalRef.current?.close();
+    modalRef.current?.closeModal();
   };
 
   /* Table Columns*/
   const columns = React.useMemo<MRT_ColumnDef<IUser>[]>(
     () => [
       {
-        accessorKey: "id",
+        accessorKey: "index",
         header: "#",
-        size: 50,
+        Cell: ({ row }) => row.index + 1,
+        enableSorting: false,
+        size: 70
       },
       {
         accessorFn: (row) =>
@@ -117,16 +164,28 @@ const Users: React.FC = () => {
       {
         id: "actions",
         header: "Actions",
-        Cell: ({ row }) => (
-          <Tooltip title="Edit">
-            <IconButton
-              onClick={() => openEditModal(row.original)}
-              size="small"
-            >
-              <Pencil size={16} />
-            </IconButton>
-          </Tooltip>
-        ),
+        Cell: ({ row }) => {
+
+          return (<div className="flex gap-2">
+            <Tooltip title="Edit User">
+              <button
+                onClick={() => openEditModal(row.original)}
+                className="btn btn-sm btn-default"
+              >
+                <Pencil size={16} />
+              </button>
+            </Tooltip>
+
+            <Tooltip title="Delete/Void User">
+              <button
+                onClick={() => handleDelete(row.original)}
+                className="text-red-500 btn btn-sm btn-danger"
+              >
+                <Trash2Icon size={16} />
+              </button>
+            </Tooltip>
+          </div>);
+        },
       },
     ],
     []
@@ -222,9 +281,10 @@ const Users: React.FC = () => {
             setLoading(false);
 
             if(response.success && response.data){
+              const fullname = `${data.first_name} ${data.other_names} ${data.last_name}`;
               ToastAlertComponentController.show({
                 type: `success`,
-                message: `User "${data.name}" ${editRow ? "updated" : "added" } successfully.`,
+                message: `User "${fullname}" ${editRow ? "updated" : "added" } successfully.`,
                 icon: `CheckCircle`,
                 animation: `slide`,
                 slideDirection: `down`

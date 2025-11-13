@@ -18,7 +18,8 @@ export interface IUser{
   password?: string;
   status?: string;
   gender?: IGender | null;
-  gender_string?: string;
+  gender_id?: number;
+  gender_name?: string;
   national_id?: string;
   contacts?:  IContact[] | [];
   role_level: IRoleLevel;
