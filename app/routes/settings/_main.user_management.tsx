@@ -9,7 +9,7 @@ import {
   type MRT_ColumnDef,
 } from "material-react-table";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
-import { CircularProgress, Box, Tooltip, IconButton } from "@mui/material";
+import { CircularProgress, Box, Tooltip } from "@mui/material";
 import { PlusCircle, RefreshCw, Pencil, Trash2Icon } from "lucide-react";
 import { fetchUsers, addUser, updateUser, deleteUser } from "~/services/userService";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -18,11 +18,10 @@ import { validationUtils } from "~/utils/validationUtils";
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import type { IUser } from "~/types/interfaces/IUserInterfaces";
 
-// Lazy loaders
 const DatatableSkeletonLoader = React.lazy(
   () => import("~/components/system/skeletons/DatatableSkeletonLoader")
 );
-const UserAdd = React.lazy(() => import("~/components/forms/user.add")); // 👈 Your Add/Edit Form Component
+const UserAdd = React.lazy(() => import("~/components/forms/user.add"));
 
 const Users: React.FC = () => {
   const modalRef = useRef<any>(null);

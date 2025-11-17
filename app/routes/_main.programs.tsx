@@ -40,7 +40,7 @@ const Templates: React.FC = () => {
       icon: 'Hand',
       name: 'Prevention',
       description: 'Prevention Program',
-      route: 'programs_prevention',
+      route: 'programs_prevention_dashboard',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
       privileges: []
     },

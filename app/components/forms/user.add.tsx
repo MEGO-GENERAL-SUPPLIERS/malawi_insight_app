@@ -145,12 +145,12 @@ const UserAddForm = forwardRef<UserAddFormHandle, UserAddFormProps>(({ user }, r
   const handleGenderChange = useCallback(
     (payload: { value: { id: number; name: string } | null; valid: boolean }) => {
       setPersonal(prev => ({ ...prev, gender: payload.value ?? DEFAULT_PERSONAL.gender, isValidGender: payload.valid }));
-    },
-    []
-  );
+    }, 
+  []);
 
   const handleContactsChange = useCallback(({ data, valid }: { data: any[]; valid: boolean }) => 
-    setPersonal(prev => ({ ...prev, contacts: data, isValidContact: valid })), []);
+    setPersonal(prev => ({ ...prev, contacts: data, isValidContact: valid })), 
+  []);
 
   const handleUsernameChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => 
     setPersonal(prev => ({ ...prev, username: e.target.value })), []);

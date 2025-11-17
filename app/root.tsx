@@ -7,8 +7,11 @@ import {
   ScrollRestoration,
 } from "react-router";
 import React from "react";
+import { LocalizationProvider } from "@mui/x-date-pickers";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 
 import { useHealthCheckWorker } from "./hooks/useHealthCheckWorker";
+import '@silevis/reactgrid/styles.css';
 
 // Custom theme
 import { lightTheme, darkTheme } from "~/theme";
@@ -61,7 +64,9 @@ export function Layout({ children }: { children: React.ReactNode }) {
 
           {typeof window !== "undefined" && (
             <AuthProvider>
-              <Outlet />
+              <LocalizationProvider dateAdapter={AdapterDayjs}>
+                <Outlet />
+              </LocalizationProvider>
             </AuthProvider>
           )}
 

@@ -24,6 +24,11 @@ export const routeDefinitions = {
     strategic_info: { path: "/app/strategic_info", file: "routes/_main.strategic_info.tsx" },
     strategic_info_templates: { path: "/app/strategic_info/templates", file: "routes/strategic_info/_main.templates.tsx" },
     strategic_info_reports: { path: "/app/strategic_info/reports", file: "routes/strategic_info/_main.reports.tsx" },
+
+    /*Prevention*/
+    programs_prevention_dashboard: { path: "/app/programs/prevention", file: "routes/programs/prevention/_main.prevention_dashboard.tsx" },
+    programs_prevention_tb_screening: { path: "/app/programs/prevention/tb_screening", file: "routes/programs/prevention/_main.prevention_tb_screening.tsx" },
+    programs_prevention_tpt_report_form: { path: "/app/programs/prevention/tpt_report_form", file: "routes/programs/prevention/_main.prevention_tpt_report_form.tsx" },
   },
 } as const;
 

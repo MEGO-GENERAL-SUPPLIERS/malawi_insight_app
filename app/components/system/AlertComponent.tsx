@@ -61,7 +61,7 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
   > = {
     info: { gradient: "bg-gradient-to-r from-cyan-500 to-cyan-400", text: "text-white", defaultIcon: "Info" },
     success: { gradient: "bg-gradient-to-r from-green-400 to-green-600", text: "text-white", defaultIcon: "CheckCircle2" },
-    warning: { gradient: "bg-gradient-to-r from-yellow-400 to-yellow-600", text: "text-white", defaultIcon: "AlertTriangle" },
+    warning: { gradient: "bg-gradient-to-r from-yellow-600 to-yellow-400", text: "text-white", defaultIcon: "AlertTriangle" },
     error: { gradient: "bg-gradient-to-r from-red-400 to-red-600", text: "text-white", defaultIcon: "AlertOctagon" },
     confirm: { gradient: "bg-gradient-to-r from-emerald-600 to-emerald-500", text: "text-white", defaultIcon: "HelpCircle" },
   };

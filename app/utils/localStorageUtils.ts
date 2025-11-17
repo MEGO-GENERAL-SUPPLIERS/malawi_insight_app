@@ -1,5 +1,6 @@
 // localStorageUtils.ts
 import { type IAppStorage } from "~/types/interfaces/ILocalStorageInterfaces";
+import { type IUser } from "~/types/interfaces/ILocalStorageInterfaces";
 
 // Application main name
 export const APP_NAME = "malawi_insight";
@@ -153,5 +154,127 @@ export const localStorageUtils = {
     localStorage.setItem(APP_NAME, JSON.stringify(mergedData));
 
     return mergedData;
+  },
+
+
+  /**
+   * Get the stored user from localStorage with proper typing
+   * Returns IUser | null if user doesn't exist or is invalid
+   */
+  getStoredUser(): IUser | null {
+  
+    if (typeof window === "undefined") {
+      return null;
+    }
+
+    try {
+      const appData = localStorageUtils.getLocalStorageItem(APP_NAME);
+      const userData = appData?.user;
+
+      // Check if we have a valid user object with required IUser fields
+      if (userData && 
+          userData.id !== undefined && 
+          userData.id !== null && 
+          userData.first_name && 
+          userData.last_name && 
+          userData.username) {
+        
+        // Convert id to number if it's stored as string in localStorage
+        const user: IUser = {
+          ...userData,
+          id: typeof userData.id === 'string' ? parseInt(userData.id, 10) : userData.id,
+          // Ensure arrays are properly initialized
+          roles: userData.roles || [],
+          locations: userData.locations || {
+            countries: [],
+            provinces: [],
+            districts: [],
+            facilities: []
+          },
+          custom_user_privileges: userData.custom_user_privileges || [],
+          contacts: userData.contacts || []
+        };
+
+        return user;
+      }
+
+      console.warn('Invalid or incomplete user data in localStorage');
+      return null;
+    } catch (error) {
+      console.error('Error reading user from localStorage:', error);
+      return null;
+    }
+  },
+
+
+  /**
+   * Type guard to check if an object is a valid IUser
+   */
+  isValidUser(user: any): user is IUser {
+    return user && 
+          typeof user.id === 'number' && 
+          typeof user.first_name === 'string' && 
+          typeof user.last_name === 'string' && 
+          typeof user.username === 'string' &&
+          Array.isArray(user.roles);
+  },
+
+
+  /**
+   * Get user facilities from localStorage
+   * Returns array of facilities or empty array if none found
+   */
+  getUserFacilities(): Array<{ id: number; name: string; code?: string }>{
+    const user = this.getStoredUser();
+    return user?.locations?.facilities || [];
+  },
+
+
+  /**
+   * Check if user is logged in and has valid session
+  */
+  isUserLoggedIn(): boolean {
+    const user = this.getStoredUser();
+    return !!(user && user.id && user.status !== 'inactive');
+  },
+
+
+  /**
+   * Update user data in localStorage
+   */
+  updateStoredUser(userUpdates: Partial<IUser>): IUser | null{
+    try {
+      const currentUser = this.getStoredUser();
+      if (!currentUser) {
+        console.warn('No user found to update');
+        return null;
+      }
+
+      const updatedUser = { ...currentUser, ...userUpdates };
+      localStorageUtils.addOrUpdateLocalStorageObject({ user: updatedUser });
+      
+      return updatedUser;
+    } catch (error) {
+      console.error('Error updating user in localStorage:', error);
+      return null;
+    }
+  },
+
+
+  /**
+   * Clear user data from localStorage (logout)
+   */
+  clearStoredUser(): void {
+    try {
+      localStorageUtils.addOrUpdateLocalStorageObject({
+        user: {
+          ...DEFAULT_APP_STRUCTURE.user,
+          logged_in: false
+        }
+      });
+    } catch (error) {
+      console.error('Error clearing user from localStorage:', error);
+    }
   }
+
 };

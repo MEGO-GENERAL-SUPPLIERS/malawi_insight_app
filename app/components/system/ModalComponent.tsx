@@ -16,6 +16,7 @@ type ModalSize = "xs" | "sm" | "md" | "lg" | "xl" | "full";
 
 export interface ModalButton {
   label: string;
+  icon?: string;
   className?: string;
   onClick?: (data?: any) => void;
 }
@@ -184,15 +185,20 @@ export const ModalComponent = forwardRef(
               flexShrink: 0,
             }}
           >
-            {customButtons.map((btn, idx) => (
-              <button
-                key={idx}
-                className={clsx("px-4 py-2 rounded", btn.className)}
-                onClick={() => handleButtonClick(btn)}
-              >
-                {btn.label}
-              </button>
-            ))}
+            {customButtons.map((btn, idx) => {
+              const ButtonIcon = btn.icon ? resolveIcon(btn.icon) : null;
+
+              return (
+                <button
+                  key={idx}
+                  className={clsx("px-4 py-2 rounded flex items-center gap-1", btn.className)}
+                  onClick={() => handleButtonClick(btn)}
+                >
+                  {ButtonIcon && <ButtonIcon className="w-4 h-4" />}
+                  {btn.label}
+                </button>
+              )}
+            )}
 
             {showCloseButton && (
               <button
