@@ -14,6 +14,9 @@ import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import TPTReportGridForm from "~/components/forms/tb.tpt_report_grid_form"; 
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import type { TPTReportGridRef, ITPTReportData, ITPTGridRow } from "~/types/interfaces/ITPTReportInterfaces";
+import { localStorageUtils } from "~/utils/localStorageUtils";
+import { addTPTReportData } from "~/services/preventionService";
+import { ConstructionOutlined } from "@mui/icons-material";
 
 const PreventionTptReport: React.FC = () => {
   const modalRef = useRef<any>(null);
@@ -26,6 +29,7 @@ const PreventionTptReport: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
   const [formSlotData, setFormSlotData] = useState<ITPTGridRow[] | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [localUser, _setLocalUser] = useState(localStorageUtils.getStoredUser());
 
   // Fetch TPT Report Data (placeholder using TB fetch)
   const handleFetchTptReportData = async () => {
@@ -75,13 +79,13 @@ const PreventionTptReport: React.FC = () => {
   const handleModalFormClose = () => {
     AlertComponentController.show({
       title: `Confirm Close`,
-      message: `Are you sure you want to close the TPT Report Form? <p className="text-red-500">All captured/unsaved information will be lost</p>`,
+      message: `Are you sure you want to close the TPT Report Form? <p className="text-red-500 mt-6">All captured/unsaved/unsubmitted data will be lost</p>`,
       icon: "HelpCircle",
       type: "warning",
       buttons: [
         {
           label: `Close Form`,
-          className: `btn btn-success`,
+          className: `btn btn-warning`,
           onClick: () => {
             setCurrentStep(0);
             modalRef?.current.closeModal();
@@ -89,7 +93,7 @@ const PreventionTptReport: React.FC = () => {
         },
         {
           label: `Cancel`,
-          className: `btn btn-danger`,
+          className: `btn btn-default`,
           autoClose: true,
           onClick: () => {}
         },
@@ -113,6 +117,8 @@ const PreventionTptReport: React.FC = () => {
 
   // Submit
   const handleSubmit = () => {
+    console.log("Form submit");
+
     if (!formRef.current) return;
 
     if (currentStep < 3) {
@@ -129,24 +135,42 @@ const PreventionTptReport: React.FC = () => {
       title: "Confirm Submission",
       message: "Are you sure you want to submit the TPT Monthly Report?",
       icon: "HelpCircle",
-      type: "warning",
+      type: "success",
       buttons: [
         {
           label: `Submit`,
           className: `btn btn-success`,
           onClick: async () => {
             setLoading(true);
-            await new Promise((res) => setTimeout(res, 3000));
 
-            const payload = formRef.current!.getRows();
-            console.log("TPT Monthly Report Submitted:", payload);
+            const formData = formRef.current!.getRows();
+            const allData = { 
+              ...formData,
+              meta: {
+                ...formData?.meta,
+                user_id: localUser?.id
+              }
+            };
 
-            ToastAlertComponentController.show({
-              type: "info",
-              message: "TPT Monthly Report to be summitted!",
-              icon: "CheckCircle",
-              autoHideDuration: 2500,
-            });
+            console.log("TPT Report Data", allData);
+
+            const response = await addTPTReportData(allData);
+
+            if(response.success){
+              ToastAlertComponentController.show({
+                type: "success",
+                message: `${ response.message || "TPT Monthly Report Data summitted successfully!"}`,
+                icon: "CheckCircle",
+                autoHideDuration: 3000,
+              });
+            } else {
+              ToastAlertComponentController.show({
+                type: "error",
+                message: `${ response.message || "Failed to submit TPT Report Data"}`,
+                icon: "TriangleAlert",
+                autoHideDuration: 3000,
+              });
+            }
 
             setLoading(false);
             modalRef?.current?.closeModal();

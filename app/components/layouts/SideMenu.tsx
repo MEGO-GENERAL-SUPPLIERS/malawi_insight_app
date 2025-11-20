@@ -9,9 +9,6 @@ import {
   IconButton,
   Box,
   Tooltip,
-  Popper,
-  Paper,
-  ClickAwayListener,
   Typography,
 } from "@mui/material";
 import {
@@ -23,8 +20,8 @@ import {
   Boxes,
   SquareLibrary,
   Menu,
-  Maximize2Icon,
   Minimize2Icon,
+  Globe
 } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -52,6 +49,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
     { label: "Dashboard", icon: LayoutDashboard, link: "/app/dashboard" },
     { label: "Programs", icon: Boxes, link: "/app/programs" },
     { label: "SI Unit", icon: SquareLibrary, link: "/app/strategic_info" },
+    { label: "General Modules", icon: Globe, link: "/app/generic" },
     { label: "Settings", icon: SettingsIcon, link: "/app/settings" },
     { label: "My Profile", icon: UserCircle2Icon, link: "/app/profile" },
   ];
@@ -125,7 +123,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
         <div className="border p-3 rounded-5 bg-white/50 dark:bg-white/90 mr-2">
           <img src="/public/img/rtc-logo.png" className="w-12" />
         </div>
-        {!effectiveMinimised && <Box className="font-bold text-lg ml-2">Malawi Insight</Box>}
+        {!effectiveMinimised && <Box className="font-bold text-lg ml-2">MIDS</Box>}
       </Box>
 
       {/* User Info */}

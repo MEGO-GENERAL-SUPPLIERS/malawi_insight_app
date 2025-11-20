@@ -11,6 +11,8 @@ import { ModalComponent, type ModalButton } from "~/components/system/ModalCompo
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import TbScreeningGridForm from "~/components/forms/tb.screening.add";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
+import { addTbScreeningData } from "~/services/preventionService";
+import { localStorageUtils } from "~/utils/localStorageUtils";
 
 
 const PreventionTbScreening: React.FC = () => {
@@ -23,7 +25,9 @@ const PreventionTbScreening: React.FC = () => {
   const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
   const [formSlotData, setFormSlotData] = useState<ITbScreenRow[] | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
+  const [localUser, _setLocalUser] = useState(localStorageUtils.getStoredUser());
 
+  
   // Handle Fetch TB Screening Data
   const handleFetchTbScreenData = async () => {
     setFetching(true);
@@ -57,17 +61,20 @@ const PreventionTbScreening: React.FC = () => {
     }
   }
 
+
   // handleModalOpen
   const handleModalOpen = () => {
     setCurrentStep(0); // Reset to first step when modal opens
     modalRef?.current.openModal();
   };
 
+
   // handleModalClose
   const handleModalClose = () => {
     setCurrentStep(0);
     return true;
   };
+
 
   // handleModalFormClose
   const handleModalFormClose = () => {
@@ -79,7 +86,7 @@ const PreventionTbScreening: React.FC = () => {
         buttons: [
           { 
             label: `Close Form`,
-            className: `btn btn-success`,
+            className: `btn btn-warning`,
             onClick: async () => {
               setCurrentStep(0);
               modalRef?.current.closeModal();
@@ -87,7 +94,7 @@ const PreventionTbScreening: React.FC = () => {
           }, 
           {
             label: `Cancel`,
-            className: `btn btn-danger`,
+            className: `btn btn-default`,
             autoClose: true,
             onClick: () => { }
           }
@@ -113,6 +120,7 @@ const PreventionTbScreening: React.FC = () => {
   const handleSubmit = () => {
     if (!formRef.current) return;
 
+
     if (currentStep < 1) {
       ToastAlertComponentController.show({
         type: "warning",
@@ -128,7 +136,7 @@ const PreventionTbScreening: React.FC = () => {
       title: "Confirm Submission",
       message: "Are you sure you want to submit the TB Screening data?",
       icon: "HelpCircle",
-      type: "warning",
+      type: "success",
       buttons: [
         { 
           label: `Proceed`,
@@ -136,18 +144,35 @@ const PreventionTbScreening: React.FC = () => {
           onClick: async () => {
             setLoading(true);
 
-            // Simulate API call for 3 seconds
-            await new Promise(res => setTimeout(res, 3000));
+            const formData = formRef.current!.getRows();
+            const allData = { 
+              ...formData,
+              meta: {
+                ...formData?.meta,
+                user_id: localUser?.id
+              }
+            };
 
-            const allData = formRef.current!.getRows();
-            console.log("TB Screening Data Submit:", allData);
+            console.log("TB Screening Data", allData);
 
-            ToastAlertComponentController.show({
-              type: "success",
-              message: "TB Screening Data successfully submitted!",
-              icon: "CheckCircle",
-              autoHideDuration: 2500,
-            });
+
+            const response = await addTbScreeningData(allData);
+
+            if(response?.success){
+              ToastAlertComponentController.show({
+                type: "success",
+                message: `${ response.message || "TB Screening Data submitted successfully!"}`,
+                icon: "CheckCircle",
+                autoHideDuration: 3000,
+              });
+            } else {
+              ToastAlertComponentController.show({
+                type: "error",
+                message: `${response.message || "Failed to submit TB Screening Data."}`,
+                icon: "TriangleAlert",
+                autoHideDuration: 2500,
+              });
+            }
 
             setLoading(false);
             modalRef?.current?.closeModal();
@@ -198,7 +223,7 @@ const PreventionTbScreening: React.FC = () => {
         label: editRow ? "Update" : "Submit", 
         icon: "Save",
         className: "btn btn-success", 
-        onClick: editRow ? handleSubmit : () => {}
+        onClick: handleSubmit
       });
     }
 
@@ -249,6 +274,7 @@ const PreventionTbScreening: React.FC = () => {
           </div>
 
           { /*Datatable*/ }
+
         </Suspense>
       </div>
 

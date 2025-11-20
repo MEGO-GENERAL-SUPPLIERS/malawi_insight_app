@@ -12,6 +12,7 @@ import type { IconType } from "react-icons";
 
 export interface CustomInputProps {
   value?: string;
+  defaultValue?: string; // 👈 new optional prop
   label?: string;
   disabled?: boolean;
   iconName?: string;
@@ -23,11 +24,18 @@ export interface CustomInputProps {
   validationMessage?: string;
   validationMethod?: (value: string) => boolean;
   liveValidation?: boolean;
-  showErrorIcon?: boolean; // 👈 new prop
+  showErrorIcon?: boolean;
+
+  multiline?: boolean;
+  expandable?: boolean;
+  minRows?: number;
+  maxRows?: number;
+  placeholderText?: string;
 }
 
 export const CustomInput: React.FC<CustomInputProps> = ({
-  value = "",
+  value, 
+  defaultValue,
   label = "Input",
   disabled = false,
   iconName,
@@ -39,16 +47,25 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   validationMessage = "Invalid input",
   validationMethod,
   liveValidation = true,
-  showErrorIcon = true, // default true
+  showErrorIcon = true,
+  multiline = false,
+  expandable = multiline,
+  minRows = 2,
+  maxRows = 6,
+  placeholderText = "",
 }) => {
-  const [inputValue, setInputValue] = useState<string>(value);
+  const initialValue = value !== undefined ? value : defaultValue ?? "";
+  const [inputValue, setInputValue] = useState<string>(initialValue);
+
   const [touched, setTouched] = useState(false);
   const [valid, setValid] = useState<boolean>(!validate);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    setInputValue(value);
+    if(value !== undefined) {
+      setInputValue(value);
+    }
   }, [value]);
 
   const handleValidation = (val: string): boolean => {
@@ -64,7 +81,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
     onChange({ value: val, valid: isValid });
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const val = e.target.value;
     setInputValue(val);
 
@@ -84,6 +101,8 @@ export const CustomInput: React.FC<CustomInputProps> = ({
     setTouched(true);
     if (!liveValidation) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
+      updateValidationState(inputValue);
+    } else {
       updateValidationState(inputValue);
     }
   };
@@ -136,11 +155,16 @@ export const CustomInput: React.FC<CustomInputProps> = ({
         fullWidth
         size="small"
         label={label}
+        placeholder={placeholderText}
         disabled={disabled}
         value={inputValue}
         onChange={handleChange}
         onBlur={handleBlur}
         error={touched && validate && !valid}
+        multiline={multiline}
+        rows={multiline && !expandable ? minRows : undefined}
+        maxRows={multiline && expandable ? maxRows : undefined}
+        minRows={multiline && expandable ? minRows : undefined}
         slotProps={{
           input: {
             startAdornment: iconPosition === "left" ? renderIcon() : undefined,

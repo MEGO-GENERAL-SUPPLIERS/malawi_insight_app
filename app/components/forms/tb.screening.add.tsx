@@ -1,12 +1,13 @@
 import React, { useState, useEffect, useImperativeHandle, forwardRef, useCallback } from 'react';
 import type { TbScreeningGridRef, ITbScreenRow, IContactTracingRow } from '~/types/interfaces/ITbScreeningDataInterfaces';
 import type { IFacility } from '~/types/interfaces/IFacilityInterfaces';
-import { IconButton, Tooltip, Stepper, Step, StepLabel, Box } from '@mui/material';
+import { IconButton, Tooltip, Stepper, Step, StepLabel, Box, TextField, FormControl } from '@mui/material';
 import { DatePicker } from "@mui/x-date-pickers";
 import DeleteOutline from '@mui/icons-material/DeleteOutline';
-import dayjs from 'dayjs';
-import { HighlightOffOutlined } from '@mui/icons-material';
+import dayjs, { type Dayjs } from 'dayjs';
 import { CircleAlert } from 'lucide-react';
+
+const FacilitySelect = React.lazy(() => import("~/components/forms/elements/FacilitySelect"));
 
 interface TbScreeningGridProps {
   data?: ITbScreenRow[];
@@ -25,9 +26,12 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
   const [sectionARows, setSectionARows] = useState<ITbScreenRow[]>([]);
   const [sectionBRows, setSectionBRows] = useState<IContactTracingRow[]>([]);
   const [facilities, setFacilities] = useState<IFacility[]>([]);
-  const [selectedFacility, setSelectedFacility] = useState<number | ''>('');
-  const [reportPeriod, setReportPeriod] = useState<string>(dayjs().format('MMM-YY'));
+  const [selectedFacility, setSelectedFacility] = useState<IFacility[] | []>([]);
+  const [reportPeriod, setReportPeriod] = useState<Dayjs | null>(null);
   const [comment, setComment] = useState<string>('');
+  const [openReportPeriod, setOpenReportPeriod] = useState(false);
+  const [currentReportPeriodView, setCurrentReportPeriodView] = useState("year");
+  const [otherDataCollectors, setOtherDataCollectors] = useState("");
 
   // Steps for the stepper - step indices:
   // 0 => Meta, 1 => Section A, 2 => Section B, 3 => Comments
@@ -35,21 +39,21 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
 
   // Default rows data for Section A (kept exactly as in your original)
   const defaultSectionARows: ITbScreenRow[] = [
-    { ageGroup: '0-14 years', indicator: 'Total Screened', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '0-14 years', indicator: 'Total Presumptives', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '0-14 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '0-14 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
     { ageGroup: '0-14 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '0-14 years', indicator: 'Total Initiated on Treatment', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '0-14 years', indicator: 'Total Clinic Attendees', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '15-19 years', indicator: 'Total Screened', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '15-19 years', indicator: 'Total Presumptives', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '0-14 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '0-14 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '15-19 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '15-19 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
     { ageGroup: '15-19 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '15-19 years', indicator: 'Total Initiated on Treatment', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '15-19 years', indicator: 'Total Clinic Attendees', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '20> years', indicator: 'Total Screened', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '20> years', indicator: 'TB Presumptives', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '15-19 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '15-19 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '20> years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '20> years', indicator: 'TB Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
     { ageGroup: '20> years', indicator: 'TB Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '20> years', indicator: 'TB Initiated on Treatment', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { ageGroup: '20> years', indicator: 'Total Clinic Attendees', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '20> years', indicator: 'TB Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { ageGroup: '20> years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
   ];
 
   // Default rows data for Section B (kept same)
@@ -85,10 +89,12 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
     }
   }, []); // run once on mount
 
+  
   // Update active step when currentStep prop changes
   useEffect(() => {
     setActiveStep(currentStep);
   }, [currentStep]);
+
 
   // Expose methods to parent via ref
   useImperativeHandle(ref, () => ({
@@ -96,8 +102,9 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
       sectionA: sectionARows,
       sectionB: sectionBRows,
       meta: {
-        facilityId: selectedFacility || undefined,
-        reportPeriod,
+        facility: selectedFacility || null,
+        reportPeriod: reportPeriod ? reportPeriod.toString() : reportPeriod,
+        otherDataCollectors,
         comment
       }
     }),
@@ -189,8 +196,9 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
     setSectionARows(defaultSectionARows);
     setSectionBRows(defaultSectionBRows);
     setSlotData(defaultSectionARows);
-    setSelectedFacility('');
-    setReportPeriod(dayjs().format('MMM-YY'));
+    setSelectedFacility([]);
+    setOtherDataCollectors("");
+    setReportPeriod(dayjs());
     setComment('');
   }, [setSlotData]);
 
@@ -246,6 +254,27 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
     });
 
     return totals;
+  };
+
+  // handleFacilitiesChange 
+  const handleFacilitiesChange = useCallback(({ data }: { data: any[] }) => {
+        if(Array.isArray(data)) {
+          setSelectedFacility(data[0]);
+          return;
+        }
+  
+        setSelectedFacility((prev: any) => ({ ...prev, data }));
+      }, []); 
+
+  // Other Data Collectors
+  const handleOtherDataCollectors = (): string | string[] => {
+    if (!otherDataCollectors) return ''; // empty
+    const trimmed = otherDataCollectors.trim();
+
+    // If contains comma, split into array, otherwise return string
+    return trimmed.includes(',')
+      ? trimmed.split(',').map(s => s.trim()).filter(Boolean) // remove empty entries
+      : trimmed;
   };
 
   // Helper function to find the row index in the flat array
@@ -504,63 +533,61 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
       <div className="step-content">
         {activeStep === 0 && (
           // Meta step minimal (Facility + Report Period repeated here for convenience)
-          <div className="bg-white rounded-lg shadow-lg p-6 mb-6">
-            <h2 className="text-2xl font-bold text-gray-800 mb-4">Meta Data</h2>
+          <div className="bg-white rounded-md p-6 space-y-6">
+            {/* First row: Report Period + Facility */}
             <div className="flex gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Facility</label>
-                <select
-                  value={selectedFacility}
-                  onChange={(e) => setSelectedFacility(e.target.value === '' ? '' : Number(e.target.value))}
-                  className="border rounded p-2 min-w-[260px]"
-                >
-                  <option value="">Select facility</option>
-                  {facilities.map(f => (
-                    <option key={f.id} value={f.id}>{f.name}</option>
-                  ))}
-                </select>
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Report Period</label>
+              <div className="flex-1">
                 <DatePicker
                   label="Report Period"
-                  views={['year', 'month']} 
+                  enableAccessibleFieldDOMStructure={false}
+                  open={openReportPeriod}
+                  onOpen={() => setOpenReportPeriod(true)}
+                  onClose={() => setOpenReportPeriod(false)}
                   openTo="year"
+                  views={['year', 'month']}
+                  yearsOrder="desc"
+                  format="MMM-YY"
                   maxDate={dayjs()}
-                  value={reportPeriod ? dayjs(reportPeriod) : null}
-                  onChange={(value) => {
-                    if (!value) {
-                      setReportPeriod('');
-                      return;
-                    }
-
-                    // Store as YYYY-MM-01
-                    setReportPeriod(value.startOf('month').format('YYYY-MM-DD'));
+                  value={reportPeriod}
+                  onChange={(selected) => {
+                    if (selected) setReportPeriod(dayjs(selected));
                   }}
+                  onViewChange={(view) => setCurrentReportPeriodView(view)}
+                  onYearChange={(_newYear) => {
+                    if (currentReportPeriodView === 'month') setOpenReportPeriod(false);
+                  }}
+                  slots={{ textField: TextField }}
                   slotProps={{
-                    textField: {
-                      size: "small",
-                      className: "border rounded-sm p-2 w-[200px]"
-                    }
+                    textField: { size: 'small', fullWidth: true }
                   }}
-                  
                 />
-                <Tooltip title="Clear report period">
-                  <IconButton
-                    type="button"
-                    className="border rounded px-2 py-1 text-sm text-gray-700 hover:bg-gray-100"
-                    onClick={() => setReportPeriod("")}
-                  >
-                    <HighlightOffOutlined />
-                  </IconButton>
-                </Tooltip>
-                  
-                {/* Display as MMM-YY */}
-                <div className="text-sm text-gray-500 mt-1">
-                  Display: {reportPeriod ? dayjs(reportPeriod).format('MMM-YY') : ''}
-                </div>
               </div>
+
+              <div className="flex-1">
+                <FacilitySelect 
+                  label="Facility"
+                  value={selectedFacility}
+                  multiple={true}
+                  maxSelection={1}
+                  validate
+                  onChange={handleFacilitiesChange}
+                />
+              </div>
+            </div>
+
+            {/* Second row: Data Collectors */}
+            <div>
+              <FormControl fullWidth>
+                <TextField
+                  label="Data Collectors"
+                  variant="outlined"
+                  size="small"
+                  placeholder="Separate names with comma"
+                  fullWidth
+                  value={otherDataCollectors}
+                  onChange={(e) => setOtherDataCollectors(e.target.value)}
+                />
+              </FormControl>
             </div>
           </div>
         )}

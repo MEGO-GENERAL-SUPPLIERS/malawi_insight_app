@@ -14,6 +14,7 @@ interface FacilitySelectProps {
   facilityFilters?: number[]; // filter key e.d dsitricts: [1,3]
   requiredMessage?: string;
   searchable?: boolean;
+  maxSelection?: number;
 }
 
 const FacilitySelect: React.FC<FacilitySelectProps> = ({
@@ -27,10 +28,10 @@ const FacilitySelect: React.FC<FacilitySelectProps> = ({
   facilityFilters,
   requiredMessage = "Facility selection required.",
   searchable = false,
+  maxSelection
 }) => {
   
   const fetchFacilitiesAdapter = async (filters?: Record<string, any>) => {
-    console.log("Facility Filters (District IDs", filters);
     const response = await fetchFacilities(filters);
     return response.data || []; 
   };
@@ -53,6 +54,7 @@ const FacilitySelect: React.FC<FacilitySelectProps> = ({
       searchable={searchable}
       fetchItems={fetchFacilitiesAdapter}
       filterBy={facilityFilters && facilityFilters.length > 0 ? { district_ids: facilityFilters } : undefined}
+      maxSelection={maxSelection}
     />
   );
 };

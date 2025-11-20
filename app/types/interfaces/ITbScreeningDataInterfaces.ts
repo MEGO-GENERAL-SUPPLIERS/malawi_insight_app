@@ -62,7 +62,7 @@ export interface ITbScreeningFormData {
 }
 
 export interface TbScreeningGridRef {
-  getRows: () => { sectionA: ITbScreenRow[]; sectionB: IContactTracingRow[]; meta: { facilityId?: number; reportPeriod?: string; comment?: string } };
+  getRows: () => { sectionA: ITbScreenRow[]; sectionB: IContactTracingRow[]; meta: { facilityId?: number; reportPeriod?: any; comment?: string } };
   validateCurrentStep: () => boolean;
   goToNextStep: () => void;
   goToPrevStep: () => void;

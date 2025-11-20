@@ -168,7 +168,7 @@ export const localStorageUtils = {
     }
 
     try {
-      const appData = localStorageUtils.getLocalStorageItem(APP_NAME);
+      const appData = localStorageUtils.ensureLocalAppStructure();
       const userData = appData?.user;
 
       // Check if we have a valid user object with required IUser fields
@@ -176,8 +176,7 @@ export const localStorageUtils = {
           userData.id !== undefined && 
           userData.id !== null && 
           userData.first_name && 
-          userData.last_name && 
-          userData.username) {
+          userData.last_name) {
         
         // Convert id to number if it's stored as string in localStorage
         const user: IUser = {

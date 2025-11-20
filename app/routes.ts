@@ -20,6 +20,11 @@ export const routeDefinitions = {
     settings_roles: { path: "/app/settings/roles", file: "routes/settings/_main.role_management.tsx" },
     settings_users: { path: "/app/settings/users", file: "routes/settings/_main.user_management.tsx" },
 
+    /*Generic*/
+    generic: { path: "/app/generic", file: "routes/_main.generic.tsx"},
+    generic_facility_visitor: { path: "/app/generic/facility_visitor", file: "routes/generic/_main.facility_visitor.tsx"},
+    generic_facility_visitor_add: { path: "/app/generic/facility_visitor/add", file: "routes/generic/_main.facility_visit_new.tsx"},
+
     /*SI Unit*/
     strategic_info: { path: "/app/strategic_info", file: "routes/_main.strategic_info.tsx" },
     strategic_info_templates: { path: "/app/strategic_info/templates", file: "routes/strategic_info/_main.templates.tsx" },

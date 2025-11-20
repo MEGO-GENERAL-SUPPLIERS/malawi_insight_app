@@ -12,7 +12,9 @@ export interface IUser{
   inactivity_duration?: number; //min
   auto_logout_count?: number; //seconds
   roles?: string[];
-  privileges?: string[];
+  privileges?: any[];
+  custom_user_privileges?: any[];
+  contacts?: []; 
   locations?: any;
   logged_in?: boolean;
   last_login?: string;

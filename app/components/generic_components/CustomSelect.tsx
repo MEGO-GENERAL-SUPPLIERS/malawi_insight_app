@@ -35,6 +35,7 @@ export interface CustomSelectProps<T extends { id: number }> {
   iconLibrary?: "lucide" | "mui" | "react";
   iconPosition?: "left" | "right";
   onIconClick?: () => void;
+  maxSelection?: number;
 }
 
 export function CustomSelect<T extends { id: number }>({
@@ -53,6 +54,7 @@ export function CustomSelect<T extends { id: number }>({
   iconLibrary = "lucide",
   iconPosition = "right",
   onIconClick,
+  maxSelection
 }: CustomSelectProps<T>) {
   const labelId = React.useId();
   const [items, setItems] = useState<T[]>([]);
@@ -143,11 +145,17 @@ export function CustomSelect<T extends { id: number }>({
     valueFromAutoComplete: T[] | T | null
   ) => {
     setTouched(true);
-    const selectedItems = Array.isArray(valueFromAutoComplete)
+    
+    let selectedItems = Array.isArray(valueFromAutoComplete)
       ? valueFromAutoComplete
       : valueFromAutoComplete
       ? [valueFromAutoComplete]
       : [];
+
+      if (maxSelection && selectedItems.length > maxSelection) {
+        selectedItems = selectedItems.slice(0, maxSelection);
+      }
+      
     setSelected(selectedItems.map((i) => i.id));
     emitSelection(selectedItems);
   };
@@ -193,6 +201,9 @@ export function CustomSelect<T extends { id: number }>({
             onChange={handleAutoCompleteChange}
             disableCloseOnSelect={multiple}
             disabled={loading}
+            getOptionDisabled={(option) =>
+              maxSelection ? selected.length >= maxSelection && !selected.includes(option.id) : false
+            }
             renderInput={(params) => (
               <TextField
                 {...params}

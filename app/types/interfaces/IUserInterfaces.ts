@@ -13,7 +13,7 @@ export interface IUser{
   first_name: string; 
   other_names?: string; 
   last_name: string; 
-  username: string;
+  username?: string;
   date_of_birth?: string;
   password?: string;
   status?: string;
@@ -22,7 +22,7 @@ export interface IUser{
   gender_name?: string;
   national_id?: string;
   contacts?:  IContact[] | [];
-  role_level: IRoleLevel;
+  role_level?: IRoleLevel;
   roles: IRole[] | [];
   locations?: {
     countries?: ICountry[] | []; 
