@@ -1,0 +1,720 @@
+import React, { forwardRef, useState, useImperativeHandle, Suspense, useCallback, useEffect } from "react";
+import { Box, Stepper, Step, StepLabel, TextField, FormControl, FormLabel, Radio, RadioGroup, FormControlLabel } from "@mui/material";
+import type { IFacility } from "~/types/interfaces/IFacilityInterfaces";
+import type { IFacilityVisitDataRef, IFacilityVisitFormData } from "~/types/interfaces/IFacilityVisit";
+import type { ITeamMemberEntry, IVisitObjective, IVisitedTeam, IVisitFinding, IVisitRecommendationAction, IQualityImprovement } from "~/types/interfaces/IFacilityVisit";
+import dayjs from "dayjs";
+import type { Dayjs } from "dayjs";
+import { validationUtils } from "~/utils/validationUtils";
+import { LocateFixedIcon, MapPinnedIcon, MessageCircleMore, SearchIcon, ShieldCheckIcon, TriangleAlertIcon, Users2Icon } from "lucide-react";
+
+import { DatePicker } from "@mui/x-date-pickers";
+import FacilitySelect from "~/components/forms/elements/FacilitySelect";
+import CustomMultiFieldGroup, { type DynamicFieldConfig} from "../generic_components/CustomMultiFieldGroup";
+import CustomInput from "../generic_components/CustomInput";
+import { ToastAlertComponentController } from "../controllers/ToastAlertComponentController";
+const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderTitle"));
+
+interface FacilityVisitData {
+  data?: IFacilityVisitFormData;
+  setSlotData: (data: any) => void;
+  onStepChange?: (step: number) => void;
+  currentStep?: number;
+}
+
+
+const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
+  data = {},
+  setSlotData, 
+  onStepChange,
+  currentStep = 0
+}, ref) => {
+  const [activeStep, setActiveStep] = useState<number>(0);
+  // Step 1 states
+  const [step1Valid, setStep1Valid] = useState(false);
+  const [selectedFacility, setSelectedFacility] = useState<IFacility[]>([]);
+  const [dateOfVisit, setDateOfVisit] = useState<Dayjs | null>(null);
+  const [teamLead, setTeamLead] = useState<string>("");
+  const [teamMembers, setTeamMembers] = useState<ITeamMemberEntry[]>([]);
+  // Step 2 states
+  const [step2Valid, setStep2Valid] = useState(false);
+  const [objectives, setObjectives] = useState<IVisitObjective[]>([]);
+  const [facilityStaffMember, setFacilityStaffMember] = useState<string>("");
+  //Step 3 states
+  const [step3Valid, setStep3Valid] = useState(false);
+  const [visitedTeam, setVisitedTeam] = useState<IVisitedTeam[]>([]);
+  // Step 4 states
+  const [step4Valid, setStep4Valid] = useState(false);
+  const [findings, setFindings] = useState<IVisitFinding[]>([]);
+  const [recommendationActions, setRecommendationActions] = useState<IVisitRecommendationAction[]>([]);
+  // Step 5 states
+  const [step5Valid, setStep5Valid] = useState(false);
+  const [qualityImprovement, setQualityImprovement] = useState<IQualityImprovement[]>([]);
+  const [qualityImprovementEnabled, setQualityImprovementEnabled] = useState<"Yes" | "No">("No");
+  // Step 6 states 
+  const [step6Valid, setStep6Valid] = useState(false);
+  const [comment, setComment] = useState<string>("");
+
+  useEffect(() => {
+    if (!data) return;
+
+    const updateIfChanged = <T,>(current: T, next: T, setter: (val: T) => void) => {
+      if (JSON.stringify(current) !== JSON.stringify(next)) {
+        setter(next);
+      }
+    };
+
+    // Step 1
+    const nextFacility = Array.isArray(data.facility) ? data.facility : [];
+    updateIfChanged(selectedFacility, nextFacility, setSelectedFacility);
+
+    const nextDate = data.dateOfVisit ? dayjs(data.dateOfVisit) : null;
+    const currentDateString = dateOfVisit?.format('YYYY-MM-DD');
+    const nextDateString = nextDate?.format('YYYY-MM-DD');
+    if (currentDateString !== nextDateString) {
+      setDateOfVisit(nextDate);
+    }
+
+    updateIfChanged(teamLead, data.teamLead || "", setTeamLead);
+    updateIfChanged(facilityStaffMember, data.facilityStaffMember || "", setFacilityStaffMember);
+    updateIfChanged(teamMembers, data.teamMembers || [], setTeamMembers);
+
+    // Step 2
+    updateIfChanged(objectives, data.objectives || [], setObjectives);
+
+    // Step 3
+    updateIfChanged(visitedTeam, data.visitedTeam || [], setVisitedTeam);
+
+    // Step 4
+    updateIfChanged(findings, data.findings || [], setFindings);
+    updateIfChanged(recommendationActions, data.recommendationActions || [], setRecommendationActions);
+
+    // Step 5
+    const nextQI = data.qualityImprovement || [];
+    const nextQIEnabled = (data.qualityImprovementEnabled === 1 ? "Yes" : "No");
+    updateIfChanged(qualityImprovement, nextQI, setQualityImprovement);
+    if (qualityImprovementEnabled !== nextQIEnabled) {
+      setQualityImprovementEnabled(nextQIEnabled);
+    }
+
+    // Step 6
+    updateIfChanged(comment, data.comment || "", setComment);
+
+  }, [data]);
+
+
+  const teamMembersFields: DynamicFieldConfig[] = [
+    {
+      name: "teamMember",
+      label: "Team Member *",
+      placeholder: "Enter team member name",
+      required: true,
+    },
+    {
+      name: "position",
+      label: "Position *",
+      placeholder: "Team member position",
+      required: true,
+    },
+    {
+      name: "organisation",
+      label: "Organisation *",
+      placeholder: "Member organisation",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v)
+    }
+  ];
+
+  const objectivesFields: DynamicFieldConfig[] = [
+    {
+      name: "objective",
+      label: "Visit Objective *",
+      placeholder: "Enter a visit objective",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Objective is required"
+    }
+  ];
+
+  const visitedTeamFields: DynamicFieldConfig[] = [
+    {
+      name: "teamMember",
+      label: "Personnel *",
+      placeholder: "Enter visited member name",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Name is required"
+    },
+    {
+      name: "position",
+      label: "Position/Role *",
+      placeholder: "Enter personnel position/role",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Position/role is required"
+    },
+    {
+      name: "organisation",
+      label: "Organisation *",
+      placeholder: "Enter organisation name",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Organisation is required"
+    }
+  ];
+
+  const visitFindingFields: DynamicFieldConfig[] = [
+    {
+      name: "finding",
+      label: "Finding/Observation *",
+      placeholder: "Enter a finding or an observation",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Objective is required"
+    }
+  ];
+
+  const visitRecommendationActionFields: DynamicFieldConfig[] = [
+    {
+      name: "recommendationAction",
+      label: "Recommendation/Action *",
+      placeholder: "Recommendation, action or way forward",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Recommendation/action required"
+    },
+    {
+      name: "responsiblePersonnel",
+      label: "Responsible Personnel *",
+      placeholder: "Enter responsible person",
+      required: true,
+      validationMethod: (v: string) => validationUtils.isValidInput(v),
+      validationMessage: "Required"
+    },
+    {
+      name: "completionDate",
+      label: "Completion Date",
+      placeholder: "YYYY-MM-DD",
+      required: false,
+    }
+  ];
+
+  const qualityImprovementFields: DynamicFieldConfig[] = [
+    {
+      name: "suggestedQI",
+      label: "Suggested or running QI *",
+      placeholder: "Suggested or running QI",
+      required: true
+    },
+    {
+      name: "goalOutcome",
+      label: "Goal or Outcome Indicator *",
+      required: true
+    }
+  ];
+
+  // handle team member entry 
+  const handleTeamMemberChange = useCallback((payload: { values: ITeamMemberEntry[]; valid: boolean }) => {
+    setTeamMembers(payload.values);
+    setStep1Valid(payload.valid);
+  }, []);
+
+
+  // handle Objectives Change
+  const handleObjectivesChange = useCallback((payload: { values: IVisitObjective[]; valid: boolean}) => {
+    setObjectives(payload.values);
+    setStep2Valid(payload.valid);
+  }, []);
+
+
+  // handle Visited personnel
+  const handleVisitedTeamChange = useCallback((payload: { values: IVisitedTeam[]; valid: boolean}) => {
+    setVisitedTeam(payload.values);
+    setStep3Valid(payload.valid);
+  }, []);
+
+
+  // handle Findings Change
+  const handleFindingsChange = useCallback((payload: { values: IVisitFinding[]; valid: boolean; }) => {
+    setFindings(payload.values);
+    setStep4Valid(payload.valid);
+  }, []);
+
+
+  // handle Recommendation/Actions Change
+  const handleObservationActionChange = useCallback((payload: { values: IVisitRecommendationAction[]; valid: boolean}) => {
+    setRecommendationActions(payload.values);
+    setStep4Valid(payload.valid);
+  }, []);
+
+
+  // handle comment change 
+  const handleQIChange = useCallback((payload: { values: IQualityImprovement[]; valid: boolean; }) => {
+    setQualityImprovement(payload.values);
+    setStep5Valid(payload.valid);
+  }, []);
+
+
+  // handleQualityImprovementDocumentedChange
+  const handleQualityImprovementDocumentedChange =(v: Record<string, any>) => {
+    setQualityImprovementEnabled(v[0]);
+  };
+
+  // handle comment 
+  const handleCommentChange = (v: any) => {
+    setComment(v.value);
+  };
+
+  const steps: string[] = ["Visit Details", "Visit Objectives", "People Met / Mentored / Supervised","Findings, Recommendations", "Continuous QI", "Comments"];
+
+  const Step1 = () => (
+    <div className="">
+      <h4 className="flex gap-2 p-1 mb-4 text-xl font-bold border-b border-b-gray-300">
+        <MapPinnedIcon />
+        Visit Details
+      </h4>
+
+      <div className="flex gap-16">
+        <div className="flex-2">
+          <FacilitySelect 
+            label="Facility Visited *"
+            multiple
+            value={selectedFacility}
+            maxSelection={1}
+            onChange={() => {}}
+          />
+        </div>
+
+        <div className="flex-2">
+          <DatePicker
+            label="Date of Visit *"
+            enableAccessibleFieldDOMStructure={false}
+            yearsOrder="desc"
+            format="YYYY-MM-DD"
+            maxDate={dayjs()}
+            value={dateOfVisit}
+            onChange={(selected) => {
+              if (selected) setDateOfVisit(dayjs(selected));
+            }}
+            slots={{ textField: TextField }}
+            slotProps={{
+              textField: { size: 'small', fullWidth: true }
+            }}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-16">
+        <div className="flex-2">
+          <CustomInput 
+            label="Team Leader (of the visitors) *"
+            value={teamLead}
+            onChange={(e) => setTeamLead(e.value)}
+            validate
+            liveValidation
+            validationMessage="Team lead's name is required"
+          />  
+        </div>
+
+        <div className="flex-2">
+          <CustomInput 
+            label="Health Facility Staff *"
+            value={facilityStaffMember}
+            validate
+            liveValidation
+            validationMessage="Health facility staff/representative is requried"
+            onChange={(e) => setFacilityStaffMember(e.value)}
+          />
+        </div>
+      </div>
+
+      <div className="flex gap-16 mt-4 pt-6 border-t border-t-gray-300">
+        <div className="flex-2">
+            <CustomMultiFieldGroup 
+              label="Visiting Team Members *"
+              fields={teamMembersFields}
+              minRows={1}
+              defaultValue={teamMembers}
+              onChange={handleTeamMemberChange}
+              showRowNumbers
+              addButtonLabel="Add Team Member"
+            />
+          </div>
+      </div>
+    </div>
+  );
+
+
+  const Step2 = () => (
+    <div>
+      <h4 className="flex gap-2 p-1 mb-4 text-xl font-bold border-b border-b-gray-300">
+        <LocateFixedIcon />
+        Visit Objectives
+      </h4>
+
+      <div className="mt-12">
+        <div>
+          <CustomMultiFieldGroup 
+            label="Objectives *"
+            fields={objectivesFields}
+            minRows={1}
+            defaultValue={objectives}
+            onChange={handleObjectivesChange}
+            showRowNumbers
+            showErrorIcon
+            addButtonLabel="Add Objective"
+          />
+        </div>
+      </div>
+    </div>
+  );
+  
+  
+  const Step3 = () => (
+    <div>
+      <h4 className="flex gap-2 p-1 mb-4 text-xl font-bold border-b border-b-gray-300">
+        <Users2Icon />
+        People Met / Mentored / Supervised
+      </h4>
+
+      <div className="mt-12">
+        <div>
+          <CustomMultiFieldGroup 
+            label="Visited Personnel *"
+            fields={visitedTeamFields}
+            minRows={1}
+            defaultValue={visitedTeam}
+            onChange={handleVisitedTeamChange}
+            showRowNumbers
+            addButtonLabel="Add Visited Member"
+          />
+        </div>
+      </div>
+    </div>
+  );
+  
+  
+  const Step4 = () => (
+    <div className="">
+      <div className="flex-1 rounded-10 border border-gray-200 p-0 mt-2">
+        <h4 className="flex gap-2 p-2 mb-4 text-lg font-bold border-b border-b-gray-300 rounded-t-10 bg-white">
+          <SearchIcon />
+          Findings/Observations
+        </h4>
+        <div className="mt-2 pr-2">
+          <CustomMultiFieldGroup 
+            label="Findings *"
+            defaultValue={findings}
+            fields={visitFindingFields}
+            minRows={1}
+            onChange={handleFindingsChange}
+            showRowNumbers
+            addButtonLabel="Add Finding"
+          />
+        </div>
+      </div>
+
+      <div className="flex-1 rounded-10 border border-gray-300 p-0 mt-8">
+        <h4 className="flex gap-2 p-2 mb-4 text-lg font-bold border-b border-b-gray-300 rounded-t-10 bg-white ">
+          <TriangleAlertIcon className="text-amber-400" /> Recommendations / Actions
+        </h4>
+        <div className="mt-2 pr-2">
+          <CustomMultiFieldGroup 
+            defaultValue={recommendationActions}
+            fields={visitRecommendationActionFields}
+            minRows={1}
+            onChange={handleObservationActionChange}
+            showRowNumbers
+            addButtonLabel="Add Recommendation"
+          />
+        </div>
+      </div>
+    </div>
+  );
+
+
+  const Step5 = () => (
+    <div>
+      <h4 className="flex gap-2 p-2 mb-4 text-lg font-bold border-b border-b-gray-300 rounded-t-10 bg-white ">
+        <ShieldCheckIcon className="text-amber-400" /> Continuous Quality Improvement
+      </h4>
+
+      <div>
+          <CustomMultiFieldGroup 
+            label="Continous Quality Improvement *"
+            fields={qualityImprovementFields}
+            defaultValue={qualityImprovement}
+            minRows={0}
+            showRowNumbers
+            onChange={handleQIChange}
+            addButtonLabel="Add QI Row"
+          />
+      </div>
+
+      <div>
+        <FormControl component="fieldset" margin="dense">
+          <FormLabel component="legend">
+            Is QI Project Documented? *
+          </FormLabel>
+          <RadioGroup
+            row
+            aria-label="quality-improvement-enabled"
+            name="qualityImprovementEnabled"
+            value={qualityImprovementEnabled}
+            onChange={(e) => setQualityImprovementEnabled(e.target.value as "Yes" | "No")}
+          >
+            <FormControlLabel value="Yes" control={<Radio />} label="Yes" />
+            <FormControlLabel value="No" control={<Radio />} label="No" />
+          </RadioGroup>
+        </FormControl>
+      </div>
+    </div>
+  )
+
+
+  const Step6 = () => (
+    <div>
+      <h4 className="flex gap-2 p-2 mb-4 text-lg font-bold border-b border-b-gray-300 rounded-t-10 bg-white ">
+        <MessageCircleMore className="text-amber-400" /> Comment(s)
+      </h4>
+
+      <div>
+        <CustomInput 
+          label="Comment(s)"
+          value={comment}
+          multiline
+          minRows={8}
+          onChange={handleCommentChange}
+        />
+      </div>
+    </div>
+  );
+
+
+  const getValidationErrors = useCallback((): string[] => {
+    const errors: string[] = [];
+
+    switch (activeStep) {
+      case 0: {
+        if (selectedFacility.length !== 1) {
+          errors.push("Please select exactly one facility.");
+        }
+        if (!dateOfVisit) {
+          errors.push("Date of visit is required.");
+        }
+        if (!teamLead.trim()) {
+          errors.push("Team Leader name is required.");
+        }
+        if (teamMembers.length === 0) {
+          errors.push("At least one visiting team member must be added.");
+        } else {
+          teamMembers.forEach((m, i) => {
+            if (!m.teamMember.trim()) errors.push(`Team member ${i + 1}: Name is required.`);
+            if (!m.position.trim()) errors.push(`Team member ${i + 1}: Position is required.`);
+            if (!m.organisation.trim()) errors.push(`Team member ${i + 1}: Organisation is required.`);
+          });
+        }
+        break;
+      }
+
+      case 1: {
+        if (objectives.length === 0) {
+          errors.push("At least one visit objective is required.");
+        } else {
+          objectives.forEach((o, i) => {
+            if (!o.objective.trim()) {
+              errors.push(`Objective ${i + 1} cannot be empty.`);
+            }
+          });
+        }
+        break;
+      }
+
+      case 2: {
+        if (visitedTeam.length === 0) {
+          errors.push("Please add at least one visited personnel.");
+        } else {
+          visitedTeam.forEach((p, i) => {
+            if (!p.teamMember.trim()) errors.push(`Visited personnel ${i + 1}: Name is required.`);
+            if (!p.position.trim()) errors.push(`Visited personnel ${i + 1}: Position is required.`);
+            if (!p.organisation.trim()) errors.push(`Visited personnel ${i + 1}: Organisation is required.`);
+          });
+        }
+        break;
+      }
+
+      case 3: {
+        const hasFindings = findings.some(f => f.finding.trim() !== "");
+        const hasRecs = recommendationActions.some(r => 
+          r.recommendationAction.trim() !== "" && r.responsiblePersonnel.trim() !== ""
+        );
+
+        if (!hasFindings && !hasRecs) {
+          errors.push("Please provide at least one finding or one recommendation with responsible personnel.");
+        }
+
+        // Optional: validate individual items
+        findings.forEach((f, i) => {
+          if (f.finding && !f.finding.trim()) {
+            errors.push(`Finding ${i + 1} cannot be empty.`);
+          }
+        });
+
+        recommendationActions.forEach((r, i) => {
+          if (r.recommendationAction && !r.recommendationAction.trim()) {
+            errors.push(`Recommendation ${i + 1}: Action is required.`);
+          }
+          if (r.responsiblePersonnel && !r.responsiblePersonnel.trim()) {
+            errors.push(`Recommendation ${i + 1}: Responsible personnel is required.`);
+          }
+        });
+        break;
+      }
+
+      case 4: {
+        if (qualityImprovementEnabled === "Yes") {
+          if (qualityImprovement.length === 0) {
+            errors.push("At least one quality improvement entry is required when QI is documented.");
+          } else {
+            qualityImprovement.forEach((q, i) => {
+              if (!q.suggestedQI?.trim()) errors.push(`QI ${i + 1}: Suggested QI is required.`);
+              if (!q.goalOutcome?.trim()) errors.push(`QI ${i + 1}: Goal or outcome is required.`);
+            });
+          }
+        }
+        break;
+      }
+
+      case 5:
+        // No validation needed
+        break;
+
+      default:
+        errors.push("Unknown step during validation.");
+    }
+
+    return errors;
+  }, [
+    activeStep,
+    selectedFacility,
+    dateOfVisit,
+    teamLead,
+    teamMembers,
+    objectives,
+    visitedTeam,
+    findings,
+    recommendationActions,
+    qualityImprovementEnabled,
+    qualityImprovement
+  ]);
+
+  const validateCurrentStep = useCallback(() => {
+    return getValidationErrors().length === 0;
+  }, [getValidationErrors]);
+
+  useImperativeHandle(ref, () => ({
+    getRows: (): IFacilityVisitFormData => {
+
+      return {
+        facility: selectedFacility,
+        dateOfVisit: dateOfVisit,
+        teamLead,
+        facilityStaffMember,
+        teamMembers,
+        objectives,
+        visitedTeam,
+        findings,
+        recommendationActions: recommendationActions.map(act => ({
+          ...act,
+          completionDate: act.completionDate
+            ? dayjs(act.completionDate).format('YYYY-MM-DD') // or .toISOString()
+            : null,
+        })),
+        qualityImprovement,
+        qualityImprovementEnabled: qualityImprovementEnabled === "Yes" ? 1 : 0,
+        comment,
+        reportedBy: data?.reportedBy
+      };
+    },
+
+    validateCurrentStep: () => validateCurrentStep(),
+
+    goToNextStep: () => {
+      if (activeStep >= steps.length - 1) return;
+
+      const errors = getValidationErrors();
+      if (errors.length > 0) {
+        // Show the first error (or combine them)
+        const message = errors.length === 1 
+          ? errors[0] 
+          : `${errors[0]} (${errors.length} issues total)`;
+
+        ToastAlertComponentController.show({
+          type: "error",
+          message,
+          autoHideDuration: 5000,
+        });
+        return;
+      }
+
+      const next = activeStep + 1;
+      setActiveStep(next);
+      onStepChange?.(next);
+    },
+
+    goToPrevStep: () => {
+      if (activeStep > 0) {
+        const prev = activeStep - 1;
+        setActiveStep(prev);
+        onStepChange?.(prev);
+      }
+    }
+  }));
+
+
+  return(
+    <div className="min-h-4/12 bg-gray-50 p-1">
+      <div className="max-w-8xl ml-0">
+        <PageHeaderTitle
+          icon="MapPinned"
+          title="New Facility Visit"
+          description="Strategic Information Unit area"
+          alignment="left"
+        />
+        
+       {/* Last recorded visit*/}
+        <div>
+          Last recorded visit
+        </div>
+
+        <div className="w-full min-h-screen p-6 bg-gray-50">
+          {/* Stepper */}
+          <Box className="mb-8">
+            <Stepper activeStep={activeStep} alternativeLabel>
+              {steps.map((label: any) => (
+                <Step key={label}>
+                  <StepLabel>{label}</StepLabel>
+                </Step>
+              ))}
+            </Stepper>
+          </Box>
+
+          {/* Step Content */}
+          <div className="step-content border border-gray-300 rounded-10 shadow p-4 ">
+            {activeStep === 0 && Step1()}
+            {activeStep === 1 && Step2()}
+            {activeStep === 2 && Step3()}
+            {activeStep === 3 && Step4()}
+            {activeStep === 4 && Step5()}
+            {activeStep === 5 && Step6()}
+          </div>
+
+        </div>
+      </div>
+
+      <ToastAlertComponentController.render />
+    </div>
+  );
+});
+
+export default FacilityVisitAdd;
