@@ -24,6 +24,7 @@ export const routeDefinitions = {
     generic: { path: "/app/generic", file: "routes/_main.generic.tsx"},
     generic_facility_visitor: { path: "/app/generic/facility_visitor", file: "routes/generic/_main.facility_visitor.tsx"},
     generic_facility_visitor_add: { path: "/app/generic/facility_visitor/add", file: "routes/generic/_main.facility_visit_new.tsx"},
+    generic_facility_visitor_data: { path: "/app/generic/facility_visitor/data", file: "routes/generic/_main.facility_visitor_data.tsx"},
 
     /*SI Unit*/
     strategic_info: { path: "/app/strategic_info", file: "routes/_main.strategic_info.tsx" },

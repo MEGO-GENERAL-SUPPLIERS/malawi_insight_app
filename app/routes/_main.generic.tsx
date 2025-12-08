@@ -29,7 +29,7 @@ const Generic = () => {
       <div className="max-w-8xl ml-0">
         <PageHeaderTitle
           icon="Globe"
-          title="Generic"
+          title="Generic Modules"
           description="Generic module that habours generic system modules usable by various groups of people"
           alignment="left"
         />

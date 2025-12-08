@@ -1,12 +1,12 @@
-import { Button } from "@mui/material";
 import { Save } from "lucide-react";
-import React, { useRef, useState, useMemo, Suspense, useEffect } from "react";
-import type { ModalButton } from "~/components/system/ModalComponent";
+import React, { useRef, useState, Suspense, useEffect } from "react";
 import type { IFacilityVisitDataRef, IFacilityVisitFormData } from "~/types/interfaces/IFacilityVisit";
-import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
-
+import { localStorageUtils } from "~/utils/localStorageUtils";
 const FacilityVisitAdd = React.lazy(() => import("~/components/forms/_main.facility_visit.add"));
+import { addFacilityVisit } from "~/services/facilityVisitService";
+import { AlertComponentController } from "~/components/controllers/AlertComponentController";
+import { CircularProgress } from "@mui/material";
 
 
 const FacilityVisitNew: React.FC = () => {
@@ -14,19 +14,21 @@ const FacilityVisitNew: React.FC = () => {
   const [currentStep, setCurrentStep] = useState(0);
   const initialData: IFacilityVisitFormData = {
     facility: null,
-    dateOfVisit: null,
-    teamLead: "",
-    facilityStaffMember: "",
-    teamMembers: [],
+    date_of_visit: null,
+    team_lead: ``,
+    facility_staff_member: ``,
+    team_members: [],
     objectives: [],
-    visitedTeam: [],
+    visited_team: [],
     findings: [],
-    recommendationActions: [],
-    qualityImprovement: [],
-    qualityImprovementEnabled: "No", 
+    recommendation_actions: [],
+    quality_improvement: [],
+    quality_improvement_enabled: "No", 
     comment: "",
   };
-    const [editRow, setEditRow] = useState<IFacilityVisitFormData>(initialData);
+  const [editRow, setEditRow] = useState<IFacilityVisitFormData>(initialData);
+  const localUser = localStorageUtils.getStoredUser();
+  const [loadingAsync, setLoadingAsync] = useState(false);
 
   useEffect(() => {
     if(currentStep !== currentStep){
@@ -62,7 +64,7 @@ const FacilityVisitNew: React.FC = () => {
 
 
   // handle Submit
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (!formRef.current) return;
 
     if (!formRef.current.validateCurrentStep()) {
@@ -75,15 +77,57 @@ const FacilityVisitNew: React.FC = () => {
     }
 
     const formData = formRef.current.getRows();
+    const allData = {
+      ...formData,
+      user_id: localUser?.id || 0
+    };
 
-    ToastAlertComponentController.show({
-      type: "warning",
-      message: "Data to be submitted",
-      autoHideDuration: 3000,
+    console.log("Final data:", allData);
+
+    AlertComponentController.dismiss();
+    AlertComponentController.show({
+      type: `confirm`,
+      title: `Submit Facility Visit Data`,
+      message: `Are you sure you want to submit this facility visit data?`,
+      buttons: [
+        {
+          label: `Proceed`,
+          className: `btn btn-success`,
+          onClick: async () => {       
+            setLoadingAsync(true);
+            
+            const response = await addFacilityVisit(allData);
+
+            if(response.success){
+              ToastAlertComponentController.show({
+                type: "success",
+                message: `${response.message || "Failed to add visit"}`,
+                autoHideDuration: 3500,
+              });
+
+              setEditRow(initialData);
+              setCurrentStep(0);
+              if (formRef.current?.resetForm) {
+                formRef.current.resetForm();
+              }
+            } else {
+              ToastAlertComponentController.show({
+                type: "error",
+                message: `${response.message || "Failed to add facility visit"}`,
+                autoHideDuration: 4000,
+              });
+            }
+
+            setLoadingAsync(false);
+          }
+        },{
+          label: `Cancel`,
+          className: `btn btn-danger`,
+          autoClose: true,
+          onClick: () => {}
+        }
+      ]
     });
-
-    console.log("Final data:", formData);
-    // Send to API here
   };
 
   return(
@@ -98,8 +142,9 @@ const FacilityVisitNew: React.FC = () => {
         }
 
         {currentStep === 5 &&
-          <button className="btn btn-success flex gap-1" onClick={handleSubmit}>
-            <Save />{" "}Submit
+          <button className={`btn btn-success flex gap-1 ${loadingAsync ? ' opacity-70 cursor-not-allowed' : ''}`} disabled={loadingAsync} onClick={handleSubmit}>
+            {loadingAsync ? <CircularProgress className="animate-spin" /> : <Save />}
+            {" "}Submit
           </button>
         }
       </div>
