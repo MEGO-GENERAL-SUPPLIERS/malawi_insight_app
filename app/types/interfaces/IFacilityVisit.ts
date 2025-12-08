@@ -5,23 +5,24 @@ export interface IFacilityVisitDataRef {
   validateCurrentStep: () => boolean;
   goToNextStep: () => void;
   goToPrevStep: () => void;
+  resetForm: () => void;
 }
 
 
 export interface IFacilityVisitFormData {
   facility: any | null;
-  dateOfVisit: Dayjs | null;
-  teamLead: string; 
-  facilityStaffMember: string;
-  teamMembers: ITeamMemberEntry[] | [];
+  date_of_visit: Dayjs | null;
+  team_lead: string; 
+  facility_staff_member: string;
+  team_members: ITeamMemberEntry[] | [];
   objectives: IVisitObjective[] | [];
-  visitedTeam: IVisitedTeam[] | [];
+  visited_team: IVisitedTeam[] | [];
   findings: IVisitFinding[] | [];
-  recommendationActions: IVisitRecommendationAction[] | [];
-  qualityImprovement: IQualityImprovement[] | [];
-  qualityImprovementEnabled: string | number; 
+  recommendation_actions: IVisitRecommendationAction[] | [];
+  quality_improvement: IQualityImprovement[] | [];
+  quality_improvement_enabled: string | number; 
   comment: string;
-  reportedBy?: {}
+  reported_by?: {}
 }
 
 export interface ITeamMemberEntry {

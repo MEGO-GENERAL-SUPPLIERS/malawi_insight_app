@@ -1,4 +1,4 @@
-import React, { forwardRef, useState, useImperativeHandle, Suspense, useCallback, useEffect } from "react";
+import React, { forwardRef, useState, useImperativeHandle, useCallback, useEffect } from "react";
 import { Box, Stepper, Step, StepLabel, TextField, FormControl, FormLabel, Radio, RadioGroup, FormControlLabel } from "@mui/material";
 import type { IFacility } from "~/types/interfaces/IFacilityInterfaces";
 import type { IFacilityVisitDataRef, IFacilityVisitFormData } from "~/types/interfaces/IFacilityVisit";
@@ -14,6 +14,9 @@ import CustomMultiFieldGroup, { type DynamicFieldConfig} from "../generic_compon
 import CustomInput from "../generic_components/CustomInput";
 import { ToastAlertComponentController } from "../controllers/ToastAlertComponentController";
 const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderTitle"));
+import { isEqual } from 'lodash';
+import { formattingUtils } from "~/utils/formattingUtils";
+
 
 interface FacilityVisitData {
   data?: IFacilityVisitFormData;
@@ -21,6 +24,17 @@ interface FacilityVisitData {
   onStepChange?: (step: number) => void;
   currentStep?: number;
 }
+
+const INITIAL_FACILITY: IFacility[] = [];
+const INITIAL_DATE: Dayjs | null = null;
+const INITIAL_STRING = "";
+const INITIAL_TEAM_MEMBERS: ITeamMemberEntry[] = [];
+const INITIAL_OBJECTIVES: IVisitObjective[] = [];
+const INITIAL_VISITED_TEAM: IVisitedTeam[] = [];
+const INITIAL_FINDINGS: IVisitFinding[] = [];
+const INITIAL_RECOMMENDATIONS: IVisitRecommendationAction[] = [];
+const INITIAL_QUALITY_IMPROVEMENT: IQualityImprovement[] = [];
+const INITIAL_QI_ENABLED: "Yes" | "No" = "No";
 
 
 const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
@@ -59,7 +73,7 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
     if (!data) return;
 
     const updateIfChanged = <T,>(current: T, next: T, setter: (val: T) => void) => {
-      if (JSON.stringify(current) !== JSON.stringify(next)) {
+      if (!isEqual(current, next)) {
         setter(next);
       }
     };
@@ -68,30 +82,30 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
     const nextFacility = Array.isArray(data.facility) ? data.facility : [];
     updateIfChanged(selectedFacility, nextFacility, setSelectedFacility);
 
-    const nextDate = data.dateOfVisit ? dayjs(data.dateOfVisit) : null;
+    const nextDate = data.date_of_visit ? dayjs(data.date_of_visit) : null;
     const currentDateString = dateOfVisit?.format('YYYY-MM-DD');
     const nextDateString = nextDate?.format('YYYY-MM-DD');
     if (currentDateString !== nextDateString) {
       setDateOfVisit(nextDate);
     }
 
-    updateIfChanged(teamLead, data.teamLead || "", setTeamLead);
-    updateIfChanged(facilityStaffMember, data.facilityStaffMember || "", setFacilityStaffMember);
-    updateIfChanged(teamMembers, data.teamMembers || [], setTeamMembers);
+    updateIfChanged(teamLead, formattingUtils.sanitizeStringValue(data.team_lead || ""), setTeamLead);
+    updateIfChanged(facilityStaffMember, data.facility_staff_member || "", setFacilityStaffMember);
+    updateIfChanged(teamMembers, data.team_members || [], setTeamMembers);
 
     // Step 2
     updateIfChanged(objectives, data.objectives || [], setObjectives);
 
     // Step 3
-    updateIfChanged(visitedTeam, data.visitedTeam || [], setVisitedTeam);
+    updateIfChanged(visitedTeam, data.visited_team || [], setVisitedTeam);
 
     // Step 4
     updateIfChanged(findings, data.findings || [], setFindings);
-    updateIfChanged(recommendationActions, data.recommendationActions || [], setRecommendationActions);
+    updateIfChanged(recommendationActions, data.recommendation_actions || [], setRecommendationActions);
 
     // Step 5
-    const nextQI = data.qualityImprovement || [];
-    const nextQIEnabled = (data.qualityImprovementEnabled === 1 ? "Yes" : "No");
+    const nextQI = data.quality_improvement || [];
+    const nextQIEnabled = (data.quality_improvement_enabled === 1 ? "Yes" : "No");
     updateIfChanged(qualityImprovement, nextQI, setQualityImprovement);
     if (qualityImprovementEnabled !== nextQIEnabled) {
       setQualityImprovementEnabled(nextQIEnabled);
@@ -256,9 +270,9 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
 
 
   // handleQualityImprovementDocumentedChange
-  const handleQualityImprovementDocumentedChange =(v: Record<string, any>) => {
-    setQualityImprovementEnabled(v[0]);
-  };
+  // const handleQualityImprovementDocumentedChange =(v: Record<string, any>) => {
+  //   setQualityImprovementEnabled(v[0]);
+  // };
 
   // handle comment 
   const handleCommentChange = (v: any) => {
@@ -281,7 +295,7 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
             multiple
             value={selectedFacility}
             maxSelection={1}
-            onChange={() => {}}
+            onChange={(selected) => setSelectedFacility(selected.data)}
           />
         </div>
 
@@ -496,6 +510,14 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
 
     switch (activeStep) {
       case 0: {
+        console.log("🔍 Validating Step 1", {
+          selectedFacility,
+          dateOfVisit,
+          teamLead: `${teamLead}`,
+          teamMembers,
+          facilityStaffMember: `${facilityStaffMember}`,
+        });
+
         if (selectedFacility.length !== 1) {
           errors.push("Please select exactly one facility.");
         }
@@ -609,7 +631,7 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
   ]);
 
   const validateCurrentStep = useCallback(() => {
-    return getValidationErrors().length === 0;
+    return getValidationErrors().length <= 0;
   }, [getValidationErrors]);
 
   useImperativeHandle(ref, () => ({
@@ -617,23 +639,23 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
 
       return {
         facility: selectedFacility,
-        dateOfVisit: dateOfVisit,
-        teamLead,
-        facilityStaffMember,
-        teamMembers,
+        date_of_visit: dateOfVisit,
+        team_lead: teamLead,
+        facility_staff_member: facilityStaffMember,
+        team_members: teamMembers,
         objectives,
-        visitedTeam,
+        visited_team: visitedTeam,
         findings,
-        recommendationActions: recommendationActions.map(act => ({
+        recommendation_actions: recommendationActions.map(act => ({
           ...act,
           completionDate: act.completionDate
             ? dayjs(act.completionDate).format('YYYY-MM-DD') // or .toISOString()
             : null,
         })),
-        qualityImprovement,
-        qualityImprovementEnabled: qualityImprovementEnabled === "Yes" ? 1 : 0,
+        quality_improvement: qualityImprovement,
+        quality_improvement_enabled: qualityImprovementEnabled === "Yes" ? 1 : 0,
         comment,
-        reportedBy: data?.reportedBy
+        reported_by: data?.reported_by
       };
     },
 
@@ -668,6 +690,23 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef,FacilityVisitData>(({
         setActiveStep(prev);
         onStepChange?.(prev);
       }
+    },
+
+    resetForm: () => {
+      setSelectedFacility(INITIAL_FACILITY);
+      setDateOfVisit(INITIAL_DATE);
+      setTeamLead(INITIAL_STRING);
+      setFacilityStaffMember(INITIAL_STRING);
+      setTeamMembers(INITIAL_TEAM_MEMBERS);
+      setObjectives(INITIAL_OBJECTIVES);
+      setVisitedTeam(INITIAL_VISITED_TEAM);
+      setFindings(INITIAL_FINDINGS);
+      setRecommendationActions(INITIAL_RECOMMENDATIONS);
+      setQualityImprovement(INITIAL_QUALITY_IMPROVEMENT);
+      setQualityImprovementEnabled(INITIAL_QI_ENABLED);
+      setComment(INITIAL_STRING);
+      setActiveStep(0); // Reset stepper to first step
+      onStepChange?.(0); // Notify parent
     }
   }));
 
