@@ -125,7 +125,9 @@ export const CustomMultiFieldGroup = <T extends RowData>({
       updated[rowIndex] = { ...updated[rowIndex], [fieldName]: value };
       const values = updated.map(({ id, ...rest }) => rest as unknown as T);
       const valid = validateRows(values);
-      onChange({ values, valid });
+      Promise.resolve().then(() => {
+        onChange({ values, valid });
+      });
       return updated;
     });
   };
