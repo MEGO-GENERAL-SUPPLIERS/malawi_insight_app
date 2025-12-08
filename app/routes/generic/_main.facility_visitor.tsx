@@ -4,10 +4,10 @@ import React from 'react';
 import PageHeaderTitle from '~/components/system/PageHeaderTitle';
 import MenuCardGrid from '~/components/system/MenuCardGrid';
 import { type IMenuCard } from '~/types/interfaces/IMenuCard';
-import { useNavigate } from 'react-router-dom';
+import { useNavigator } from "~/hooks/useNavigator";
 
 const Templates: React.FC = () => {
-  const navigate = useNavigate();
+  const { navigateTo } = useNavigator();
 
   const templateCards: IMenuCard[] = [
     {
@@ -16,6 +16,14 @@ const Templates: React.FC = () => {
       description: 'Form to add a facility visit',
       route: '/app/generic/facility_visitor/add',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
+      privileges: []
+    },
+    {
+      icon: "Table2Icon",
+      name: 'Facility Visit Data',
+      description: 'Facility visit data captured',
+      route: '/app/generic/facility_visitor/data',
+      colors: ['blue-400', 'blue-500', 'blue-600'],
       privileges: []
     },
     {
@@ -29,8 +37,7 @@ const Templates: React.FC = () => {
   ];
 
   const handleCardClick = (route: string) => {
-    console.log(`Navigating to: ${route}`);
-    navigate(route);
+    navigateTo(route);
   };
 
   return (
