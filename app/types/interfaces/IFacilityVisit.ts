@@ -48,7 +48,7 @@ export interface IVisitFinding{
 export interface IVisitRecommendationAction{
   recommendation_action: string;
   responsible_personnel: string;
-  completion_date: Dayjs | string | null; 
+  completion_date?: Dayjs | string | null; 
 }
 
 export interface IQualityImprovement{

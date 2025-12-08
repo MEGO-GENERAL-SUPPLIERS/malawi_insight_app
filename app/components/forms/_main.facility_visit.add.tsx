@@ -352,13 +352,6 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef, FacilityVisitData>(({
     </div>
   );
 
-  const handleQIDocumentedChange = (value: "Yes" | "No") => {
-    setQualityImprovementEnabled(value);
-    // When switching to "No", ensure at least one empty row exists
-    if (value === "No" && qualityImprovement.length === 0) {
-      setQualityImprovement([{ suggested_qi: "", goal_outcome: "" }]);
-    }
-  };
 
   const getValidationErrors = useCallback((): string[] => {
     const errors: string[] = [];
@@ -476,21 +469,38 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef, FacilityVisitData>(({
   }, [getValidationErrors]);
 
   useImperativeHandle(ref, () => ({
-    getRows: (): IFacilityVisitFormData => ({
-      facility: selectedFacility,
-      date_of_visit: dateOfVisit,
-      team_lead: teamLead,
-      facility_staff_member: facilityStaffMember,
-      team_members: teamMembers,
-      objectives,
-      visited_team: visitedTeam,
-      findings,
-      recommendation_actions: recommendationActions,
-      quality_improvement: qualityImprovement,
-      quality_improvement_enabled: qualityImprovementEnabled === "Yes" ? 1 : 0,
-      comment,
-      submitted_by: data?.submitted_by
-    }),
+    getRows: (): IFacilityVisitFormData => {
+      const normalisedRecommendations = recommendationActions.map(action => {
+        let completion_date = action.completion_date;
+
+        if(completion_date === "") completion_date = null;
+
+        if (completion_date instanceof dayjs) {
+          completion_date = completion_date.isValid() ? completion_date.toISOString() : null;
+        }
+
+        return {
+          ...action,
+          completion_date: completion_date
+        };
+      });
+
+      return {
+        facility: selectedFacility,
+        date_of_visit: dateOfVisit ?? null,
+        team_lead: teamLead,
+        facility_staff_member: facilityStaffMember,
+        team_members: teamMembers,
+        objectives,
+        visited_team: visitedTeam,
+        findings,
+        recommendation_actions: normalisedRecommendations,
+        quality_improvement: qualityImprovement,
+        quality_improvement_enabled: qualityImprovementEnabled === "Yes" ? 1 : 0,
+        comment,
+        submitted_by: data?.submitted_by
+      }
+    },
 
     validateCurrentStep,
 
