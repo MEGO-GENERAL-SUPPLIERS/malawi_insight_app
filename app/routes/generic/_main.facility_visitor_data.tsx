@@ -98,7 +98,7 @@ const FacilityVisitorData: React.FC = () => {
         <div className="flex gap-2">
           <Tooltip title="View visit details">
             <button
-              className="btn btn-secondary btn-sm"
+              className="btn btn-info btn-sm"
               onClick={() => handleModalOpen(row.original)}
             >
               <EyeIcon />
