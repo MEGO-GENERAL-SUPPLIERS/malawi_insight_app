@@ -10,6 +10,7 @@ const DatatablePageSkeletonLoader = React.lazy(() => import("~/components/system
 import { format } from "date-fns";
 import { enUS } from "date-fns/locale";
 import { DisabledVisible } from "@mui/icons-material";
+import { useNavigator } from "~/hooks/useNavigator";
 
 const FacilityVisitorData: React.FC = () => {
   const [tableData, setTableData] = useState<IFacilityVisitFormData[]>([]);
@@ -17,6 +18,8 @@ const FacilityVisitorData: React.FC = () => {
   const [fetching, setFetching] = useState(true);
   const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
   const [editRow, setEditRow] = useState<IFacilityVisitFormData | null>(null);
+  const { navigateTo } = useNavigator();
+
 
   const loadFacilityVisitData = async () => {
       try {
@@ -104,8 +107,9 @@ const FacilityVisitorData: React.FC = () => {
           </Tooltip>
           <Tooltip title="Void visit">
             <button
-              className="btn btn-danger btn-sm"
+              className="btn-sm bg-gray-300 cursor-not-allowed rounded-sm text-white"
               onClick={() => alert("Void this visit?")}
+              disabled
               >
               <DisabledVisible />
             </button>
@@ -131,7 +135,7 @@ const FacilityVisitorData: React.FC = () => {
             {/*Add Facility visit*/}
             <Tooltip title="Add facility visit">
               <button
-                onClick={() => alert("Navigate to Add new facility visit")}
+                onClick={() => navigateTo("generic_facility_visitor_add")}
                 className="btn btn-success flex gap-2 items-center"
               >
                 <PlusCircle />
@@ -150,21 +154,21 @@ const FacilityVisitorData: React.FC = () => {
             </Tooltip>
           </div>
 
-           {/*Loader and datatable*/}
-        {fetching ? (
-          <Box className="flex justify-center items-center py-10">
-            <CircularProgress size={36} />
-          </Box>
-        ) : (
-          <TableContainer component={Paper}>
-            <MaterialReactTable 
-              data={tableData} 
-              columns={columns} 
-              enableColumnActions={true}
-            />
-          </TableContainer>
-        )}
-          Facility Visit Data
+          {/*Loader and datatable*/}
+          {fetching ? (
+            <Box className="flex justify-center items-center py-10">
+              <CircularProgress size={36} />
+            </Box>
+          ) : (
+            <TableContainer component={Paper}>
+              <MaterialReactTable 
+                data={tableData} 
+                columns={columns} 
+                enableColumnActions={true}
+              />
+            </TableContainer>
+          )}
+            Facility Visit Data
         </Suspense>
       </div>
     </div>

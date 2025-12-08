@@ -22,11 +22,11 @@ export interface IFacilityVisitFormData {
   quality_improvement: IQualityImprovement[] | [];
   quality_improvement_enabled: string | number; 
   comment: string;
-  reported_by?: {}
+  submitted_by?: any
 }
 
 export interface ITeamMemberEntry {
-  teamMember: string;
+  team_member: string;
   position: string;
   organisation: string;
 }
@@ -36,7 +36,7 @@ export interface IVisitObjective{
 }
 
 export interface IVisitedTeam{
-  teamMember: string; 
+  team_member: string; 
   position: string;
   organisation: string;
 }
@@ -46,12 +46,12 @@ export interface IVisitFinding{
 }
 
 export interface IVisitRecommendationAction{
-  recommendationAction: string;
-  responsiblePersonnel: string;
-  completionDate: Dayjs | string | null; 
+  recommendation_action: string;
+  responsible_personnel: string;
+  completion_date: Dayjs | string | null; 
 }
 
 export interface IQualityImprovement{
-  suggestedQI: string;
-  goalOutcome: string;
+  suggested_qi: string;
+  goal_outcome: string;
 }

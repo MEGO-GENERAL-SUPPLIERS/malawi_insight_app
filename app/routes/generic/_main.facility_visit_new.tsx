@@ -79,7 +79,7 @@ const FacilityVisitNew: React.FC = () => {
     const formData = formRef.current.getRows();
     const allData = {
       ...formData,
-      user_id: localUser?.id || 0
+      submitted_by: localUser?.id || 0
     };
 
     console.log("Final data:", allData);

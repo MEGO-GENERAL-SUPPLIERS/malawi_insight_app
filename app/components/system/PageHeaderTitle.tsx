@@ -1,53 +1,72 @@
 // components/custom-elements/PageHeaderTitle.tsx
 
-import React from 'react';
+import React, { Fragment } from 'react';
 import * as LucideIcons from 'lucide-react';
 import { type IPageHeaderTitleProps } from '~/types/interfaces/IPageHeaderTitle';
 import { type IconComponent } from '~/types/interfaces/ILucideIconTypes';
 
 const PageHeaderTitle: React.FC<IPageHeaderTitleProps> = ({
   icon,
+  iconColor = 'text-slate-700',
+  iconSize: propIconSize = 32,
   title,
+  titleColor = 'text-cyan-700',
+  titleSize = 'text-xl',
   description,
+  descriptionColor = 'text-gray-600',
+  descriptionSize = 'text-sm',
   alignment = 'left',
-  iconSize = 32,
-  className = ''
+  className = '',
+  actions
 }) => {
-  // Dynamically get the icon component if provided
-  const IconComponent = icon 
+  const IconComponent = icon
     ? (LucideIcons[icon] as IconComponent) || (LucideIcons.HelpCircle as IconComponent)
     : null;
 
-  // Determine alignment classes
-  const alignmentClasses = {
-    left: 'text-start',
-    center: 'text-center',
-    right: 'text-end'
+  const textAlignClass =
+    alignment === 'left' ? 'text-start' :
+    alignment === 'center' ? 'text-center' :
+    'text-end';
+
+  const renderActions = () => {
+    if (!actions) return null;
+    return Array.isArray(actions) ? actions : [actions];
   };
 
-  const alignmentClass = alignmentClasses[alignment];
-
   return (
-    <div className={`mb-8 ${alignmentClass} ${className} pb-3 border-b border-cyan-600`}>
+    <div className={`mb-8 ${textAlignClass} ${className} pb-3 border-b border-cyan-600`}>
+      {/* Title row */}
       <div className="flex items-center gap-3 mb-2">
-        {/* Icon */}
         {IconComponent && (
-          <div className="text-gray-700">
-            <IconComponent size={iconSize} />
-          </div>
+          <span className={iconColor}>
+            <IconComponent size={propIconSize} />
+          </span>
         )}
-        
-        {/* Title */}
-        <h1 className="text-xl font-bold text-cyan-700">
+        <h1 className={`${titleSize} font-bold ${titleColor}`}>
           {title}
         </h1>
       </div>
-      
-      {/* Description */}
-      {description && (
-        <p className="text-gray-600 text-sm">
-          {description}
-        </p>
+
+      {/* Description + Actions row (same line) */}
+      {(description || actions) && (
+        <div className="flex items-center justify-between">
+          {description && (
+            <p className={`${descriptionSize} ${descriptionColor} flex-1`}>
+              {description}
+            </p>
+          )}
+
+          {/* If no description, actions still appear right-aligned */}
+          {!description && <div className="flex-1"></div>}
+
+          {actions && (
+            <div className="flex items-center gap-2 ms-4 flex-shrink-0">
+              {renderActions()?.map((action, index) => (
+                <Fragment key={index}>{action}</Fragment>
+              ))}
+            </div>
+          )}
+        </div>
       )}
     </div>
   );
