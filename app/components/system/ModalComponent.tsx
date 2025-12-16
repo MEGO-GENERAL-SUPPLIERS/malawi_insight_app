@@ -22,7 +22,7 @@ export interface ModalButton {
 }
 
 export interface ReusableModalProps {
-  title?: string;
+  title?: ReactNode;
   icon?: string;
   size?: ModalSize;
   blur?: number;
@@ -152,7 +152,9 @@ export const ModalComponent = forwardRef(
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
               {IconComponent && <IconComponent />}
-              <Typography variant="h6">{title}</Typography>
+              {title && (
+                <Typography variant="h6" component={"div"}>{title}</Typography>
+              )}
             </Box>
 
             {showCloseButton && (
