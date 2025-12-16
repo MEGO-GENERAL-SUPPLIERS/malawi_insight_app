@@ -15,17 +15,17 @@ export interface ITbScreeningData{
     last_name?: string;
     roles?: IRole[];
   },
-  dataCollectors: (string | number)[];
+  data_collectors: (string | number)[];
   editable?: boolean;
   data?: {
-    section_a?: ITbScreenRow[] | [],
-    section_b?: IContactTracingRow[]
+    tb_screen_data?: ITbScreenRow[] | [],
+    tb_contact_tracing_data?: IContactTracingRow[]
   }
   comments?: string;
 }
 
 export interface ITbScreenRow {
-  ageGroup: string;
+  age_group: string;
   indicator: string;
   opd_m: number;
   opd_f: number;
@@ -50,19 +50,19 @@ export interface IContactTracingRow {
 // Separate interface for form data collection
 export interface ITbScreeningFormData {
   facility: IFacility | null;
-  reportingMonth: Date | null;
-  reportedBy: {
+  report_period: Date | null;
+  submitted_by: {
     id: number;
     name: string;
   };
-  dataCollectors: number[]; // array of person IDs
-  sectionA: ITbScreenRow[];
-  sectionB: IContactTracingRow[];
+  other_data_collectors: number[]; // array of person IDs
+  tb_screen_data: ITbScreenRow[];
+  tb_contact_tracing_data: IContactTracingRow[];
   comments: string;
 }
 
 export interface TbScreeningGridRef {
-  getRows: () => { sectionA: ITbScreenRow[]; sectionB: IContactTracingRow[]; meta: { facilityId?: number; reportPeriod?: any; comment?: string } };
+  getRows: () => { tb_screen_data: ITbScreenRow[]; tb_contact_tracing_data: IContactTracingRow[]; meta: { facility?: any; report_period?: any; comment?: string } };
   validateCurrentStep: () => boolean;
   goToNextStep: () => void;
   goToPrevStep: () => void;

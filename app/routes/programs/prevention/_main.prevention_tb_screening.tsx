@@ -149,12 +149,11 @@ const PreventionTbScreening: React.FC = () => {
               ...formData,
               meta: {
                 ...formData?.meta,
-                user_id: localUser?.id
+                submitted_by: localUser
               }
             };
 
             console.log("TB Screening Data", allData);
-
 
             const response = await addTbScreeningData(allData);
 
@@ -165,6 +164,9 @@ const PreventionTbScreening: React.FC = () => {
                 icon: "CheckCircle",
                 autoHideDuration: 3000,
               });
+
+              modalRef?.current?.closeModal();
+
             } else {
               ToastAlertComponentController.show({
                 type: "error",
@@ -175,7 +177,6 @@ const PreventionTbScreening: React.FC = () => {
             }
 
             setLoading(false);
-            modalRef?.current?.closeModal();
           }
         }, 
         {
@@ -320,7 +321,7 @@ const PreventionTbScreening: React.FC = () => {
 
           <TbScreeningGridForm 
             ref={formRef} 
-            data={editRow?.data?.section_a} 
+            data={editRow?.data?.tb_screen_data} 
             setSlotData={(data: ITbScreenRow[]) => setFormSlotData(data)}
             currentStep={currentStep}
             onStepChange={handleStepChange}
