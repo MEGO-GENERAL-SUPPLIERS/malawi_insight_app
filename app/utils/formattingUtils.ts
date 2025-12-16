@@ -14,6 +14,23 @@ export const formattingUtils = {
   },
 
 
+ formatReportPeriod(dateString: string | null | undefined): string {
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "Invalid Date";
+    return date.toISOString().slice(0, 7); // "2025-12"
+  },
+
+  formatReportPeriodMMMYY(dateString: string | null | undefined): string{
+    if (!dateString) return "—";
+    const date = new Date(dateString);
+    if (isNaN(date.getTime())) return "—";
+
+    const month = date.toLocaleString('en-US', { month: 'short' }); // e.g., "Dec"
+    const year = date.getFullYear().toString().slice(-2);           // e.g., "25"
+    return `${month}-${year}`;
+  },
+
   snakeCaseToCamelCase(str: string): string {
     return str.replace(/_([a-z])/g, (_, letter) => letter.toUpperCase());
   },
