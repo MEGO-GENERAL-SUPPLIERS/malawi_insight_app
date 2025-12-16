@@ -273,7 +273,7 @@ const Auth = () => {
             <div className="flex">
               <div className="flex flex-1 items-center justify-between">
                 {/* Remember Me */}
-                <label className="flex items-center cursor-pointer group">
+                {/* <label className="flex items-center cursor-pointer group">
                   <input
                     type="checkbox"
                     checked={rememberMe}
@@ -295,7 +295,7 @@ const Auth = () => {
                     )}
                   </div>
                   <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-green-600 transition-colors">Remember me</span>
-                </label>
+                </label> */}
               </div>
 
               {/* Api Config */}

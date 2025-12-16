@@ -28,21 +28,52 @@ const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose, onUpda
     setBase(apiConfig.base || "api/v1");
   }, [isOpen]);
 
+  const buildBaseUrl = () => {
+    // Normalize base: ensure no leading/trailing slashes
+    const normalizedBase = base.replace(/^\/+|\/+$/g, "");
+    let url = `${protocol}://${server}`;
+    if (port && port !== "80" && port !== "443") {
+      url += `:${port}`;
+    }
+    url += `/${normalizedBase}`;
+    return url;
+  };
+
   const handleUpdate = async () => {
     setIsLoading(true);
+
+    const infoToastId = toast.info("API settings cached. Testing configuration...", {
+      autoClose: false,
+    });
+
     try {
       const config = { protocol, server, port, base };
 
-      // Update parent if onUpdate exists
-      if (onUpdate) onUpdate(config);
-
-      // Persist to localStorage
       localStorageUtils.addOrUpdateLocalStorageObject({ api: config });
 
-      toast.success("API configuration cached successfully!");
+      const normalizedBase = base.replace(/^\/+|\/+$/g, "");
+      let baseUrl = `${protocol}://${server}`;
+      if (port && port !== "80" && port !== "443") {
+        baseUrl += `:${port}`;
+      }
+      baseUrl += `/${normalizedBase}`;
+      const healthCheckUrl = `${baseUrl}/health_check`;
+
+      const response = await fetch(healthCheckUrl, { method: "GET" });
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      const data = await response.json();
+
+      if (onUpdate) onUpdate(config);
+
+      toast.dismiss(infoToastId);
+      toast.success("API configuration validated successfully!");
+
       onClose();
     } catch (error: any) {
-      toast.error(`Failed to cache API configuration. ${error.message}`);
+      toast.dismiss(infoToastId);
+      toast.error(`API test failed: ${error.message || "Unable to reach health check endpoint"}`);
     } finally {
       setIsLoading(false);
     }
@@ -61,23 +92,52 @@ const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose, onUpda
       >
         <div className="flex justify-between items-center mb-6">
           <h2 className="text-xl font-bold text-gray-900 dark:text-white">API Configuration</h2>
-          <button onClick={onClose} className="cursor-pointer text-gray-500 hover:text-gray-700 dark:hover:text-gray-300">
+          <button
+            onClick={onClose}
+            className="cursor-pointer text-gray-500 hover:text-gray-700 dark:hover:text-gray-300"
+            disabled={isLoading}
+          >
             <XCircle className="w-6 h-6" />
           </button>
         </div>
 
         <div className="space-y-4">
-          <input className="w-full p-3 border rounded dark:bg-gray-200" placeholder="Protocol" value={protocol} onChange={(e) => setProtocol(e.target.value)} />
-          <input className="w-full p-3 border rounded dark:bg-gray-200" placeholder="Host" value={server} onChange={(e) => setServer(e.target.value)} />
-          <input className="w-full p-3 border rounded dark:bg-gray-200" placeholder="Port (optional)" value={port} onChange={(e) => setPort(e.target.value)} />
-          <input className="w-full p-3 border rounded dark:bg-gray-200" placeholder="Base" value={base} onChange={(e) => setBase(e.target.value)} />
+          <input
+            className="w-full p-3 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            placeholder="Protocol (e.g., http, https)"
+            value={protocol}
+            onChange={(e) => setProtocol(e.target.value.trim())}
+            disabled={isLoading}
+          />
+          <input
+            className="w-full p-3 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            placeholder="Host (e.g., localhost, api.example.com)"
+            value={server}
+            onChange={(e) => setServer(e.target.value.trim())}
+            disabled={isLoading}
+          />
+          <input
+            className="w-full p-3 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            placeholder="Port (optional, e.g., 3000)"
+            value={port}
+            onChange={(e) => setPort(e.target.value.trim())}
+            disabled={isLoading}
+          />
+          <input
+            className="w-full p-3 border rounded dark:bg-gray-700 dark:text-white dark:border-gray-600"
+            placeholder="Base path (e.g., api/v1)"
+            value={base}
+            onChange={(e) => setBase(e.target.value.trim())}
+            disabled={isLoading}
+          />
         </div>
 
         <div className="mt-6 flex justify-end space-x-3">
           <button
             type="button"
             onClick={onClose}
-            className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-500 hover:bg-gray-400 dark:hover:bg-gray-600 transition cursor-pointer"
+            disabled={isLoading}
+            className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 transition cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>
@@ -85,9 +145,13 @@ const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose, onUpda
             type="button"
             onClick={handleUpdate}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition flex items-center justify-center cursor-pointer"
+            className="px-4 py-2 rounded-lg bg-blue-500 hover:bg-blue-600 text-white transition flex items-center justify-center cursor-pointer disabled:opacity-70"
           >
-            {isLoading ? <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div> : "Update Config"}
+            {isLoading ? (
+              <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+            ) : (
+              "Save & Test"
+            )}
           </button>
         </div>
       </div>
