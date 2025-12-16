@@ -9,7 +9,7 @@ const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderT
 const MenuCardsSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/MenuCardsSkeletonLoader"));
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
-import TbScreeningGridForm from "~/components/forms/tb.screening.add";
+import TbScreeningGridForm from "~/routes/programs/prevention/components/tb.screening.add";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { addTbScreeningData } from "~/services/preventionService";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -37,6 +37,7 @@ const PreventionTbScreening: React.FC = () => {
   // Handle Fetch TB Screening Data
   const handleFetchTbScreenData = async () => {
     setFetching(true);
+    setLoading(true);
     try {
       const response = await fetchTbScreeningData();
       if (response.success && Array.isArray(response.data)) {
@@ -66,6 +67,7 @@ const PreventionTbScreening: React.FC = () => {
       });
     } finally {
       setFetching(false);
+      setLoading(false);
     }
   };
 
@@ -184,7 +186,6 @@ const PreventionTbScreening: React.FC = () => {
   // handleSubmit
   const handleSubmit = () => {
     if (!formRef.current) return;
-
 
     if (currentStep < 1) {
       ToastAlertComponentController.show({
@@ -335,7 +336,7 @@ const PreventionTbScreening: React.FC = () => {
                 onClick={handleFetchTbScreenData}
                 className="btn btn-secondary flex items-center justify-center"
               >
-                <RefreshCw size={20} />
+                { (loading || fetching) ? <CircularProgress size={18} color="inherit" /> : <RefreshCw size={19} />}
               </button>
             </Tooltip>
           </div>
@@ -346,9 +347,9 @@ const PreventionTbScreening: React.FC = () => {
       </div>
 
       <div>
-        {loading ? (
+        {(loading || fetching) ? (
           <Box className="flex justify-center items-center h-64">
-            <CircularProgress />
+            <CircularProgress size={22}/>  
           </Box>
         ) : (
           <MaterialReactTable columns={columns} data={tableData} />
@@ -371,7 +372,7 @@ const PreventionTbScreening: React.FC = () => {
         <div className="relative">
           {(loading || errorMessage) && (
             <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
-              {loading && <CircularProgress size={24} />}
+              {loading && <CircularProgress size={20} />}
               {errorMessage && (
                 <StaticAlertComponent
                   type="error"

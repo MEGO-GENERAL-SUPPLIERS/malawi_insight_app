@@ -1,5 +1,5 @@
-import React, { Suspense, useRef, useState, useMemo } from "react";
-import { Tooltip, Box, CircularProgress } from "@mui/material";
+import React, { Suspense, useRef, useState, useMemo, useEffect } from "react";
+import { Tooltip, Box, CircularProgress, LinearProgress } from "@mui/material";
 import { PlusCircle, RefreshCw } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
@@ -33,7 +33,7 @@ const PreventionTptReport: React.FC = () => {
   // Fetch TPT Report Data (placeholder using TB fetch)
   const handleFetchTptReportData = async () => {
     setFetching(true);
-
+    setLoading(true);
     try {
       const response = await fetchTptReportData(); // Replace with TPT service later
 
@@ -61,8 +61,14 @@ const PreventionTptReport: React.FC = () => {
       });
     } finally {
       setFetching(false);
+      setLoading(false);
     }
   };
+
+
+  useEffect(() => {
+    handleFetchTptReportData();
+  }, []);
 
   // Open modal
   const handleModalOpen = () => {
@@ -252,7 +258,7 @@ const PreventionTptReport: React.FC = () => {
                 onClick={handleFetchTptReportData}
                 className="btn btn-secondary flex items-center justify-center"
               >
-                <RefreshCw size={20} />
+                { (loading || fetching) ? <CircularProgress color="inherit" size={18} /> : <RefreshCw size={19} /> }
               </button>
             </Tooltip>
           </div>
@@ -263,7 +269,7 @@ const PreventionTptReport: React.FC = () => {
       <div>
         {loading ? (
           <Box className="flex justify-center items-center h-64">
-            <CircularProgress />
+            <CircularProgress size={22} />
           </Box>
         ) : (
           <MaterialReactTable columns={columns} data={tableData} />
