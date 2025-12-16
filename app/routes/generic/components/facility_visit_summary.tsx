@@ -85,8 +85,7 @@ const FacilityVisitSummary: React.FC<FacilityVisitSummaryProps> = ({ data, error
         </div>
         <div className="flex-1 min-w-0">
           <div className="font-semibold text-gray-900 text-sm truncate">{name}</div>
-          <div className="text-xs text-gray-600 mt-0.5">{position}</div>
-          <div className="text-xs text-gray-500">{organisation}</div>
+          <div className="text-xs text-gray-600 mt-0.5">{position} ({organisation})</div>
         </div>
       </div>
     </div>
