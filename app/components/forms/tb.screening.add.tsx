@@ -39,21 +39,21 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
 
   // Default rows data for Section A (kept exactly as in your original)
   const defaultSectionARows: ITbScreenRow[] = [
-    { age_group: '0-14 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '0-14 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '0-14 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '0-14 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '0-14 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '15-19 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '15-19 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '15-19 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '15-19 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '15-19 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '20> years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '20> years', indicator: 'TB Presumptives (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '20> years', indicator: 'TB Cases Diagnosed with TB', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '20> years', indicator: 'TB Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
-    { age_group: '20> years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, ped_m: 0, ped_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '0-14 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '0-14 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '0-14 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '0-14 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '0-14 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '15-19 years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '15-19 years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '15-19 years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '15-19 years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '15-19 years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '20> years', indicator: 'Total Screened (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '20> years', indicator: 'Total Presumptives (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '20> years', indicator: 'Total Cases Diagnosed with TB', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '20> years', indicator: 'Total Initiated on Treatment (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
+    { age_group: '20> years', indicator: 'Total Clinic Attendees (TB)', opd_m: 0, opd_f: 0, peads_m: 0, peads_f: 0, male_m: 0, male_f: 0, female_m: 0, female_f: 0, art_m: 0, art_f: 0, teen_m: 0, teen_f: 0, total: 0 },
   ];
 
   // Default rows data for Section B (kept same)
@@ -143,7 +143,7 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
 
     return (
       Number(row.opd_m || 0) + Number(row.opd_f || 0) +
-      Number(row.ped_m || 0) + Number(row.ped_f || 0) +
+      Number(row.peads_m || 0) + Number(row.peads_f || 0) +
       Number(row.male_m || 0) + Number(row.male_f || 0) +
       Number(row.female_m || 0) + Number(row.female_f || 0) +
       Number(row.art_m || 0) + Number(row.art_f || 0) +
@@ -201,7 +201,7 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
   }, [setSlotData]);
 
   const editableFields: (keyof ITbScreenRow)[] = [
-    'opd_m', 'opd_f', 'ped_m', 'ped_f', 'male_m', 'male_f',
+    'opd_m', 'opd_f', 'peads_m', 'peads_f', 'male_m', 'male_f',
     'female_m', 'female_f', 'art_m', 'art_f', 'teen_m', 'teen_f'
   ];
 
@@ -222,8 +222,8 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
     const totals: Record<string, number> = {
       opd_m: 0,
       opd_f: 0,
-      ped_m: 0,
-      ped_f: 0,
+      peads_m: 0,
+      peads_f: 0,
       male_m: 0,
       male_f: 0,
       female_m: 0,
@@ -238,8 +238,8 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
     groupRows.forEach(row => {
       totals.opd_m += Number(row.opd_m || 0);
       totals.opd_f += Number(row.opd_f || 0);
-      totals.ped_m += Number(row.ped_m || 0);
-      totals.ped_f += Number(row.ped_f || 0);
+      totals.peads_m += Number(row.peads_m || 0);
+      totals.peads_f += Number(row.peads_f || 0);
       totals.male_m += Number(row.male_m || 0);
       totals.male_f += Number(row.male_f || 0);
       totals.female_m += Number(row.female_m || 0);
