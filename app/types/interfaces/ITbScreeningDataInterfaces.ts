@@ -29,8 +29,8 @@ export interface ITbScreenRow {
   indicator: string;
   opd_m: number;
   opd_f: number;
-  ped_m: number;
-  ped_f: number;
+  peads_m: number;
+  peads_f: number;
   male_m: number;
   male_f: number;
   female_m: number;
@@ -59,6 +59,14 @@ export interface ITbScreeningFormData {
   tb_screen_data: ITbScreenRow[];
   tb_contact_tracing_data: IContactTracingRow[];
   comments: string;
+}
+
+export interface ITbScreeningDataResponse{
+  id: number;
+  meta: any; 
+  tb_screen_data: ITbScreenRow[] | [];
+  tb_contact_tracing_data: IContactTracingRow[] | [];
+  metadata: any[] | [];
 }
 
 export interface TbScreeningGridRef {

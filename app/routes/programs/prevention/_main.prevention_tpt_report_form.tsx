@@ -2,7 +2,6 @@ import React, { Suspense, useRef, useState, useMemo } from "react";
 import { Tooltip, Box, CircularProgress } from "@mui/material";
 import { PlusCircle, RefreshCw } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
-import { fetchTbScreeningData } from "~/services/programPreventionService"; // You will later replace with a service for TPT
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
 
 const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderTitle"));
@@ -10,7 +9,7 @@ const MenuCardsSkeletonLoader = React.lazy(() => import("~/components/system/ske
 
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
-
+import { fetchTptReportData } from "~/services/preventionService";
 import TPTReportGridForm from "~/components/forms/tb.tpt_report_grid_form"; 
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import type { TPTReportGridRef, ITPTReportData, ITPTGridRow } from "~/types/interfaces/ITPTReportInterfaces";
@@ -36,7 +35,7 @@ const PreventionTptReport: React.FC = () => {
     setFetching(true);
 
     try {
-      const response = await fetchTbScreeningData(); // Replace with TPT service later
+      const response = await fetchTptReportData(); // Replace with TPT service later
 
       if (response.success && Array.isArray(response.data)) {
         ToastAlertComponentController.show({

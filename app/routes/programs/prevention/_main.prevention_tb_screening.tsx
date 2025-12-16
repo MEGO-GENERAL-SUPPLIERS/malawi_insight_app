@@ -1,10 +1,10 @@
-import React, { Suspense, useRef, useState, useMemo } from "react";
+import React, { Suspense, useRef, useState, useMemo, useEffect } from "react";
 import { Tooltip, Box, CircularProgress } from "@mui/material";
-import { PlusCircle, RefreshCw } from "lucide-react";
+import { Eye, PlusCircle, RefreshCw } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
-import { fetchTbScreeningData } from "~/services/programPreventionService";
+import { fetchTbScreeningData } from "~/services/preventionService";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
-import type { ITbScreeningData, ITbScreenRow, TbScreeningGridRef } from "~/types/interfaces/ITbScreeningDataInterfaces";
+import type { ITbScreeningData, ITbScreeningDataResponse, ITbScreenRow, TbScreeningGridRef } from "~/types/interfaces/ITbScreeningDataInterfaces";
 const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderTitle"));
 const MenuCardsSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/MenuCardsSkeletonLoader"));
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
@@ -13,12 +13,14 @@ import TbScreeningGridForm from "~/components/forms/tb.screening.add";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import { addTbScreeningData } from "~/services/preventionService";
 import { localStorageUtils } from "~/utils/localStorageUtils";
+import { formattingUtils } from "~/utils/formattingUtils";
+const TbScreeningDataViewer = React.lazy(() => import("~/routes/programs/prevention/components/tb_screen_data_viewer"));
 
 
 const PreventionTbScreening: React.FC = () => {
   const modalRef = useRef<any>(null);
   const formRef = useRef<TbScreeningGridRef>(null);
-  const [tableData, setTableData] = useState<ITbScreeningData[]>([]);
+  const [tableData, setTableData] = useState<ITbScreeningDataResponse[]>([]);
   const [fetching, setFetching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editRow, setEditRow] = useState<ITbScreeningData | null>(null);
@@ -26,7 +28,11 @@ const PreventionTbScreening: React.FC = () => {
   const [formSlotData, setFormSlotData] = useState<ITbScreenRow[] | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
   const [localUser, _setLocalUser] = useState(localStorageUtils.getStoredUser());
-
+  
+  const tbScreenDataModalRef = useRef<any>(null);
+  const [tbScreenDataDetails, setTbScreenDataDetails] = useState<ITbScreeningDataResponse | null>(null);
+  const [loadingTbScreenData, setLoadingTbScreenData] = useState<boolean>(false);
+  const [tbScreenDataErrorMessage, setTbScreenDataErrorMessage] = useState<string | string[] | null>(null);
   
   // Handle Fetch TB Screening Data
   const handleFetchTbScreenData = async () => {
@@ -34,7 +40,7 @@ const PreventionTbScreening: React.FC = () => {
     try {
       const response = await fetchTbScreeningData();
       if (response.success && Array.isArray(response.data)) {
-        // setTableData(response.data);
+        setTableData(response.data); // ✅ Critical: populate tableData
         ToastAlertComponentController.show({
           type: `success`,
           message: `TB Screening data refreshed successfully`,
@@ -42,6 +48,7 @@ const PreventionTbScreening: React.FC = () => {
           autoHideDuration: 2500,
         });
       } else {
+        setTableData([]); // clear on failure
         ToastAlertComponentController.show({
           type: `error`,
           message: response.message || `Failed to refresh TB Screening Data`,
@@ -50,6 +57,7 @@ const PreventionTbScreening: React.FC = () => {
         });
       }
     } catch (err: any) {
+      setTableData([]);
       ToastAlertComponentController.show({
         type: `error`,
         message: `Error refreshing TB Screening Data: ${err.message}`,
@@ -59,7 +67,12 @@ const PreventionTbScreening: React.FC = () => {
     } finally {
       setFetching(false);
     }
-  }
+  };
+
+
+  useEffect(() => {
+    handleFetchTbScreenData();
+  }, []);
 
 
   // handleModalOpen
@@ -68,10 +81,25 @@ const PreventionTbScreening: React.FC = () => {
     modalRef?.current.openModal();
   };
 
+  const handleTbScreeningDataModalOpen = (row?: ITbScreeningDataResponse) => {
+    console.log("Data", row);
+    setTbScreenDataErrorMessage(null);
+    if (row) {
+      setTbScreenDataDetails(row);
+    } else {
+      setTbScreenDataDetails(null);
+    }
+    tbScreenDataModalRef?.current.openModal();
+  }
+
 
   // handleModalClose
   const handleModalClose = () => {
     setCurrentStep(0);
+    return true;
+  };
+
+  const handleTbScreeDataModalClose = () => {
     return true;
   };
 
@@ -103,17 +131,54 @@ const PreventionTbScreening: React.FC = () => {
   };
 
   // Columns 
-  const columns = React.useMemo<MRT_ColumnDef<ITbScreeningData>[]>(
+  const columns = useMemo<MRT_ColumnDef<ITbScreeningDataResponse>[]>(
     () => [
       {
         accessorKey: "index",
         header: "#",
         Cell: ({ row }) => row.index + 1,
         enableSorting: false,
-        size: 70
-      }
+        size: 60,
+      },
+      {
+        accessorFn: (row) => formattingUtils.formatReportPeriodMMMYY(row.meta?.report_period),
+        id: "report_period",
+        header: "Report Period",
+        size: 120,
+      },
+      {
+        accessorFn: (row) => row.meta?.facility?.name || "—",
+        id: "facility_name",
+        header: "Facility",
+        size: 180,
+      },
+      {
+        accessorFn: (row) => row.meta?.comment || "—",
+        id: "comment",
+        header: "Comment",
+        size: 200,
+      },
+      {
+        id: "actions",
+        header: "Actions",
+        Cell: ({ row }) => (
+          <Tooltip title="View Details">
+            <button
+              onClick={() => {
+                handleTbScreeningDataModalOpen(row.original);
+              }}
+              className="p-1 text-blue-600 hover:bg-blue-50 rounded btn btn-sm btn-info cursor-pointer"
+            >
+              <Eye size={18} />
+            </button>
+          </Tooltip>
+        ),
+        enableSorting: false,
+        size: 80,
+      },
     ],
-  []);
+    []
+  );
 
 
   // handleSubmit
@@ -165,6 +230,7 @@ const PreventionTbScreening: React.FC = () => {
                 autoHideDuration: 3000,
               });
 
+              tableData.push(allData as ITbScreeningDataResponse);
               modalRef?.current?.closeModal();
 
             } else {
@@ -325,6 +391,39 @@ const PreventionTbScreening: React.FC = () => {
             setSlotData={(data: ITbScreenRow[]) => setFormSlotData(data)}
             currentStep={currentStep}
             onStepChange={handleStepChange}
+          />
+        </div>
+      </ModalComponent>
+
+      {/*Tb Screen data modal component*/}
+      <ModalComponent
+        ref={tbScreenDataModalRef}
+        title={`TB Screening Data - ${tbScreenDataDetails?.meta?.facility?.name} (${formattingUtils.formatReportPeriodMMMYY(tbScreenDataDetails?.meta?.report_period)})`}
+        icon="Sheet"
+        size="full"
+        blur={1}
+        backdropOpacity={0.4}
+        onClose={handleTbScreeDataModalClose}
+      >
+        <div className="relative">
+          {(loadingTbScreenData || tbScreenDataErrorMessage) && (
+            <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
+              {loadingTbScreenData && <CircularProgress size={24} />}
+              {tbScreenDataErrorMessage && (
+                <StaticAlertComponent
+                  type="error"
+                  title="Error(s)"
+                  message={tbScreenDataErrorMessage}
+                  icon="AlertTriangle"
+                  dismissable
+                  onClose={() => setErrorMessage(null)}
+                />
+              )}
+            </Box>
+          )}
+
+          <TbScreeningDataViewer 
+            tbScreenDataDetails={tbScreenDataDetails}
           />
         </div>
       </ModalComponent>
