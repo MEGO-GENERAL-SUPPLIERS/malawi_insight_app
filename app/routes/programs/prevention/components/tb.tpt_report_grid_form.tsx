@@ -14,7 +14,7 @@ import type {
   TPTReportGridRef,
 } from "~/types/interfaces/ITPTReportInterfaces";
 import { DatePicker } from "@mui/x-date-pickers";
-import FacilitySelect from "./elements/FacilitySelect";
+import FacilitySelect from "../../../../components/forms/elements/FacilitySelect";
 import type { IFacility } from "~/types/interfaces/IFacilityInterfaces";
 
 interface Props {
@@ -89,14 +89,14 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     const [gridRows, setGridRows] = useState<ITPTGridRow[]>(makeDefaultGrid());
     const [iptStop, setIptStop] = useState<Record<string, number>>({});
     const [threeHpStop, setThreeHpStop] = useState<Record<string, number>>({});
-    const [comments, setComments] = useState("");
+    const [comment, setComment] = useState("");
 
     useEffect(() => {
       if (data) {
-        if (data.grid) setGridRows(data.grid);
-        if (data.iptStopReasons) setIptStop(data.iptStopReasons);
-        if (data.threeHpStopReasons) setThreeHpStop(data.threeHpStopReasons);
-        if (data.comments) setComments(data.comments);
+        if (data.data) setGridRows(data.data);
+        if (data.ipt_stop_reasons) setIptStop(data.ipt_stop_reasons);
+        if (data.three_hp_stop_reasons) setThreeHpStop(data.three_hp_stop_reasons);
+        if (data.meta.comment) setComment(data.meta.comment);
       } else {
         setIptStop(Object.fromEntries(defaultReasons.map((r) => [r, 0])));
         setThreeHpStop(Object.fromEntries(defaultReasons.map((r) => [r, 0])));
@@ -122,15 +122,14 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     useImperativeHandle(ref, () => ({
       getRows: () => ({
         meta: {
-          reportPeriod: reportPeriod?.toString(),
-          locations: {
-            facilities: facility
-          }
+          report_period: reportPeriod?.toString(),
+          facilities: facility,
+          submitted_by: null
         }, // Step 1 is empty — no metadata
-        grid: gridRows,
-        iptStopReasons: iptStop,
-        threeHpStopReasons: threeHpStop,
-        comments,
+        data: gridRows,
+        ipt_stop_reasons: iptStop,
+        three_hp_stop_reasons: threeHpStop,
+        comment,
       }),
       validateCurrentStep: () => true,
       goToNextStep: () => {
@@ -420,8 +419,8 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
         <h2 className="text-2xl font-bold mb-4">Comments</h2>
         <textarea
           className="w-full border rounded p-3 min-h-[160px]"
-          value={comments}
-          onChange={(e) => setComments(e.target.value)}
+          value={comment}
+          onChange={(e) => setComment(e.target.value)}
         />
       </div>
     );
