@@ -1,6 +1,7 @@
 import React, { useMemo } from 'react';
-import { Info, Users, ClipboardList } from 'lucide-react';
+import { Info, Users, ClipboardList, HospitalIcon } from 'lucide-react';
 import type { ITbScreeningDataResponse, ITbScreenRow } from '~/types/interfaces/ITbScreeningDataInterfaces';
+import { formattingUtils } from '~/utils/formattingUtils';
 
 interface TbScreeningViewerProps {
   tbScreenDataDetails: ITbScreeningDataResponse | null;
@@ -107,9 +108,9 @@ const TbScreeningViewer: React.FC<TbScreeningViewerProps> = ({ tbScreenDataDetai
     <div className="w-full space-y-6">
       {/* Meta Information Card */}
       <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg shadow-md p-6 border border-blue-200">
-        <div className="flex items-start gap-4">
-          <div className="p-3 bg-blue-600 rounded-lg">
-            <Info className="w-6 h-6 text-white" />
+        <div className="flex items-start gap-3">
+          <div className="p-3 bg-cyan-600 rounded-lg">
+            <HospitalIcon className="w-6 h-6 text-white" />
           </div>
           <div className="flex-1 grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
@@ -121,11 +122,8 @@ const TbScreeningViewer: React.FC<TbScreeningViewerProps> = ({ tbScreenDataDetai
               <p className="text-sm text-gray-600 font-medium">Report Period</p>
               <p className="text-lg font-bold text-gray-800">
                 {meta?.report_period
-                  ? new Date(meta.report_period).toLocaleDateString('en-US', {
-                      month: 'short',
-                      year: 'numeric'
-                    })
-                  : '–'}
+                  ? formattingUtils.formatReportPeriodMMMYY(meta.report_period)
+                  : '--'}
               </p>
             </div>
             <div>

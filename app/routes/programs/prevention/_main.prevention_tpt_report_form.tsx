@@ -10,7 +10,7 @@ const MenuCardsSkeletonLoader = React.lazy(() => import("~/components/system/ske
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
 import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import { fetchTptReportData } from "~/services/preventionService";
-import TPTReportGridForm from "~/components/forms/tb.tpt_report_grid_form"; 
+import TPTReportGridForm from "~/routes/programs/prevention/components/tb.tpt_report_grid_form"; 
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
 import type { TPTReportGridRef, ITPTReportData, ITPTGridRow } from "~/types/interfaces/ITPTReportInterfaces";
 import { localStorageUtils } from "~/utils/localStorageUtils";
@@ -178,7 +178,7 @@ const PreventionTptReport: React.FC = () => {
             }
 
             setLoading(false);
-            modalRef?.current?.closeModal();
+            // modalRef?.current?.closeModal();
           },
         },
         {

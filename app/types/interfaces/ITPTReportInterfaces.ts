@@ -1,26 +1,26 @@
 export interface ITPTGridRow {
-indicator: string; // e.g., "Total number of clients new on ART (TX New)"
-type: 'M' | 'FP' | 'FNP';
-values: Record<string, number>; // ageGroupKey => number
+  indicator: string; // e.g., "Total number of clients new on ART (TX New)"
+  type: 'M' | 'FP' | 'FNP';
+  values: Record<string, number>; // ageGroupKey => number
 }
 
 
 export interface ITPTStopReasons {
-reason: string;
-value: number;
+  reason: string;
+  value: number;
 }
 
 
 export interface ITPTReportData {
   meta: {
-    facilityId?: number;
-    districtId?: number;
-    reportPeriod?: string; // YYYY-MM-01 format
+    facilities?: any;
+    report_period?: string; 
+    comment?: string;
+    submitted_by: Record<string, any> | {} | null;
   };
-  grid: ITPTGridRow[];
-  iptStopReasons: Record<string, number>; // reason => number
-  threeHpStopReasons: Record<string, number>; // reason => number
-  comments?: string;
+  data: ITPTGridRow[];
+  ipt_stop_reasons: Record<string, number>; // reason => number
+  three_hp_stop_reasons: Record<string, number>; // reason => number
 }
 
 export type TPTReportGridRef = {
