@@ -1,21 +1,47 @@
 import React, { Suspense, useRef, useState, useMemo, useEffect } from "react";
-import { Tooltip, Box, CircularProgress, LinearProgress } from "@mui/material";
-import { PlusCircle, RefreshCw } from "lucide-react";
+import { Tooltip, Box, CircularProgress } from "@mui/material";
+import { PlusCircle, RefreshCw, Building, EyeIcon } from "lucide-react";
 import { ToastAlertComponentController } from "~/components/controllers/ToastAlertComponentController";
 import { MaterialReactTable, type MRT_ColumnDef } from "material-react-table";
+import { formattingUtils } from "~/utils/formattingUtils";
 
 const PageHeaderTitle = React.lazy(() => import("~/components/system/PageHeaderTitle"));
 const MenuCardsSkeletonLoader = React.lazy(() => import("~/components/system/skeletons/MenuCardsSkeletonLoader"));
 
 import { ModalComponent, type ModalButton } from "~/components/system/ModalComponent";
-import { StaticAlertComponent } from "~/components/system/StaticAlertComponent";
 import { fetchTptReportData } from "~/services/preventionService";
-import TPTReportGridForm from "~/routes/programs/prevention/components/tb.tpt_report_grid_form"; 
+import TPTReportGridForm from "~/routes/programs/prevention/components/tb.tpt_report_grid_form";
 import { AlertComponentController } from "~/components/controllers/AlertComponentController";
-import type { TPTReportGridRef, ITPTReportData, ITPTGridRow } from "~/types/interfaces/ITPTReportInterfaces";
+import type { TPTReportGridRef, ITPTReportData } from "~/types/interfaces/ITPTReportInterfaces";
 import { localStorageUtils } from "~/utils/localStorageUtils";
-import { addTPTReportData } from "~/services/preventionService";
-import { ConstructionOutlined } from "@mui/icons-material";
+import { addTptReportData } from "~/services/preventionService";
+import TptReportDataViewer from "~/routes/programs/prevention/components/tpt_report_data_viewer";
+
+// Helper: Extract value from disaggregation data
+const getValue = (
+  data: ITPTReportData["data"],
+  indicator: string,
+  type: string,
+  ageGroup: string
+): number => {
+  const row = data.find(d => d.indicator === indicator && d.type === type);
+  return row?.values?.[ageGroup] ?? 0;
+};
+
+// Helper: Sum all age groups for an indicator + type
+const getTotalFor = (
+  data: ITPTReportData["data"],
+  indicator: string,
+  type: string
+): number => {
+  const row = data.find(d => d.indicator === indicator && d.type === type);
+  return row ? Object.values(row.values).reduce((a, b) => a + b, 0) : 0;
+};
+
+// Helper: Get total stop reasons count
+const getTotalStopReasons = (reasons: Record<string, number>): number => {
+  return Object.values(reasons).reduce((sum, val) => sum + val, 0);
+};
 
 const PreventionTptReport: React.FC = () => {
   const modalRef = useRef<any>(null);
@@ -25,38 +51,40 @@ const PreventionTptReport: React.FC = () => {
   const [fetching, setFetching] = useState(false);
   const [loading, setLoading] = useState(false);
   const [editRow, setEditRow] = useState<ITPTReportData | null>(null);
-  const [errorMessage, setErrorMessage] = useState<string | string[] | null>(null);
-  const [formSlotData, setFormSlotData] = useState<ITPTGridRow[] | null>(null);
+  const [formSlotData, setFormSlotData] = useState<any[] | null>(null);
   const [currentStep, setCurrentStep] = useState(0);
-  const [localUser, _setLocalUser] = useState(localStorageUtils.getStoredUser());
+  const [localUser] = useState(() => localStorageUtils.getStoredUser());
 
-  // Fetch TPT Report Data (placeholder using TB fetch)
+  const detailsModalRef = useRef<any>(null);
+  const [selectedReport, setSelectedReport] = useState<ITPTReportData | null>(null);
+
   const handleFetchTptReportData = async () => {
     setFetching(true);
     setLoading(true);
     try {
-      const response = await fetchTptReportData(); // Replace with TPT service later
+      const response = await fetchTptReportData();
 
       if (response.success && Array.isArray(response.data)) {
+        setTableData(response.data);
         ToastAlertComponentController.show({
-          type: `success`,
-          message: `TPT Report data refreshed successfully`,
-          icon: `CheckCircle`,
+          type: "success",
+          message: "TPT Report data refreshed successfully",
+          icon: "CheckCircle",
           autoHideDuration: 2500,
         });
       } else {
         ToastAlertComponentController.show({
-          type: `error`,
-          message: response.message || `Failed to refresh TPT Report Data`,
-          icon: `XCircle`,
+          type: "error",
+          message: response.message || "Failed to refresh TPT Report Data",
+          icon: "XCircle",
           autoHideDuration: 3500,
         });
       }
     } catch (err: any) {
       ToastAlertComponentController.show({
-        type: `error`,
+        type: "error",
         message: `Error refreshing TPT Report Data: ${err.message}`,
-        icon: `XCircle`,
+        icon: "XCircle",
         autoHideDuration: 3500,
       });
     } finally {
@@ -65,15 +93,19 @@ const PreventionTptReport: React.FC = () => {
     }
   };
 
-
   useEffect(() => {
     handleFetchTptReportData();
   }, []);
 
-  // Open modal
   const handleModalOpen = () => {
     setCurrentStep(0);
+    setEditRow(null);
     modalRef?.current.openModal();
+  };
+
+  const handleTptReportDetailsModalOpen = (report: ITPTReportData) => {
+    setSelectedReport(report);
+    detailsModalRef.current?.openModal();
   };
 
   const handleModalClose = () => {
@@ -83,22 +115,22 @@ const PreventionTptReport: React.FC = () => {
 
   const handleModalFormClose = () => {
     AlertComponentController.show({
-      title: `Confirm Close`,
-      message: `Are you sure you want to close the TPT Report Form? <p className="text-red-500 mt-6">All captured/unsaved/unsubmitted data will be lost</p>`,
+      title: "Confirm Close",
+      message: `Are you sure you want to close the TPT Report Form? <p class="text-red-500 mt-2">All unsaved data will be lost.</p>`,
       icon: "HelpCircle",
       type: "warning",
       buttons: [
         {
-          label: `Close Form`,
-          className: `btn btn-warning`,
+          label: "Close Form",
+          className: "btn btn-warning",
           onClick: () => {
             setCurrentStep(0);
             modalRef?.current.closeModal();
           },
         },
         {
-          label: `Cancel`,
-          className: `btn btn-default`,
+          label: "Cancel",
+          className: "btn btn-default",
           autoClose: true,
           onClick: () => {}
         },
@@ -106,26 +138,149 @@ const PreventionTptReport: React.FC = () => {
     });
   };
 
-  // Table Columns
-  const columns = useMemo<MRT_ColumnDef<ITPTReportData>[]>(
-    () => [
-      {
-        accessorKey: "index",
-        header: "#",
-        Cell: ({ row }) => row.index + 1,
-        enableSorting: false,
-        size: 70,
+  // ✅ Define meaningful columns
+  const columns = useMemo<MRT_ColumnDef<ITPTReportData>[]>(() => [
+    {
+      accessorKey: "meta.facility.name",
+      header: "Facility",
+      Cell: ({ row }) => (
+        <div className="flex items-center gap-2">
+          <Building size={16} className="text-gray-500" />
+          <span>{row.original.meta.facility?.name}</span>
+        </div>
+      ),
+      size: 200,
+    },
+    // {
+    //   accessorKey: "meta.submitted_by",
+    //   header: "Submitted By",
+    //   Cell: ({ row }) => {
+    //     const user = row.original.meta.submitted_by;
+    //     return (
+    //       <div className="flex items-center gap-2">
+    //         <User size={16} className="text-gray-500" />
+    //         <span>{`${user?.first_name} ${user?.last_name}`}</span>
+    //       </div>
+    //     );
+    //   },
+    //   size: 180,
+    // },
+    {
+      accessorKey: "reportPeriod",
+      header: "Report Period",
+      Cell: ({ cell }) => formattingUtils.formatReportPeriodMMMYY(cell.getValue<string>()),
+      size: 120,
+    },
+    {
+      accessorKey: "txNewTotal",
+      header: "TX New (Total)",
+      Cell: ({ row }) => {
+        const data = row.original.data;
+        const total = ["M", "FP", "FNP"].reduce(
+          (sum, type) => sum + getTotalFor(data, "Total number of clients new on ART (TX New)", type),
+          0
+        );
+        return <strong>{total}</strong>;
       },
-    ],
-    []
-  );
+      size: 100,
+    },
+    // {
+    //   accessorKey: "iptStartedTotal",
+    //   header: "IPT Started",
+    //   Cell: ({ row }) => {
+    //     const data = row.original.data;
+    //     const total = ["M", "FP", "FNP"].reduce(
+    //       (sum, type) => sum + getTotalFor(data, "Number of clients new on ART started on IPT", type),
+    //       0
+    //     );
+    //     return total;
+    //   },
+    //   size: 100,
+    // },
+    // {
+    //   accessorKey: "threeHpStartedTotal",
+    //   header: "3HP Started",
+    //   Cell: ({ row }) => {
+    //     const data = row.original.data;
+    //     const total = ["M", "FP", "FNP"].reduce(
+    //       (sum, type) => sum + getTotalFor(data, "Number of clients new on ART started on 3HP", type),
+    //       0
+    //     );
+    //     return total;
+    //   },
+    //   size: 100,
+    // },
+    {
+      accessorKey: "iptCompleted",
+      header: "IPT Completed",
+      Cell: ({ row }) => {
+        const data = row.original.data;
+        const total = ["M", "FP", "FNP"].reduce(
+          (sum, type) =>
+            sum +
+            getTotalFor(
+              data,
+              "Number of clients who reached the six months milestone during the reporting month (IPT)",
+              type
+            ),
+          0
+        );
+        return total;
+      },
+      size: 100,
+    },
+    {
+      accessorKey: "threeHpCompleted",
+      header: "3HP Completed",
+      Cell: ({ row }) => {
+        const data = row.original.data;
+        const total = ["M", "FP", "FNP"].reduce(
+          (sum, type) =>
+            sum +
+            getTotalFor(
+              data,
+              "Number of clients reached the three months milestone during the reporting month (3HP)",
+              type
+            ),
+          0
+        );
+        return total;
+      },
+      size: 100,
+    },
+    {
+      accessorKey: "iptStopped",
+      header: "IPT Stopped",
+      Cell: ({ row }) => getTotalStopReasons(row.original.ipt_stop_reasons),
+      size: 90,
+    },
+    {
+      accessorKey: "threeHpStopped",
+      header: "3HP Stopped",
+      Cell: ({ row }) => getTotalStopReasons(row.original.three_hp_stop_reasons),
+      size: 90,
+    },
+    {
+      accessorKey: "actions",
+      header: "Actions",
+      Cell: ({ row }) => (
+        <button
+          onClick={() => {
+            setEditRow(row.original);
+            handleTptReportDetailsModalOpen(row.original);
+          }}
+          className="btn btn-info btn-sm text-sm"
+        >
+          <EyeIcon size={20}/>
+        </button>
+      ),
+      size: 100,
+      enableSorting: false,
+    },
+  ], []);
 
-  // Submit
   const handleSubmit = () => {
-    console.log("Form submit");
-
     if (!formRef.current) return;
-
     if (currentStep < 3) {
       ToastAlertComponentController.show({
         type: "warning",
@@ -143,55 +298,47 @@ const PreventionTptReport: React.FC = () => {
       type: "success",
       buttons: [
         {
-          label: `Submit`,
-          className: `btn btn-success`,
+          label: "Submit",
+          className: "btn btn-success",
           onClick: async () => {
             setLoading(true);
-
             const formData = formRef.current!.getRows();
-            const allData = { 
+            const allData = {
               ...formData,
               meta: {
                 ...formData?.meta,
-                user_id: localUser?.id
-              }
+                submitted_by: localUser,
+              },
             };
 
-            console.log("TPT Report Data", allData);
+            const response = await addTptReportData(allData);
+            setLoading(false);
 
-            const response = await addTPTReportData(allData);
-
-            if(response.success){
+            if (response.success) {
               ToastAlertComponentController.show({
                 type: "success",
-                message: `${ response.message || "TPT Monthly Report Data summitted successfully!"}`,
+                message: response.message || "TPT/IPT Report submitted successfully!",
                 icon: "CheckCircle",
-                autoHideDuration: 3000,
+                autoHideDuration: 3500,
               });
+              setCurrentStep(0);
+              modalRef?.current?.closeModal();
+              handleFetchTptReportData(); // Refresh table
             } else {
               ToastAlertComponentController.show({
                 type: "error",
-                message: `${ response.message || "Failed to submit TPT Report Data"}`,
-                icon: "TriangleAlert",
-                autoHideDuration: 3000,
+                message: response.message || "Failed to submit report",
+                icon: "XCircle",
+                autoHideDuration: 3500,
               });
             }
-
-            setLoading(false);
-            // modalRef?.current?.closeModal();
           },
         },
-        {
-          label: `Cancel`,
-          className: `btn btn-danger`,
-          autoClose: true,
-          onClick: () => {}
-        },
+        { label: "Cancel", className: "btn btn-default", autoClose: true, onClick: () => {} },
       ],
     });
   };
 
-  // Steps Button Logic
   const customButtons = useMemo(() => {
     const buttons: ModalButton[] = [];
 
@@ -214,8 +361,7 @@ const PreventionTptReport: React.FC = () => {
     if (currentStep === 3) {
       buttons.push({
         label: editRow ? "Update Report" : "Submit Report",
-        icon: "Save",
-        className: "btn btn-success",
+        className: `btn ${editRow ? "btn-warning" : "btn-success"}`,
         onClick: handleSubmit,
       });
     }
@@ -227,7 +373,7 @@ const PreventionTptReport: React.FC = () => {
     });
 
     return buttons;
-  }, [currentStep, editRow]);
+  }, [currentStep, editRow, loading]);
 
   return (
     <div className="min-h-screen bg-gray-50 p-1">
@@ -236,50 +382,48 @@ const PreventionTptReport: React.FC = () => {
           <PageHeaderTitle
             icon="ClipboardCheck"
             title="TPT Monthly Reporting"
-            description="TPT Monthly Reporting Form"
+            description="Track and report TPT (IPT & 3HP) program indicators"
             alignment="left"
           />
 
-          {/* Add Button */}
           <div className="flex justify-between items-center mb-4">
-            <Tooltip title="Add TPT Monthly Report">
-              <button
-                onClick={handleModalOpen}
-                className="btn btn-success flex gap-2 items-center"
-              >
-                <PlusCircle />
-                <span>Add TPT Report</span>
+            <Tooltip title="Add New TPT Report">
+              <button onClick={handleModalOpen} className="btn btn-success flex gap-2 items-center">
+                <PlusCircle size={18} />
+                Add Report
               </button>
             </Tooltip>
 
-            {/* Refresh */}
-            <Tooltip title="Refresh TPT Reports">
-              <button
-                onClick={handleFetchTptReportData}
-                className="btn btn-secondary flex items-center justify-center"
-              >
-                { (loading || fetching) ? <CircularProgress color="inherit" size={18} /> : <RefreshCw size={19} /> }
+            <Tooltip title="Refresh Reports">
+              <button onClick={handleFetchTptReportData} className="btn btn-secondary">
+                {fetching ? <CircularProgress color="inherit" size={18} /> : <RefreshCw size={18} />}
               </button>
             </Tooltip>
           </div>
         </Suspense>
       </div>
 
-      {/* Table */}
-      <div>
+      <div className="mt-2">
         {loading ? (
-          <Box className="flex justify-center items-center h-64">
-            <CircularProgress size={22} />
+          <Box display="flex" justifyContent="center" alignItems="center" minHeight="200px">
+            <CircularProgress size={24} />
           </Box>
         ) : (
-          <MaterialReactTable columns={columns} data={tableData} />
+          <MaterialReactTable
+            columns={columns}
+            data={tableData}
+            initialState={{ density: "comfortable" }}
+            enableColumnFilters={false}
+            enableSorting={true}
+            enablePagination={true}
+            muiTablePaperProps={{ elevation: 2 }}
+          />
         )}
       </div>
 
-      {/* Modal */}
       <ModalComponent
         ref={modalRef}
-        title={`TPT Monthly Report - Step ${currentStep + 1}`}
+        title={`${editRow ? "Edit" : "Add"} TPT Monthly Report - Step ${currentStep + 1}`}
         icon="Pill"
         size="full"
         blur={1}
@@ -290,30 +434,35 @@ const PreventionTptReport: React.FC = () => {
         onClose={handleModalClose}
       >
         <div className="relative">
-          {(loading || errorMessage) && (
-            <Box className="relative inset-0 flex flex-col justify-center items-center bg-white/90 z-10 gap-3 pt-2 pb-2 mb-4 rounded-md">
-              {loading && <CircularProgress size={24} />}
-              {errorMessage && (
-                <StaticAlertComponent
-                  type="error"
-                  title="Error(s)"
-                  message={errorMessage}
-                  icon="AlertTriangle"
-                  dismissable
-                  onClose={() => setErrorMessage(null)}
-                />
-              )}
+          {loading && (
+            <Box className="absolute inset-0 bg-white/80 flex items-center justify-center z-10 rounded-md">
+              <CircularProgress size={24} />
             </Box>
           )}
-
           <TPTReportGridForm
             ref={formRef}
-            data={editRow ?? null}
-            setSlotData={(data: ITPTGridRow[] | null) => setFormSlotData(data)}
+            data={editRow}
+            setSlotData={setFormSlotData}
             currentStep={currentStep}
             onStepChange={setCurrentStep}
           />
         </div>
+      </ModalComponent>
+
+      {/*TPT Report Data*/}
+      <ModalComponent
+        ref={detailsModalRef}
+        title="TPT Report Details"
+        icon="FileText"
+        size="full"
+        blur={1}
+        backdropOpacity={0.4}
+        dismissable={true}
+        showCloseButton={true}
+        customButtons={[]}
+        onClose={() => setSelectedReport(null)}
+      >
+        <TptReportDataViewer reportData={selectedReport} />
       </ModalComponent>
 
       <ToastAlertComponentController.render />

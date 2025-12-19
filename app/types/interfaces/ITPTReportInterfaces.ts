@@ -13,10 +13,10 @@ export interface ITPTStopReasons {
 
 export interface ITPTReportData {
   meta: {
-    facilities?: any;
+    facility?: any;
     report_period?: string; 
     comment?: string;
-    submitted_by: Record<string, any> | {} | null;
+    submitted_by: Record<string, any>;
   };
   data: ITPTGridRow[];
   ipt_stop_reasons: Record<string, number>; // reason => number

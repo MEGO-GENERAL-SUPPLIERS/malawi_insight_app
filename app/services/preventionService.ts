@@ -33,9 +33,9 @@ export const fetchTbScreeningData = async (params: Record<string, any> = {}): Pr
 };
 
 
-export const addTPTReportData = async (params: Record<string, any> = {}): Promise<IApiResponse<any>> => {
+export const addTptReportData = async (params: Record<string, any> = {}): Promise<IApiResponse<any>> => {
   try{
-    const response = await apiClient.post<any>("/prevention/tb/add_tpt_report_data", params);
+    const response = await apiClient.post<any>("/prevention/tpt/add_tpt_report_data", params);
     return reformatResponse(response);
   } catch(e: any){
     return{

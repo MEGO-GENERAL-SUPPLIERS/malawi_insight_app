@@ -122,14 +122,14 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     useImperativeHandle(ref, () => ({
       getRows: () => ({
         meta: {
-          report_period: reportPeriod?.toString(),
-          facilities: facility,
-          submitted_by: null
+          report_period: reportPeriod?.toISOString(),
+          facility: facility,
+          submitted_by: {},
+          comment
         }, // Step 1 is empty — no metadata
         data: gridRows,
         ipt_stop_reasons: iptStop,
         three_hp_stop_reasons: threeHpStop,
-        comment,
       }),
       validateCurrentStep: () => true,
       goToNextStep: () => {
@@ -169,10 +169,9 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     );
 
     // ----- RENDER STEP CONTENT -----
-
     const Step1 = () => (
       <div className="bg-white rounded-lg shadow">
-        <div className="bg-white rounded-lg shadow p-6 items-center">
+        <div className="bg-white rounded-lg shadow p-6">
           <h2 className="text-xl font-bold">TPT Report</h2>
           <p className="text-gray-600 mt-2">Proceed to continue filling the report.</p>
         </div>
@@ -219,217 +218,250 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
             </div>
           </div>
 
-          {/* Second row: Data Collectors */}
           <div>
-            <FormControl fullWidth>
-              <TextField
-                label="Data Collectors"
-                variant="outlined"
-                size="small"
-                placeholder="Separate names with comma"
-                fullWidth
-              />
-            </FormControl>
+            <TextField
+              label="Data Collectors"
+              variant="outlined"
+              size="small"
+              placeholder="Separate names with comma"
+              fullWidth
+            />
           </div>
         </div>
-
       </div>
     );
 
-   const Step2 = () => (
-    <div className="bg-white rounded-lg shadow p-6">
-      <h2 className="text-2xl font-bold mb-4">TPT Reporting Grid</h2>
+  const Step2 = () => (
+      <div className="bg-white rounded-lg shadow-lg overflow-hidden">
+        <div className="bg-gradient-to-r from-cyan-600 to-blue-600 p-4">
+          <h2 className="text-xl font-bold text-white">TPT Reporting Grid</h2>
+        </div>
 
-      <div className="overflow-x-auto">
-        <table className="w-full border-collapse border border-gray-300 text-sm">
-          <thead>
-            <tr>
-              <th className="border p-2 bg-gray-200">Indicator</th>
-              <th className="border p-2 bg-gray-200">Type</th>
-              {ageGroups.map((a) => (
-                <th key={a} className="border p-2 bg-gray-200 text-center">
-                  {a}
+        <div className="overflow-x-auto">
+          <table className="w-full border-collapse border border-gray-300 text-sm">
+            <thead>
+              <tr>
+                <th className="border border-gray-300 bg-gray-700 p-3 font-bold text-white text-left min-w-[200px]">
+                  Indicator
                 </th>
-              ))}
-            </tr>
-          </thead>
+                <th className="border border-gray-300 bg-gray-700 p-3 font-bold text-white text-left min-w-[150px]">
+                  Gender
+                </th>
+                {ageGroups.map((age) => (
+                  <th
+                    key={age}
+                    className="border border-gray-300 bg-gray-600 p-2 font-bold text-white text-center min-w-[60px]"
+                  >
+                    {age}
+                  </th>
+                ))}
+              </tr>
+            </thead>
 
-          <tbody>
-            {indicators.map((ind, indIdx) => (
-              <React.Fragment key={ind}>
-                <tr className="bg-gray-100">
-                  <td colSpan={2 + ageGroups.length} className="border p-2 font-bold">
-                    {ind}
-                  </td>
-                </tr>
+            <tbody>
+              {indicators.map((indicator, indIdx) => {
+                const types = ["M", "FP", "FNP"];
+                return (
+                  <React.Fragment key={indicator}>
+                    {types.map((type, typeIdx) => {
+                      const isFirst = typeIdx === 0;
+                      const rowIndex = indIdx * 3 + typeIdx;
+                      const row = gridRows[rowIndex];
 
-                {["M", "FP", "FNP"].map((t, tIdx) => {
-                  const rowIndex = indIdx * 3 + tIdx;
-                  const row = gridRows[rowIndex];
-
-                  return (
-                    <tr key={t} className="hover:bg-gray-50">
-                      <td className="border p-2">&nbsp;</td>
-                      <td className="border p-2 text-center font-semibold bg-blue-200">{t}</td>
-
-                      {ageGroups.map((a) => {
-                        const [buffer, setBuffer] = useState<string>(String(row.values[a]));
-
-                        return (
-                          <td key={a} className="border p-0">
-                            <input
-                              type="text"
-                              className="w-full p-2 text-center outline-none"
-                              value={buffer}
-                              onFocus={() => {
-                                if (buffer === "0") {
-                                  setBuffer("");
-                                }
-                              }}
-                              onChange={(e) => {
-                                const val = e.target.value;
-                                if (val === "" || /^\d+$/.test(val)) {
-                                  setBuffer(val);
-                                }
-                              }}
-                              onBlur={() => {
-                                const finalVal = buffer === "" ? 0 : parseInt(buffer, 10);
-
-                                // restore default 0 if user left blank
-                                setBuffer(String(finalVal));
-
-                                setGridRows((prev) =>
-                                  prev.map((r, idx) =>
-                                    idx === rowIndex
-                                      ? { ...r, values: { ...r.values, [a]: finalVal } }
-                                      : r
-                                  )
-                                );
-                              }}
-                            />
+                      return (
+                        <tr key={`${indicator}-${type}`} className="hover:bg-gray-50">
+                          {isFirst && (
+                            <td
+                              rowSpan={types.length}
+                              className="border border-gray-300 p-3 font-medium text-gray-800 bg-gray-50 align-top"
+                            >
+                              {indicator}
+                            </td>
+                          )}
+                          <td className="border border-gray-300 p-3 text-gray-700">
+                            {type === "M" ? "Male" : type === "FP" ? "Female (Pregnant)" : "Female (Not Pregnant)"}
                           </td>
-                        );
-                      })}
-                    </tr>
-                  );
-                })}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
+
+                          {ageGroups.map((age) => {
+                            const [buffer, setBuffer] = useState<string>(
+                              String(row.values[age])
+                            );
+
+                            return (
+                              <td key={age} className="border border-gray-300 p-0">
+                                <input
+                                  type="text"
+                                  className="w-full p-2 text-center outline-none focus:ring-1 focus:ring-blue-400"
+                                  value={buffer}
+                                  onFocus={() => {
+                                    if (buffer === "0") {
+                                      setBuffer("");
+                                    }
+                                  }}
+                                  onChange={(e) => {
+                                    const val = e.target.value;
+                                    if (val === "" || /^\d+$/.test(val)) {
+                                      setBuffer(val);
+                                    }
+                                  }}
+                                  onBlur={() => {
+                                    const finalVal = buffer === "" ? 0 : parseInt(buffer, 10);
+                                    setBuffer(String(finalVal));
+
+                                    setGridRows((prev) =>
+                                      prev.map((r, idx) =>
+                                        idx === rowIndex
+                                          ? { ...r, values: { ...r.values, [age]: finalVal } }
+                                          : r
+                                      )
+                                    );
+                                  }}
+                                />
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      );
+                    })}
+                  </React.Fragment>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
       </div>
-    </div>
-  );
+    );
 
     const Step3 = () => {
-      const [iptStop, setIptStop] = useState<any>({});
-      const [threeHpStop, setThreeHpStop] = useState<any>({});
-
-      // Handle typing (digits only)
-      const handleNumericInput = (setter: any, key: string, value: string) => {
-        // Allow only digits
+      const handleIptChange = (reason: string, value: string) => {
         if (/^\d*$/.test(value)) {
-          setter((prev: any) => ({
+          setIptStop((prev) => ({
             ...prev,
-            [key]: value,         // IMPORTANT: do NOT force "0" here
+            [reason]: value === "" ? 0 : parseInt(value, 10) || 0,
           }));
         }
       };
 
-      // Handle focus: clear "0" so user can type freely
-      const handleFocus = (setter: any, key: string, currentValue: string) => {
-        if (currentValue === "0") {
-          setter((prev: any) => ({
+      const handleHpChange = (reason: string, value: string) => {
+        if (/^\d*$/.test(value)) {
+          setThreeHpStop((prev) => ({
             ...prev,
-            [key]: "",
-          }));
-        }
-      };
-
-      // Handle blur: restore 0 if field is left empty
-      const handleBlur = (setter: any, key: string, currentValue: string) => {
-        if (currentValue === "") {
-          setter((prev: any) => ({
-            ...prev,
-            [key]: "0",
+            [reason]: value === "" ? 0 : parseInt(value, 10) || 0,
           }));
         }
       };
 
       return (
-        <div className="bg-white rounded-lg shadow p-6">
-          <h2 className="text-2xl font-semibold mb-4">Stop Reasons</h2>
+        <div className="space-y-6">
+          <h2 className="text-2xl font-bold text-gray-800">Stop Reasons</h2>
 
-          <div className="grid md:grid-cols-2 md:gap-50 sm:grid-cols-1 sm:gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            {/* IPT Card */}
+            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-orange-500 to-red-500 p-4">
+                <h3 className="text-lg font-bold text-white">IPT Stop Reasons</h3>
+              </div>
+              <div className="p-5">
+                <div className="space-y-4">
+                  {defaultReasons.map((reason) => {
+                    const currentValue = iptStop[reason] ?? 0;
+                    const [buffer, setBuffer] = useState<string>(String(currentValue));
 
-            {/* IPT */}
-            <div>
-              <h3 className="font-bold mb-2 text-blue-600">IPT</h3>
-              {defaultReasons.map((r) => {
-                const current = iptStop[r] ?? "0";
-                return (
-                  <div key={r} className="flex justify-between items-center mb-2">
-                    <span>{r}</span>
-
-                    <input
-                      className="border p-1 w-20 text-center"
-                      type="text"
-                      inputMode="numeric"
-                      value={current}
-                      onChange={(e) => handleNumericInput(setIptStop, r, e.target.value)}
-                      onFocus={() => handleFocus(setIptStop, r, current)}
-                      onBlur={() => handleBlur(setIptStop, r, iptStop[r] ?? "")}
-                    />
-                  </div>
-                );
-              })}
+                    return (
+                      <div key={reason} className="flex items-center justify-between">
+                        <span className="text-gray-700 font-medium">{reason}</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={buffer}
+                          onFocus={() => buffer === "0" && setBuffer("")}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "" || /^\d+$/.test(val)) {
+                              setBuffer(val);
+                              handleIptChange(reason, val);
+                            }
+                          }}
+                          onBlur={() => {
+                            const final = buffer === "" ? "0" : buffer;
+                            setBuffer(final);
+                            handleIptChange(reason, final);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
 
-            {/* 3HP */}
-            <div>
-              <h3 className="font-bold mb-2 text-blue-600">3HP</h3>
-              {defaultReasons.map((r) => {
-                const current = threeHpStop[r] ?? "0";
-                return (
-                  <div key={r} className="flex justify-between items-center mb-2">
-                    <span>{r}</span>
+            {/* 3HP Card */}
+            <div className="bg-white rounded-xl shadow-md border border-gray-200 overflow-hidden">
+              <div className="bg-gradient-to-r from-purple-500 to-indigo-500 p-4">
+                <h3 className="text-lg font-bold text-white">3HP Stop Reasons</h3>
+              </div>
+              <div className="p-5">
+                <div className="space-y-4">
+                  {defaultReasons.map((reason) => {
+                    const currentValue = threeHpStop[reason] ?? 0;
+                    const [buffer, setBuffer] = useState<string>(String(currentValue));
 
-                    <input
-                      className="border p-1 w-20 text-center"
-                      type="text"
-                      inputMode="numeric"
-                      value={current}
-                      onChange={(e) => handleNumericInput(setThreeHpStop, r, e.target.value)}
-                      onFocus={() => handleFocus(setThreeHpStop, r, current)}
-                      onBlur={() => handleBlur(setThreeHpStop, r, threeHpStop[r] ?? "")}
-                    />
-                  </div>
-                );
-              })}
+                    return (
+                      <div key={reason} className="flex items-center justify-between">
+                        <span className="text-gray-700 font-medium">{reason}</span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                          value={buffer}
+                          onFocus={() => buffer === "0" && setBuffer("")}
+                          onChange={(e) => {
+                            const val = e.target.value;
+                            if (val === "" || /^\d+$/.test(val)) {
+                              setBuffer(val);
+                              handleHpChange(reason, val);
+                            }
+                          }}
+                          onBlur={() => {
+                            const final = buffer === "" ? "0" : buffer;
+                            setBuffer(final);
+                            handleHpChange(reason, final);
+                          }}
+                        />
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
             </div>
-
           </div>
         </div>
       );
     };
 
-
     const Step4 = () => (
-      <div className="bg-white rounded-lg shadow p-6">
-        <h2 className="text-2xl font-bold mb-4">Comments</h2>
+      <div className="bg-white rounded-xl shadow-md p-6">
+        <h2 className="text-2xl font-bold text-gray-800 mb-4">Comments</h2>
         <textarea
-          className="w-full border rounded p-3 min-h-[160px]"
+          className="w-full border border-gray-300 rounded-lg p-3 min-h-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
           value={comment}
           onChange={(e) => setComment(e.target.value)}
+          placeholder="Add any relevant comments about this report..."
         />
       </div>
     );
 
     return (
-      <div className="w-full min-h-screen p-4 bg-gray-50">
-        <Box className="mb-8">
+      <div className="w-full min-h-screen p-3 bg-gray-50">
+        <Box className="mb-8 sticky z-10 -top-4 py-4 bg-blue-100 border-b-3 border-b-white" 
+          sx={{
+            boxShadow: '0 4px 12px rgba(0, 0, 0, 0 , 0.08)',
+            borderRadius: '8px'
+          }}
+        >
           <Stepper activeStep={activeStep} alternativeLabel>
-            {["Intro", "Grid", "Stop Reasons", "Comments"].map((lbl) => (
+            {["Intro", "Data Grid", "Stop Reasons", "Comments"].map((lbl) => (
               <Step key={lbl}>
                 <StepLabel>{lbl}</StepLabel>
               </Step>
@@ -440,7 +472,17 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
         {activeStep === 0 && <Step1 />}
         {activeStep === 1 && <Step2 />}
         {activeStep === 2 && <Step3 />}
-        {activeStep === 3 && <Step4 />}
+        {activeStep === 3 && (
+          <div className="bg-white rounded-xl shadow-md p-6">
+            <h2 className="text-2xl font-bold text-gray-800 mb-4">Comments</h2>
+            <textarea
+              className="w-full border border-gray-300 rounded-lg p-3 min-h-[160px] focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              value={comment}
+              onChange={(e) => setComment(e.target.value)}
+              placeholder="Add any relevant comments about this report..."
+            />
+          </div>
+        )}
       </div>
     );
   }

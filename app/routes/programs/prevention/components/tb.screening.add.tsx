@@ -517,7 +517,12 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
   return (
     <div className="w-full min-h-screen p-6 bg-gray-50">
       {/* Stepper */}
-      <Box className="mb-8">
+      <Box className="mb-8 sticky z-10 -top-4 py-4 bg-blue-100 border-b-3 border-b-white" 
+        sx={{
+          boxShadow: '0 4px 12px rgba(0, 0, 0, 0 , 0.08)',
+          borderRadius: '8px'
+        }}
+      >
         <Stepper activeStep={activeStep} alternativeLabel>
           {steps.map((label) => (
             <Step key={label}>
