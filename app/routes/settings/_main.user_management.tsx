@@ -164,26 +164,39 @@ const Users: React.FC = () => {
         id: "actions",
         header: "Actions",
         Cell: ({ row }) => {
+          const isSuperAdmin = row.original.roles?.some(
+            (role) => role.name?.toLowerCase() === "super admin"
+          );
 
-          return (<div className="flex gap-2">
-            <Tooltip title="Edit User">
-              <button
-                onClick={() => openEditModal(row.original)}
-                className="btn btn-sm btn-default"
-              >
-                <Pencil size={16} />
-              </button>
-            </Tooltip>
+          return (
+            <div className="flex gap-2">
+              <Tooltip title="Edit User">
+                <button
+                  onClick={() => openEditModal(row.original)}
+                  className="btn btn-sm btn-default"
+                >
+                  <Pencil size={16} />
+                </button>
+              </Tooltip>
 
-            <Tooltip title="Delete/Void User">
-              <button
-                onClick={() => handleDelete(row.original)}
-                className="text-red-500 btn btn-sm btn-danger"
-              >
-                <Trash2Icon size={16} />
-              </button>
-            </Tooltip>
-          </div>);
+              {isSuperAdmin ? (
+                <Tooltip title="Super Admin accounts cannot be deleted">
+                  <span className="btn btn-sm btn-danger opacity-50 cursor-not-allowed">
+                    <Trash2Icon size={16} />
+                  </span>
+                </Tooltip>
+              ) : (
+                <Tooltip title="Delete/Void User">
+                  <button
+                    onClick={() => handleDelete(row.original)}
+                    className="text-red-500 btn btn-sm btn-danger"
+                  >
+                    <Trash2Icon size={16} />
+                  </button>
+                </Tooltip>
+              )}
+            </div>
+          );
         },
       },
     ],
