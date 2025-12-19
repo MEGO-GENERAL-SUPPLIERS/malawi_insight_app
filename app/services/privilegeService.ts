@@ -5,9 +5,9 @@ import type { IApiResponse } from "~/types/interfaces/IApiResponse";
 
 const apiClient = new ApiClient();
 
-export const fetchPrivileges = async (params: Record<string, any> ={}): Promise<IApiResponse<IPrivilege[]>> => {
+export const fetchAllPrivileges = async (params: Record<string, any> = {}): Promise<IApiResponse<IPrivilege[]>> => {
   try{
-    const response = await apiClient.get<IPrivilege[]>("/privileges/fetch", params);
+    const response = await apiClient.post<IPrivilege[]>("/privileges/fetch", params);
     return reformatResponse(response);
   }catch(ex: any){
     return {
