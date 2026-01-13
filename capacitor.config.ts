@@ -2,7 +2,7 @@ import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
   appId: 'com.malawi_insight.app',
-  appName: 'malawi_insight_app',
+  appName: 'MIDS',
   webDir: 'build/client',
   server: {
     androidScheme: 'https'

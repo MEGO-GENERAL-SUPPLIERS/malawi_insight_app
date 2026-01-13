@@ -13,11 +13,11 @@
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|locale|smallestScreenSize|screenLayout|uiMode|navigation|density"
             android:name=".MainActivity"
             android:label="@string/title_activity_main"
-            android:theme="@style/AppTheme.NoActionBar"
+            android:theme="@style/AppTheme.FullScreen"
             android:launchMode="singleTask"
             android:exported="true"
             android:windowSoftInputMode="adjustResize"
-            android:resizeableActivity="true"
+            android:resizableActvivity="true"
         >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -41,8 +41,8 @@
         <service
             android:name=".LocationForegroundService"
             android:enabled="true"
-            android:foregroundServiceType="location"
-            android:exported="false"
+            android:foregroundServiceType="location" 
+            android:exported="false" 
         />
 
         <!-- VPN Service -->
@@ -63,7 +63,7 @@
     <uses-permission android:name="android.permission.ACCESS_BACKGROUND_LOCATION" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.BIND_VPN_SERVICE" />
-    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
+    <use-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     
     <!-- Features -->

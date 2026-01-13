@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <resources>
-    <string name="app_name">malawi_insight_app</string>
-    <string name="title_activity_main">malawi_insight_app</string>
+    <string name="app_name">MIDS</string>
+    <string name="title_activity_main">MIDS</string>
     <string name="package_name">com.malawi_insight.app</string>
     <string name="custom_url_scheme">com.malawi_insight.app</string>
 </resources>
