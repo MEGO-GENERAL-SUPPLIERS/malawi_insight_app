@@ -10,6 +10,7 @@ import {
   Box,
   Tooltip,
   Typography,
+  Menu as MuiMenu, MenuItem
 } from "@mui/material";
 import {
   LayoutDashboard,
@@ -21,10 +22,14 @@ import {
   SquareLibrary,
   Menu,
   Minimize2Icon,
-  Globe
+  Globe,
+  ChartArea,
+  Maximize2Icon
 } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
+import { privilegesUtils } from '../../utils/privilegesUtils';
+import { handleAppRefresh } from '~/utils/appUtils';
 
 interface SideMenuProps {
   mobileOpen: boolean;
@@ -46,13 +51,18 @@ const SideMenu: React.FC<SideMenuProps> = ({
   const location = useLocation();
 
   const menuItems = [
-    { label: "Dashboard", icon: LayoutDashboard, link: "/app/dashboard" },
-    { label: "Programs", icon: Boxes, link: "/app/programs" },
-    { label: "SI Unit", icon: SquareLibrary, link: "/app/strategic_info" },
-    { label: "General Modules", icon: Globe, link: "/app/generic" },
-    { label: "Settings", icon: SettingsIcon, link: "/app/settings" },
-    { label: "My Profile", icon: UserCircle2Icon, link: "/app/profile" },
+    { label: "Dashboard", icon: LayoutDashboard, route: "/app/dashboard", privileges: [] },
+    { label: "Programs", icon: Boxes, route: "/app/programs", privileges: [] },
+    { label: "SI Unit", icon: SquareLibrary, route: "/app/strategic_info", privileges: [] },
+    { label: "General Modules", icon: Globe, route: "/app/generic", privileges: [] },
+    { label: "Settings", icon: SettingsIcon, route: "/app/settings", privileges: ['can_access_settings'] },
+    { label: "Reports", icon: ChartArea, route: "/app/reports", privileges: ['can_access_reports'] },
+    { label: "My Profile", icon: UserCircle2Icon, route: "/app/profile", privileges: [] },
   ];
+  
+  // Get user privileges if not provided
+  const privileges = privilegesUtils.getUserPrivileges();
+  const accessibleMenuItems = privilegesUtils.filterByPrivileges(menuItems, privileges);
 
   const effectiveMinimised = isMobile ? false : sidebarMinimised;
   const drawerWidth = effectiveMinimised ? 64 : 242;
@@ -84,6 +94,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
     if (isMobile) setMobileOpen(false);
     setBottomMenuAnchor(null);
   };
+
 
   const roleDisplay =
     user?.roles && user.roles.length === 1
@@ -166,13 +177,13 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
       {/* Menu Items */}
       <List sx={{ flex: 1, overflowY: "auto" }}>
-        {menuItems.map((item) => {
+        {accessibleMenuItems.map((item) => {
           const Icon = item.icon;
           return (
             <Tooltip key={item.label} title={effectiveMinimised ? item.label : ""} placement="right">
               <ListItemButton
                 component={Link}
-                to={item.link}
+                to={item.route}
                 onClick={handleMenuClick}
                 sx={{
                   color: "white",
@@ -193,9 +204,65 @@ const SideMenu: React.FC<SideMenuProps> = ({
       {/* Bottom Buttons */}
       <Box display="flex" justifyContent="space-around" alignItems="center" p={2} borderTop="1px solid rgba(148,163,184,0.3)">
         {effectiveMinimised && !isMobile && (
-          <IconButton sx={{ color: "white" }} onClick={handleBottomMenuToggle} size="large">
-            <Menu />
-          </IconButton>
+          <>
+            <IconButton sx={{ color: "white" }} onClick={handleBottomMenuToggle} size="large">
+              <Menu />
+            </IconButton>
+
+            {/* Popup menu for collapsed sidebar */}
+            <MuiMenu
+              anchorEl={bottomMenuAnchor}
+              open={Boolean(bottomMenuAnchor)}
+              onClose={() => setBottomMenuAnchor(null)}
+              anchorOrigin={{
+                vertical: "top",
+                horizontal: "right",
+              }}
+              transformOrigin={{
+                vertical: "bottom",
+                horizontal: "right",
+              }}
+              PaperProps={{
+                sx: {
+                  backgroundColor: "#0f172a",
+                  color: "white",
+                  minWidth: 180,
+                  zIndex: 1300,
+                },
+              }}
+            >
+              {/* Minimize button */}
+              <MenuItem
+                onClick={() => {
+                  setSidebarMinimised(!sidebarMinimised);
+                  setBottomMenuAnchor(null);
+                }}
+              >
+                <Maximize2Icon style={{ marginRight: 8 }} /> Minimize
+              </MenuItem>
+
+              {/* Folder Sync button */}
+              <MenuItem
+                onClick={() => {
+                  handleMenuClick();
+                  setBottomMenuAnchor(null);
+                }}
+              >
+                <FolderSyncIcon style={{ marginRight: 8 }} /> Sync
+              </MenuItem>
+
+              {/* Rotate button */}
+              <MenuItem
+                onClick={() => {
+                  handleMenuClick();
+                  setBottomMenuAnchor(null);
+                  handleAppRefresh();
+                }}
+              >
+                <RotateCw style={{ marginRight: 8 }} /> Refresh
+              </MenuItem>
+            </MuiMenu>
+          </>
         )}
         {(!effectiveMinimised || isMobile) && (
           <>
@@ -207,7 +274,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
             <IconButton sx={{ color: "white" }} onClick={() => { handleMenuClick(); setBottomMenuAnchor(null); }} size="large">
               <FolderSyncIcon />
             </IconButton>
-            <IconButton sx={{ color: "white" }} onClick={() => { handleMenuClick(); setBottomMenuAnchor(null); }} size="large">
+            <IconButton sx={{ color: "white" }} onClick={() => { handleMenuClick(); setBottomMenuAnchor(null); handleAppRefresh();}} size="large">
               <RotateCw />
             </IconButton>
           </>

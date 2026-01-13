@@ -16,7 +16,7 @@ const Templates: React.FC = () => {
       description: 'Upload report templates',
       route: '/templates/reports',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_upload_templates']
     },
     {
       icon: 'Layout',
@@ -24,7 +24,7 @@ const Templates: React.FC = () => {
       description: 'Templates upload monthly tracker',
       route: '/templates/layouts',
       colors: ['from-purple-400', 'to-pink-500'], // 2-color gradient
-      privileges: []
+      privileges: ['can_track_uoloaded_templates']
     },
     {
       icon: 'Send',
@@ -32,7 +32,7 @@ const Templates: React.FC = () => {
       description: 'Submit templates by DECs',
       route: '/templates/reports',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_submit_templates']
     },
     {
       icon: 'ThumbsUp',
@@ -40,7 +40,7 @@ const Templates: React.FC = () => {
       description: 'Review and attend to templates by M&EOs',
       route: '/templates/reports',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_approve_district_templates']
     },
     {
       icon: 'ThumbsUp',
@@ -48,7 +48,7 @@ const Templates: React.FC = () => {
       description: 'Approval of templates by M&EO Manager',
       route: '/templates/reports',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_approve_province_templates']
     },
     {
       icon: 'ThumbsUp',
@@ -56,7 +56,7 @@ const Templates: React.FC = () => {
       description: 'Approval of templates by M&E Lead',
       route: '/templates/reports',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_approve_national_templates']
     },
     {
       icon: 'Download',

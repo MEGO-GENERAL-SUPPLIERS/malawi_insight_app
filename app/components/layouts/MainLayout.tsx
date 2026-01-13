@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, Suspense } from "react";
 import { Outlet, useNavigation } from "react-router-dom";
 import Navbar from "~/components/layouts/Navbar";
 import SideMenu from "~/components/layouts/SideMenu";
@@ -9,6 +9,9 @@ import { type IAppStorage } from "~/types/interfaces/ILocalStorageInterfaces";
 import { useTheme, useMediaQuery } from "@mui/material";
 import QuickAccessPanel from "./QuickAccessPanel";
 import PageLoader from "~/components/layouts/PageLoader";
+import { ToastAlertComponentController } from "../controllers/ToastAlertComponentController";
+import { checkAppRefreshStatus } from "~/utils/appUtils";
+import PageSkeletonLoader from "../system/skeletons/PageSkeletonLoader";
 
 const SIDEBAR_WIDTH = 240; // default sidebar width in px
 const SIDEBAR_MINI_WIDTH = 72; // width when minimized
@@ -29,6 +32,10 @@ const MainLayout: React.FC = () => {
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
+ 
+  useEffect(() => {
+    checkAppRefreshStatus();
+  }, []);
 
   // Persist UI settings for desktop
   useEffect(() => {
@@ -49,7 +56,7 @@ const MainLayout: React.FC = () => {
       <div className="h-screen w-screen overflow-hidden relative">
         {/* 🌈 Gradient Background */}
         <div className="fixed inset-0 -z-10">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-50/30 via-green-50/40 to-red-50/30"></div>
+          <div className="absolute inset-0 bg-linear-to-r from-blue-50/30 via-green-50/40 to-red-50/30"></div>
           <div className="absolute inset-0 backdrop-blur-[1px]"></div>
         </div>
 
@@ -89,7 +96,7 @@ const MainLayout: React.FC = () => {
           }}
         >
           <main className="flex-1 overflow-y-auto overflow-x-auto p-3">
-            <div className="w-full px-1.5 min-w-[700px]"> {/* optional min width */}
+            <div className={`w-full px-1.5 min-w-full`}> {/* optional min width */}
               <Outlet />
             </div>
           </main>
@@ -99,6 +106,8 @@ const MainLayout: React.FC = () => {
 
         {/* 🚀 Quick Access Panel */}
         <QuickAccessPanel />
+
+        <ToastAlertComponentController.render />
       </div>
     </QuickAccessProvider>
   );

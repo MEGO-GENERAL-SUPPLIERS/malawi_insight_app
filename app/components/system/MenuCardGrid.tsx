@@ -21,7 +21,7 @@ const MenuCardGrid: React.FC<IMenuCardGridProps> = ({
       <div className="flex items-center justify-center p-8">
         <div className="text-center text-gray-500">
           <p className="text-lg font-medium">No accessible menu items</p>
-          <p className="text-sm">Contact your administrator for access.</p>
+          <p className="text-sm">Contact your administrator for access. If you have been given permissions, logout and login to see effect.</p>
         </div>
       </div>
     );

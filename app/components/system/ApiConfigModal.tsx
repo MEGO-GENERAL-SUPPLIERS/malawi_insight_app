@@ -137,7 +137,7 @@ const ApiConfigModal: React.FC<ApiConfigModalProps> = ({ isOpen, onClose, onUpda
             type="button"
             onClick={onClose}
             disabled={isLoading}
-            className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 transition cursor-pointer disabled:opacity-50"
+            className="px-4 py-2 rounded-lg bg-gray-300 dark:bg-red-600 hover:bg-gray-400 dark:hover:bg-red-500 transition cursor-pointer disabled:opacity-50"
           >
             Cancel
           </button>

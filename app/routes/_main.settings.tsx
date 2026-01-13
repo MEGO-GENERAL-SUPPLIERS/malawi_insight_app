@@ -24,7 +24,7 @@ const Settings: React.FC = () => {
       description: 'Manage System locations',
       route: 'settings_locations',
       colors: ['from-purple-400', 'to-pink-500'],
-      privileges: []
+      privileges: ['can_manage_locations']
     },
     {
       icon: 'Shield',
@@ -32,7 +32,7 @@ const Settings: React.FC = () => {
       description: 'Configure roles and permissions',
       route: 'settings_roles',
       colors: ['from-purple-400', 'to-pink-500'],
-      privileges: []
+      privileges: ['can_manager_role_privileges']
     },
     {
       icon: 'User',
@@ -40,7 +40,7 @@ const Settings: React.FC = () => {
       description: 'Manage system users',
       route: 'settings_users',
       colors: ['from-blue-400', 'to-blue-600'],
-      privileges: []
+      privileges: ['can_manager_user_management']
     },
     {
       icon: 'Signature',
@@ -48,7 +48,7 @@ const Settings: React.FC = () => {
       description: 'Set  approval system',
       route: 'settings_approvals',
       colors: ['from-orange-400', 'to-red-500'],
-      privileges: []
+      privileges: ['can_manage_approval_chains']
     },
     {
       icon: 'Server',
@@ -56,7 +56,7 @@ const Settings: React.FC = () => {
       description: 'Configure system parameters',
       route: 'settings_system',
       colors: ['from-orange-400', 'to-red-500'],
-      privileges: []
+      privileges: ['can_manage_system_settings']
     },
     {
       icon: 'HardDrive',
@@ -64,7 +64,7 @@ const Settings: React.FC = () => {
       description: 'Data backup and restoration',
       route: 'settings_backup',
       colors: ['from-indigo-400', 'to-purple-500'],
-      privileges: []
+      privileges: ['can_manage_backups']
     },
     {
       icon: 'Activity',
@@ -72,7 +72,7 @@ const Settings: React.FC = () => {
       description: 'View system audit logs',
       route: 'settings_audit',
       colors: ['from-pink-400', 'to-rose-500'],
-      privileges: []
+      privileges: ['can_access_audit_logs']
     }
   ];
 

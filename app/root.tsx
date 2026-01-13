@@ -59,6 +59,19 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <head>
         <meta charSet="utf-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
+        
+        {/*Apple Touch Icon*/}
+        <link rel="apple-touch-icon" href="/icons/icon-192x192.png"></link>
+        
+        {/*Launch Screen (simulated via meta tags)*/}
+        <link rel="apple-touch-icon" href="%PUBLIC_URL%/icons/icon-192.png" />
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <meta name="apple-mobile-web-app-title" content="MIDS" />
+        
+        {/*Theme Color*/}
+        <meta name="theme-color" content="#000000" />
+
         <Meta />
         <Links />
       </head>

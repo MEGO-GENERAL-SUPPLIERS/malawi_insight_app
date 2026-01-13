@@ -14,10 +14,11 @@ export interface IUser{
   roles?: string[];
   privileges?: any[];
   custom_user_privileges?: any[];
-  contacts?: []; 
+  contacts?: any[]; 
   locations?: any;
   logged_in?: boolean;
   last_login?: string;
+  username?: string;
 }
 
 export interface IDevice {

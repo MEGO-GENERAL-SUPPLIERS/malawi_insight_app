@@ -1,4 +1,4 @@
-import React, { useState, useImperativeHandle, forwardRef } from "react";
+import React, { useState, useImperativeHandle, forwardRef, type JSX } from "react";
 import { Snackbar, Slide, Fade, Grow, Zoom, type SlideProps } from "@mui/material";
 import * as LucideIcons from "lucide-react";
 import * as MuiIcons from "@mui/icons-material";
@@ -28,9 +28,10 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
 
   useImperativeHandle(ref, () => ({
     show: (options: ToastAlertProps) => {
-      // Avoid duplicate messages
       setQueue((prev) => {
-        const exists = prev.find((t) => t.message === options.message && t.type === options.type);
+        const exists = prev.find(
+          (t) => t.message === options.message && t.type === options.type
+        );
         if (exists) return prev;
         const id = `${Date.now()}-${Math.random()}`;
         return [...prev, { ...options, id }];
@@ -49,35 +50,6 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
     return (LucideIcons as any)[name] || (MuiIcons as any)[name] || undefined;
   };
 
-  const resolveTransition = (animation?: string, slideDirection: "left" | "right" | "up" | "down" = "up", positionY: "top" | "bottom" = "top" ) => {
-    if (animation === "slide") {
-      let actualDirection = slideDirection;
-
-      // Fix direction based on Snackbar position
-      if (positionY === "top") {
-        // Top toasts slide downward INTO view
-        if (slideDirection === "down") actualDirection = "down";
-        if (slideDirection === "up") actualDirection = "up";
-      } else {
-        // Bottom toasts should slide upward INTO view
-        if (slideDirection === "down") actualDirection = "up";
-        if (slideDirection === "up") actualDirection = "down";
-      }
-
-      return (props: SlideProps) => <Slide {...props} direction={actualDirection} />;
-    }
-
-    switch (animation) {
-      case "grow":
-        return Grow;
-      case "zoom":
-        return Zoom;
-      case "fade":
-      default:
-        return Fade;
-    }
-  };
-
   const typeToGradient = {
     success: "bg-gradient-to-r from-emerald-600 to-emerald-500 text-white",
     error: "bg-gradient-to-r from-red-600 to-red-500 text-white",
@@ -85,13 +57,47 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
     info: "bg-gradient-to-r from-blue-600 to-blue-500 text-white",
   };
 
+  // Helper to wrap Snackbar in a transition
+  const wrapWithTransition = (toast: ToastQueueItem, content: JSX.Element) => {
+    const { animation, slideDirection = "up", positionY = "top" } = toast;
+
+    if (animation === "slide") {
+      let actualDirection = slideDirection;
+      if (positionY === "top") {
+        actualDirection = slideDirection;
+      } else {
+        actualDirection = slideDirection === "up" ? "down" : "up";
+      }
+
+      return (
+        <Slide
+          in
+          direction={actualDirection}
+          mountOnEnter
+          unmountOnExit
+        >
+          {content}
+        </Slide>
+      );
+    }
+
+    switch (animation) {
+      case "grow":
+        return <Grow in>{content}</Grow>;
+      case "zoom":
+        return <Zoom in>{content}</Zoom>;
+      case "fade":
+      default:
+        return <Fade in>{content}</Fade>;
+    }
+  };
+
   return (
     <>
       {queue.map((toast) => {
         const IconComponent = resolveIcon(toast.icon);
-        const TransitionComponent = resolveTransition(toast.animation);
 
-        return (
+        const snackbarContent = (
           <Snackbar
             key={toast.id}
             open
@@ -101,8 +107,7 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
               vertical: toast.positionY ?? "top",
               horizontal: toast.positionX ?? "center",
             }}
-            TransitionComponent={TransitionComponent as any}
-            TransitionProps={{ timeout: 300 }}
+            sx={{ mt: toast.positionY === "top" ? 8 : 6 }} // top margin for top toasts
           >
             <div
               className={`flex items-center gap-2 px-4 py-3 rounded-md shadow-lg ${typeToGradient[toast.type ?? "info"]}`}
@@ -112,6 +117,8 @@ const ToastAlertComponent = forwardRef<ToastAlertHandle>((_, ref) => {
             </div>
           </Snackbar>
         );
+
+        return wrapWithTransition(toast, snackbarContent);
       })}
     </>
   );
