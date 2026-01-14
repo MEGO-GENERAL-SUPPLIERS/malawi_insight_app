@@ -65,21 +65,38 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
     countdownSeconds ?? null
   );
 
-  // Handle countdown logic
+  // countdown
   useEffect(() => {
-    if (secondsLeft === null || secondsLeft < 0) {
-      if (secondsLeft === 0) {
-        onCountdownEnd?.();
-      }
+    if (countdownSeconds == null || countdownSeconds <= 0) {
+      setSecondsLeft(null);
       return;
     }
 
-    const timer = setTimeout(() => {
-      setSecondsLeft((prev) => (prev !== null ? prev - 1 : null));
+    setSecondsLeft(countdownSeconds);
+
+    const timer = setInterval(() => {
+      setSecondsLeft((prev) => {
+        if (prev === null || prev <= 0) {
+          clearInterval(timer);
+          return null;
+        }
+
+        const next = prev - 1;
+        if (next === 0) {
+          // Trigger onCountdownEnd exactly once at 0
+          setTimeout(() => {
+            onCountdownEnd?.();
+          }, 0);
+          clearInterval(timer);
+          return 0;
+        }
+
+        return next;
+      });
     }, 1000);
 
-    return () => clearTimeout(timer);
-  }, [secondsLeft, onCountdownEnd]);
+    return () => clearInterval(timer);
+  }, [countdownSeconds, onCountdownEnd]);
 
   // Format message with live countdown
   const formatMessage = (): string | React.ReactNode => {

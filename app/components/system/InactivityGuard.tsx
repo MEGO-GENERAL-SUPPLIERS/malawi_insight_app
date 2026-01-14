@@ -52,14 +52,22 @@ export const InactivityGuard = () => {
           className: "btn btn-danger",
           onClick: () => {
             auth.logout();
-            navigator.navigateTo("/");
           },
         },
       ],
     });
   };
 
+  const isAuthenticated = () => {
+    const user = localStorageUtils.getStoredUser();
+    const api = localStorageUtils.getStoredApi();
+    return !!user?.logged_in && !!api?.token;
+  };
+
   const handleAutoLogout = () => {
+    // Prevent duplicate calls
+    if (!isAuthenticated()) return;
+
     AlertComponentController.dismiss();
     ToastAlertComponentController.show({
       message: "You have been logged out due to inactivity.",
