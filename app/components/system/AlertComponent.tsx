@@ -1,4 +1,6 @@
-import React from "react";
+// ~/components/system/AlertComponent.tsx
+
+import React, { useEffect, useState } from "react";
 import parse, { domToReact, Element } from "html-react-parser";
 import {
   Dialog,
@@ -6,7 +8,7 @@ import {
   DialogContent,
   DialogActions,
   Typography,
-  Zoom
+  Zoom,
 } from "@mui/material";
 import * as LucideIcons from "lucide-react";
 import * as MuiIcons from "@mui/icons-material";
@@ -36,7 +38,9 @@ export interface AlertComponentProps {
   backdropBlur?: number;
   backdropOpacity?: number;
   isHtml?: boolean;
-  htmlStyles?: Record<string, React.CSSProperties>; // New: element-specific styles
+  htmlStyles?: Record<string, React.CSSProperties>;
+  countdownSeconds?: number; // Optional: enables auto-decrementing countdown
+  onCountdownEnd?: () => void; // Triggered when countdown hits 0
 }
 
 const AlertComponent: React.FC<AlertComponentProps> = ({
@@ -53,17 +57,80 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
   backdropBlur = 2,
   backdropOpacity = 0.3,
   isHtml = true,
-  htmlStyles = {}, // Default empty
+  htmlStyles = {},
+  countdownSeconds,
+  onCountdownEnd,
 }) => {
+  const [secondsLeft, setSecondsLeft] = useState<number | null>(
+    countdownSeconds ?? null
+  );
+
+  // Handle countdown logic
+  useEffect(() => {
+    if (secondsLeft === null || secondsLeft < 0) {
+      if (secondsLeft === 0) {
+        onCountdownEnd?.();
+      }
+      return;
+    }
+
+    const timer = setTimeout(() => {
+      setSecondsLeft((prev) => (prev !== null ? prev - 1 : null));
+    }, 1000);
+
+    return () => clearTimeout(timer);
+  }, [secondsLeft, onCountdownEnd]);
+
+  // Format message with live countdown
+  const formatMessage = (): string | React.ReactNode => {
+    if (typeof message !== "string") return message;
+
+    // If user provided {{countdown}}, replace it
+    if (message.includes("{{countdown}}")) {
+      return message.replace(
+        /{{countdown}}/g,
+        `<strong>${secondsLeft ?? countdownSeconds}</strong>`
+      );
+    }
+
+    // Otherwise, append a standard countdown notice
+    if (secondsLeft !== null) {
+      const word = secondsLeft === 1 ? "second" : "seconds";
+      return `${message} Your session will expire in <strong>${secondsLeft}</strong> ${word}.`;
+    }
+
+    return message;
+  };
+
   const colorStyles: Record<
     AlertType,
     { gradient: string; text: string; defaultIcon: string }
   > = {
-    info: { gradient: "bg-gradient-to-r from-cyan-500 to-cyan-400", text: "text-white", defaultIcon: "Info" },
-    success: { gradient: "bg-gradient-to-r from-emerald-600 to-emerald-500", text: "text-white", defaultIcon: "CheckCircle2" },
-    warning: { gradient: "bg-gradient-to-r from-yellow-600 to-yellow-400", text: "text-white", defaultIcon: "AlertTriangle" },
-    error: { gradient: "bg-gradient-to-r from-red-400 to-red-600", text: "text-white", defaultIcon: "AlertOctagon" },
-    confirm: { gradient: "bg-gradient-to-r from-emerald-600 to-emerald-500", text: "text-white", defaultIcon: "HelpCircle" },
+    info: {
+      gradient: "bg-gradient-to-r from-cyan-500 to-cyan-400",
+      text: "text-white",
+      defaultIcon: "Info",
+    },
+    success: {
+      gradient: "bg-gradient-to-r from-emerald-600 to-emerald-500",
+      text: "text-white",
+      defaultIcon: "CheckCircle2",
+    },
+    warning: {
+      gradient: "bg-gradient-to-r from-yellow-600 to-yellow-400",
+      text: "text-white",
+      defaultIcon: "AlertTriangle",
+    },
+    error: {
+      gradient: "bg-gradient-to-r from-red-400 to-red-600",
+      text: "text-white",
+      defaultIcon: "AlertOctagon",
+    },
+    confirm: {
+      gradient: "bg-gradient-to-r from-emerald-600 to-emerald-500",
+      text: "text-white",
+      defaultIcon: "HelpCircle",
+    },
   };
 
   const { gradient, text, defaultIcon } = colorStyles[type];
@@ -82,18 +149,17 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
   };
 
   const renderHtmlMessage = (html: string) =>
-  parse(html, {
-    replace: (domNode) => {
-      if (domNode instanceof Element && htmlStyles[domNode.name]) {
-        // Cast children to 'any' to satisfy TypeScript
-        return (
-          <span style={htmlStyles[domNode.name]}>
-            {domToReact(domNode.children as any, { replace: undefined })}
-          </span>
-        );
-      }
-    },
-  });
+    parse(html, {
+      replace: (domNode) => {
+        if (domNode instanceof Element && htmlStyles[domNode.name]) {
+          return (
+            <span style={htmlStyles[domNode.name]}>
+              {domToReact(domNode.children as any, { replace: undefined })}
+            </span>
+          );
+        }
+      },
+    });
 
   return (
     <Dialog
@@ -135,15 +201,12 @@ const AlertComponent: React.FC<AlertComponentProps> = ({
         <div className="flex items-start gap-2 mt-4">
           {MessageIconComponent && <MessageIconComponent className="text-slate-500 mt-1" size={18} />}
           {isHtml && typeof message === "string" ? (
-            <Typography
-              variant="body1"
-              className="text-slate-700 text-sm leading-relaxed mt-1"
-            >
-              {renderHtmlMessage(message)}
+            <Typography variant="body1" className="text-slate-700 text-sm leading-relaxed mt-1">
+              {renderHtmlMessage(formatMessage() as string)}
             </Typography>
           ) : (
             <Typography variant="body1" className="text-slate-700 text-sm leading-relaxed mt-1">
-              {message}
+              {formatMessage()}
             </Typography>
           )}
         </div>

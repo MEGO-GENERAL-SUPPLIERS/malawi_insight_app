@@ -1,8 +1,13 @@
+// ~/components/controllers/AlertComponentController.ts
+
 import React from "react";
 import { createRoot, type Root } from "react-dom/client";
-import AlertComponent, { type AlertType, type AlertButton } from "~/components/system/AlertComponent";
+import AlertComponent, {
+  type AlertType,
+  type AlertButton,
+} from "~/components/system/AlertComponent";
 
-interface AlertOptions {
+export interface AlertOptions {
   type?: AlertType;
   title?: string;
   icon?: string;
@@ -11,6 +16,8 @@ interface AlertOptions {
   dismissable?: boolean;
   backdropBlur?: number;
   backdropOpacity?: number;
+  countdownSeconds?: number; // Optional countdown timer
+  onCountdownEnd?: () => void; // Called when countdown reaches 0
 }
 
 export class AlertComponentController {
@@ -55,6 +62,8 @@ export class AlertComponentController {
           dismissable={options.dismissable ?? true}
           backdropBlur={options.backdropBlur ?? 2}
           backdropOpacity={options.backdropOpacity ?? 0.3}
+          countdownSeconds={options.countdownSeconds}
+          onCountdownEnd={options.onCountdownEnd}
           onClose={() => close(null)}
         />
       );
