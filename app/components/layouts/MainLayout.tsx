@@ -12,6 +12,7 @@ import PageLoader from "~/components/layouts/PageLoader";
 import { ToastAlertComponentController } from "../controllers/ToastAlertComponentController";
 import { checkAppRefreshStatus } from "~/utils/appUtils";
 import PageSkeletonLoader from "../system/skeletons/PageSkeletonLoader";
+import { SessionGuard } from "../system/SessionGuard";
 
 const SIDEBAR_WIDTH = 240; // default sidebar width in px
 const SIDEBAR_MINI_WIDTH = 72; // width when minimized
@@ -53,6 +54,9 @@ const MainLayout: React.FC = () => {
 
   return (
     <QuickAccessProvider>
+
+      <SessionGuard />
+
       <div className="h-screen w-screen overflow-hidden relative">
         {/* 🌈 Gradient Background */}
         <div className="fixed inset-0 -z-10">

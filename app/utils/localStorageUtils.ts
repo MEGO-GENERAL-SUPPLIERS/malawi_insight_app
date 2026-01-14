@@ -262,7 +262,7 @@ export const localStorageUtils = {
 
   /**
    * Clear user data from localStorage (logout)
-   */
+  */
   clearStoredUser(): void {
     try {
       localStorageUtils.addOrUpdateLocalStorageObject({
@@ -274,6 +274,39 @@ export const localStorageUtils = {
     } catch (error) {
       console.error('Error clearing user from localStorage:', error);
     }
-  }
+  },
 
+
+  /**
+   * Get the stored API configuration from localStorage with proper typing
+   * Returns the api object or default if missing/invalid
+  */
+  getStoredApi(): typeof DEFAULT_APP_STRUCTURE.api {
+    try {
+      const appData = localStorageUtils.ensureLocalAppStructure();
+      return appData?.api || DEFAULT_APP_STRUCTURE.api;
+    } catch (error) {
+      console.error('Error reading API config from localStorage:', error);
+      return DEFAULT_APP_STRUCTURE.api;
+    }
+  },
+
+
+  /**
+   * Clear only the sensitive/token fields in the API section (e.g., on logout)
+   * Preserves protocol, server, port, base, timeout for reuse
+  */
+  clearStoredApiTokens(): void {
+    try {
+      const currentApi = localStorageUtils.getStoredApi();
+      const sanitizedApi = {
+        ...currentApi,
+        token: "",
+        refresh_token: ""
+      };
+      localStorageUtils.addOrUpdateLocalStorageObject({ api: sanitizedApi });
+    } catch (error) {
+      console.error('Error clearing API tokens from localStorage:', error);
+    }
+  }
 };
