@@ -103,7 +103,7 @@ const Auth = () => {
       const saved = localStorage.getItem("rememberMe");
       if (saved === "true") setRememberMe(true);
       setLoadingSteps(prev => ({ ...prev, rememberMeLoaded: true }));
-      setLoadingMessage("Preferences loaded");
+      setLoadingMessage("Loading...");
     } catch (error) {
       console.error("Failed to load remember me:", error);
       setLoadingSteps(prev => ({ ...prev, rememberMeLoaded: true })); // Continue anyway
@@ -296,9 +296,9 @@ const Auth = () => {
 
           {/* App Name */}
           <h1 className="text-3xl font-bold mb-2">
-            <span className="bg-gradient-to-r from-green-700 via-green-600 to-green-500 bg-clip-text text-transparent">M</span>
-            <span className="bg-gradient-to-r from-red-800 via-red-700 to-red-900 bg-clip-text text-transparent">ID</span>
-            <span className="bg-gradient-to-r from-gray-800 via-gray-700 to-gray-900 bg-clip-text text-transparent">S</span>
+            <span className="bg-linear-to-r from-green-700 via-green-600 to-green-500 bg-clip-text text-transparent">M</span>
+            <span className="bg-linear-to-r from-red-800 via-red-700 to-red-900 bg-clip-text text-transparent">ID</span>
+            <span className="bg-linear-to-r from-gray-800 via-gray-700 to-gray-900 bg-clip-text text-transparent">S</span>
           </h1>
 
           {/* Spinner */}
