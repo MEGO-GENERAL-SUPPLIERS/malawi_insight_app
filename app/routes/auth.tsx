@@ -349,9 +349,9 @@ const Auth = () => {
                 <img src="/img/rtc-logo.png" alt="App Logo" className="w-25 h-25 object-contain" />
               </div>
               <h1 className="text-2xl font-bold mb-2">
-                <span className="bg-gradient-to-r from-green-700 via-green-600 to-green-500 bg-clip-text text-transparent">M</span>{""}
-                <span className="bg-gradient-to-r from-red-800 via-red-700 to-red-900 bg-clip-text text-transparent">ID</span>
-                <span className="bg-gradient-to-r from-gray-400 via-gray-600 to-gray-700 bg-clip-text text-transparent">S</span>
+                <span className="bg-linear-to-r from-green-700 via-green-600 to-green-500 bg-clip-text text-transparent">M</span>{""}
+                <span className="bg-linear-to-r from-red-800 via-red-700 to-red-900 bg-clip-text text-transparent">ID</span>
+                <span className="bg-linear-to-r from-gray-400 via-gray-500 to-gray-600 bg-clip-text text-transparent">S</span>
               </h1>
               <p className="text-gray-600 dark:text-gray-300 text-sm">Malawi Integrated Data System</p>
             </div>
@@ -374,6 +374,7 @@ const Auth = () => {
                 <input
                   type="text"
                   value={email}
+                  inputMode="text"
                   onChange={(e) => setEmail(e.target.value)}
                   placeholder="Username / Email address"
                   className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
@@ -389,6 +390,7 @@ const Auth = () => {
                 <input
                   type={showPassword ? "text" : "password"}
                   value={password}
+                  inputMode="text"
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="Password"
                   className="w-full pl-12 pr-12 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-green-500 outline-none transition-all duration-200 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
