@@ -85,7 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({
         )}
         
         {/* Back button */}
-        {!isMobile && (
+        {/* {!isMobile && ( */}
           <Tooltip title={isBackDisabled ? "Cannot go back" : "Go back"}>
             <span>
               <IconButton
@@ -105,7 +105,7 @@ const Navbar: React.FC<NavbarProps> = ({
               </IconButton>
             </span>
           </Tooltip>
-        )}
+        {/* )} */}
         
         <Box flex={1} />
 
