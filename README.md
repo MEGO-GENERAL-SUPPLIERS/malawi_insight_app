@@ -12,6 +12,19 @@ To build, you:
 4. run `npx cap sync android`  
 5. run `npx cap open android` or open the android folder in Android studio in the OS environment the application reside.
 
+NOTE: for production disable the following: 
+```capacitor.config.ts```
+server: {
+  cleartext: false,
+  androidScheme: "https"
+}
+
+```AndroidManifest.xml```
+android:usesCleartextTraffic="false"
+
+```network_security_config.xml```
+<base-config cleartextTrafficPermitted="false">
+
 Generate a Debug APK (Testing)
 1. Go to Build > Build Bundle(s) / APK(s) > Build APK(s).
 2. Wait for the background "Gradle build" to finish
