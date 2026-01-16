@@ -5,7 +5,9 @@ const config: CapacitorConfig = {
   appName: 'MIDS',
   webDir: 'build/client',
   server: {
-    androidScheme: 'https'
+    cleartext: true,
+    androidScheme: 'http', //'https'
+    allowNavigation: ["http://10.0.2.2", "http://10.0.2.2:5023"]
   }
 };
 
