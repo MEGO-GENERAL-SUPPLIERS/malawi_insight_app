@@ -28,6 +28,7 @@ import { ThemeProvider } from "@mui/material/styles";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { AuthProvider } from "./hooks/AuthProvider";
+import { useAndroidBackButtonHandler } from "./hooks/useAndroidBackButtonHandler";
 
 export function HydrateFallback() {
   return <>Loading...</>;
@@ -50,6 +51,8 @@ export function Layout({ children }: { children: React.ReactNode }) {
   const storage = localStorageUtils.ensureLocalAppStructure();
   const currentTheme = storage.app.theme?.theme === "dark" ? darkTheme : lightTheme;
   useHealthCheckWorker();
+
+  useAndroidBackButtonHandler(); // back button handler for Android
 
   return (
     <html
@@ -78,7 +81,6 @@ export function Layout({ children }: { children: React.ReactNode }) {
       <body>
         <ThemeProvider theme={currentTheme}>
           <CssBaseline />
-
           {typeof window !== "undefined" && (
             <AuthProvider>
               <LocalizationProvider dateAdapter={AdapterDayjs}>
