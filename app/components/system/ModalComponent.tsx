@@ -39,13 +39,13 @@ interface SlotDataChildProps {
   setSlotData?: (data: any) => void;
 }
 
-const modalSizes: Record<ModalSize, string | number> = {
+const modalSizes: Record<ModalSize, number> = {
   xs: 300,
   sm: 400,
   md: 600,
   lg: 800,
   xl: 1000,
-  full: "100%", // base reference for full mode
+  full: 0, // unused when isFull=true
 };
 
 export const ModalComponent = forwardRef(
@@ -126,13 +126,25 @@ export const ModalComponent = forwardRef(
             top: isFull ? "8px" : "50%",
             left: isFull ? "8px" : "50%",
             transform: isFull ? "none" : "translate(-50%, -50%)",
-            width: isFull ? "calc(100% - 16px)" : modalSizes[size],
+            width: isFull
+              ? "calc(100% - 16px)"
+              : {
+                  xs: "calc(100% - 32px)",
+                  sm: modalSizes[size],
+                },
+            maxWidth: isFull
+              ? "none"
+              : {
+                  xs: "calc(100vw - 32px)",
+                  sm: modalSizes[size],
+                },
             height: isFull ? "calc(100vh - 16px)" : "auto",
             maxHeight: isFull ? "none" : "90vh",
             bgcolor: "background.paper",
-            borderRadius: 0.6,
+            borderRadius: { xs: 0, sm: 0.75 },
             display: "flex",
             flexDirection: "column",
+            outline: "none",
             boxShadow: isFull
               ? "0 0 12px rgba(0,0,0,0.25)"
               : "0 4px 20px rgba(0,0,0,0.2)",
@@ -151,15 +163,21 @@ export const ModalComponent = forwardRef(
             }}
           >
             <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-              {IconComponent && <IconComponent />}
+              {IconComponent && <IconComponent className="w-5 h-5" />}
               {title && (
-                <Typography variant="h6" component={"div"}>{title}</Typography>
+                <Typography variant="h6" component="div">
+                  {title}
+                </Typography>
               )}
             </Box>
 
             {showCloseButton && (
-              <IconButton onClick={() => handleClose(true)}>
-                <X />
+              <IconButton
+                onClick={() => handleClose(true)}
+                size="small"
+                sx={{ p: 0.5 }}
+              >
+                <X className="w-5 h-5" />
               </IconButton>
             )}
           </Box>
@@ -171,48 +189,57 @@ export const ModalComponent = forwardRef(
               p: 2,
               overflowY: "auto",
               flexGrow: 1,
+              minHeight: 0, // ensures proper shrinking on mobile
             }}
           >
             {renderChildren()}
           </Box>
 
           {/* Footer */}
-          <Box
-            sx={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: 1,
-              p: 2,
-              borderTop: "1px solid #eee",
-              flexShrink: 0,
-            }}
-          >
-            {customButtons.map((btn, idx) => {
-              const ButtonIcon = btn.icon ? resolveIcon(btn.icon) : null;
+          {(customButtons.length > 0 || showCloseButton) && (
+            <Box
+              sx={{
+                display: "flex",
+                justifyContent: "flex-end",
+                gap: 1.5,
+                p: 2,
+                borderTop: "1px solid #eee",
+                flexShrink: 0,
+                flexWrap: "wrap", // prevents button overflow on tiny screens
+              }}
+            >
+              {customButtons.map((btn, idx) => {
+                const ButtonIcon = btn.icon ? resolveIcon(btn.icon) : null;
+                return (
+                  <button
+                    key={idx}
+                    className={clsx(
+                      "px-4 py-2 rounded-md text-sm font-medium whitespace-nowrap",
+                      "focus:outline-none focus:ring-2 focus:ring-offset-1",
+                      btn.className
+                    )}
+                    onClick={() => handleButtonClick(btn)}
+                  >
+                    {ButtonIcon && <ButtonIcon className="w-4 h-4 inline mr-1" />}
+                    {btn.label}
+                  </button>
+                );
+              })}
 
-              return (
+              {showCloseButton && (
                 <button
-                  key={idx}
-                  className={clsx("px-4 py-2 rounded flex items-center gap-1", btn.className)}
-                  onClick={() => handleButtonClick(btn)}
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400"
+                  onClick={() => handleClose(true)}
                 >
-                  {ButtonIcon && <ButtonIcon className="w-4 h-4" />}
-                  {btn.label}
+                  Close
                 </button>
               )}
-            )}
-
-            {showCloseButton && (
-              <button
-                className="px-4 py-2 btn btn-danger"
-                onClick={() => handleClose(true)}
-              >
-                Close
-              </button>
-            )}
-          </Box>
+            </Box>
+          )}
         </Box>
       </Modal>
     );
   }
 );
+
+ModalComponent.displayName = "ModalComponent";
