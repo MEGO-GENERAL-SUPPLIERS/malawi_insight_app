@@ -36,6 +36,7 @@ const MainLayout: React.FC = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down("md"));
  
   useEffect(() => {
+    document.body.style.overflow = 'hidden';
     checkAppRefreshStatus();
   }, []);
 
