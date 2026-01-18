@@ -12,7 +12,7 @@ import type { IconType } from "react-icons";
 
 export interface CustomInputProps {
   value?: string;
-  defaultValue?: string; // 👈 new optional prop
+  defaultValue?: string;
   label?: string;
   disabled?: boolean;
   iconName?: string;
@@ -31,10 +31,12 @@ export interface CustomInputProps {
   minRows?: number;
   maxRows?: number;
   placeholderText?: string;
+  // 👇 New prop
+  fullWidth?: boolean; // defaults to true
 }
 
 export const CustomInput: React.FC<CustomInputProps> = ({
-  value, 
+  value,
   defaultValue,
   label = "Input",
   disabled = false,
@@ -53,6 +55,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   minRows = 2,
   maxRows = 6,
   placeholderText = "",
+  fullWidth = true, // 👈 default to true for backward compatibility
 }) => {
   const initialValue = value !== undefined ? value : defaultValue ?? "";
   const [inputValue, setInputValue] = useState<string>(initialValue);
@@ -63,7 +66,7 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
-    if(value !== undefined) {
+    if (value !== undefined) {
       setInputValue(value);
     }
   }, [value]);
@@ -150,9 +153,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   };
 
   return (
-    <Box position="relative" width="100%">
+    <Box position="relative" width={fullWidth ? "100%" : "auto"}>
       <TextField
-        fullWidth
+        fullWidth={fullWidth} // 👈 now controlled by prop
         size="small"
         label={label}
         placeholder={placeholderText}
