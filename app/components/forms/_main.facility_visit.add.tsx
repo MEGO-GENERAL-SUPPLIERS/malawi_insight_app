@@ -466,6 +466,9 @@ const FacilityVisitAdd = forwardRef<IFacilityVisitDataRef, FacilityVisitData>(
         setComment("");
         setActiveStep(0);
         onStepChange?.(0);
+        setTeamLeadTouched(false);
+        setFacilityStaffTouched(false);
+        setCommentTouched(false);
       },
     }));
 
