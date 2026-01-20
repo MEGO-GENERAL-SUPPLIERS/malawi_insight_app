@@ -23,7 +23,7 @@ const PageLoader: React.FC<PageLoaderProps> = ({
         {loaderType === "spinner" && (
           <div className="w-10 h-10 border-4 border-cyan-600 border-solid rounded-full animate-spin"></div>
         )}
-        {text && <p className="text-gray-400 dark:text-gray-200 text-sm">{text}</p>}
+        {text && <p className="text-slate-100 dark:text-gray-200 text-sm">{text}</p>}
       </div>
     </div>
   );

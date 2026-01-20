@@ -228,7 +228,7 @@ export const ModalComponent = forwardRef(
 
               {showCloseButton && (
                 <button
-                  className="px-4 py-2 rounded-md text-sm font-medium bg-gray-100 hover:bg-gray-200 text-gray-800 whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400"
+                  className="px-4 py-2 rounded-md text-sm font-medium bg-red-600 hover:bg-red-500 text-white whitespace-nowrap focus:outline-none focus:ring-2 focus:ring-offset-1 focus:ring-gray-400 cursor-pointer"
                   onClick={() => handleClose(true)}
                 >
                   Close
