@@ -11,7 +11,7 @@ export interface IFacilityVisitDataRef {
 
 export interface IFacilityVisitFormData {
   facility: any | null;
-  date_of_visit: Dayjs | null;
+  date_of_visit: Dayjs | string | null;
   team_lead: string; 
   facility_staff_member: string;
   team_members: ITeamMemberEntry[] | [];
