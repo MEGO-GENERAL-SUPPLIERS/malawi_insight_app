@@ -57,19 +57,14 @@ export const CustomInput: React.FC<CustomInputProps> = ({
   placeholderText = "",
   fullWidth = true, // 👈 default to true for backward compatibility
 }) => {
-  const initialValue = value !== undefined ? value : defaultValue ?? "";
-  const [inputValue, setInputValue] = useState<string>(initialValue);
-
+  const isControlled = value !== undefined;
+  const [uncontrolledValue, setUncontrolledValue] = useState<string>(defaultValue ?? "");
   const [touched, setTouched] = useState(false);
   const [valid, setValid] = useState<boolean>(!validate);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  useEffect(() => {
-    if (value !== undefined) {
-      setInputValue(value);
-    }
-  }, [value]);
+  const displayedValue = isControlled ? value : uncontrolledValue;
 
   const handleValidation = (val: string): boolean => {
     if (!validate) return true;
@@ -86,7 +81,10 @@ export const CustomInput: React.FC<CustomInputProps> = ({
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const val = e.target.value;
-    setInputValue(val);
+
+    if (!isControlled) {
+      setUncontrolledValue(val);
+    }
 
     if (timeoutRef.current) clearTimeout(timeoutRef.current);
 
@@ -104,9 +102,9 @@ export const CustomInput: React.FC<CustomInputProps> = ({
     setTouched(true);
     if (!liveValidation) {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);
-      updateValidationState(inputValue);
+      updateValidationState(displayedValue);
     } else {
-      updateValidationState(inputValue);
+      updateValidationState(displayedValue);
     }
   };
 
@@ -152,15 +150,15 @@ export const CustomInput: React.FC<CustomInputProps> = ({
     );
   };
 
-  return (
+ return (
     <Box position="relative" width={fullWidth ? "100%" : "auto"}>
       <TextField
-        fullWidth={fullWidth} // 👈 now controlled by prop
+        fullWidth={fullWidth}
         size="small"
         label={label}
         placeholder={placeholderText}
         disabled={disabled}
-        value={inputValue}
+        value={displayedValue} // ✅ use displayedValue
         onChange={handleChange}
         onBlur={handleBlur}
         error={touched && validate && !valid}
