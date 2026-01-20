@@ -91,6 +91,14 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     const [threeHpStop, setThreeHpStop] = useState<Record<string, number>>({});
     const [comment, setComment] = useState("");
 
+    const [iptBuffers, setIptBuffers] = useState<Record<string, string>>(
+      () => Object.fromEntries(defaultReasons.map(r => [r, String(iptStop[r] ?? 0)]))
+    );
+
+    const [threeHpBuffers, setThreeHpBuffers] = useState<Record<string, string>>(
+      () => Object.fromEntries(defaultReasons.map(r => [r, String(threeHpStop[r] ?? 0)]))
+    );
+
     useEffect(() => {
       if (data) {
         if (data.data) setGridRows(data.data);
@@ -333,23 +341,68 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
     );
 
     const Step3 = () => {
-      const handleIptChange = (reason: string, value: string) => {
-        if (/^\d*$/.test(value)) {
-          setIptStop((prev) => ({
-            ...prev,
-            [reason]: value === "" ? 0 : parseInt(value, 10) || 0,
-          }));
-        }
-      };
+      // Initialize buffers ONCE from iptStop/threeHpStop
+      const [iptBuffers, setIptBuffers] = useState<Record<string, string>>(() =>
+        Object.fromEntries(
+          defaultReasons.map(r => [r, String(iptStop[r] ?? 0)])
+        )
+      );
 
-      const handleHpChange = (reason: string, value: string) => {
-        if (/^\d*$/.test(value)) {
-          setThreeHpStop((prev) => ({
-            ...prev,
-            [reason]: value === "" ? 0 : parseInt(value, 10) || 0,
-          }));
-        }
-      };
+      const [threeHpBuffers, setThreeHpBuffers] = useState<Record<string, string>>(() =>
+        Object.fromEntries(
+          defaultReasons.map(r => [r, String(threeHpStop[r] ?? 0)])
+        )
+      );
+
+      // Sync buffers when iptStop/threeHpStop change (e.g., from data prop)
+      useEffect(() => {
+        setIptBuffers(prev => {
+          const updated = { ...prev };
+          let changed = false;
+          defaultReasons.forEach(r => {
+            const newVal = String(iptStop[r] ?? 0);
+            if (updated[r] !== newVal) {
+              updated[r] = newVal;
+              changed = true;
+            }
+          });
+          return changed ? updated : prev;
+        });
+      }, [iptStop]);
+
+      useEffect(() => {
+        setThreeHpBuffers(prev => {
+          const updated = { ...prev };
+          let changed = false;
+          defaultReasons.forEach(r => {
+            const newVal = String(threeHpStop[r] ?? 0);
+            if (updated[r] !== newVal) {
+              updated[r] = newVal;
+              changed = true;
+            }
+          });
+          return changed ? updated : prev;
+        });
+      }, [threeHpStop]);
+
+      // Stable update functions
+      const updateIptBuffer = useCallback((reason: string, value: string) => {
+        setIptBuffers(prev => ({ ...prev, [reason]: value }));
+      }, []);
+
+      const updateHpBuffer = useCallback((reason: string, value: string) => {
+        setThreeHpBuffers(prev => ({ ...prev, [reason]: value }));
+      }, []);
+
+      const handleIptBlur = useCallback((reason: string, value: string) => {
+        const num = value === "" ? 0 : parseInt(value, 10) || 0;
+        setIptStop(prev => ({ ...prev, [reason]: num }));
+      }, []);
+
+      const handleHpBlur = useCallback((reason: string, value: string) => {
+        const num = value === "" ? 0 : parseInt(value, 10) || 0;
+        setThreeHpStop(prev => ({ ...prev, [reason]: num }));
+      }, []);
 
       return (
         <div className="space-y-6">
@@ -364,29 +417,26 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
               <div className="p-5">
                 <div className="space-y-4">
                   {defaultReasons.map((reason) => {
-                    const currentValue = iptStop[reason] ?? 0;
-                    const [buffer, setBuffer] = useState<string>(String(currentValue));
-
+                    const buffer = iptBuffers[reason] ?? "0";
                     return (
-                      <div key={reason} className="flex items-center justify-between">
+                      <div key={`ipt-${reason}`} className="flex items-center justify-between">
                         <span className="text-gray-700 font-medium">{reason}</span>
                         <input
                           type="text"
                           inputMode="numeric"
                           className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={buffer}
-                          onFocus={() => buffer === "0" && setBuffer("")}
+                          value={buffer === "0" ? "" : buffer}
+                          placeholder="0"
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "" || /^\d+$/.test(val)) {
-                              setBuffer(val);
-                              handleIptChange(reason, val);
+                              updateIptBuffer(reason, val);
                             }
                           }}
                           onBlur={() => {
                             const final = buffer === "" ? "0" : buffer;
-                            setBuffer(final);
-                            handleIptChange(reason, final);
+                            updateIptBuffer(reason, final);
+                            handleIptBlur(reason, final);
                           }}
                         />
                       </div>
@@ -404,29 +454,26 @@ const TPTReportGridForm = forwardRef<TPTReportGridRef, Props>(
               <div className="p-5">
                 <div className="space-y-4">
                   {defaultReasons.map((reason) => {
-                    const currentValue = threeHpStop[reason] ?? 0;
-                    const [buffer, setBuffer] = useState<string>(String(currentValue));
-
+                    const buffer = threeHpBuffers[reason] ?? "0";
                     return (
-                      <div key={reason} className="flex items-center justify-between">
+                      <div key={`hp-${reason}`} className="flex items-center justify-between">
                         <span className="text-gray-700 font-medium">{reason}</span>
                         <input
                           type="text"
                           inputMode="numeric"
                           className="w-20 px-3 py-2 border border-gray-300 rounded-lg text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          value={buffer}
-                          onFocus={() => buffer === "0" && setBuffer("")}
+                          value={buffer === "0" ? "" : buffer}
+                          placeholder="0"
                           onChange={(e) => {
                             const val = e.target.value;
                             if (val === "" || /^\d+$/.test(val)) {
-                              setBuffer(val);
-                              handleHpChange(reason, val);
+                              updateHpBuffer(reason, val);
                             }
                           }}
                           onBlur={() => {
                             const final = buffer === "" ? "0" : buffer;
-                            setBuffer(final);
-                            handleHpChange(reason, final);
+                            updateHpBuffer(reason, final);
+                            handleHpBlur(reason, final);
                           }}
                         />
                       </div>
