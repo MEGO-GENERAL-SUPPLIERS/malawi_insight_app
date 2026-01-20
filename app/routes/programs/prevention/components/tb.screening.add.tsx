@@ -6,6 +6,7 @@ import { DatePicker } from "@mui/x-date-pickers";
 import DeleteOutline from '@mui/icons-material/DeleteOutline';
 import dayjs, { type Dayjs } from 'dayjs';
 import { CircleAlert } from 'lucide-react';
+import { Stepper as CustomStepper, type StepObject } from '~/components/generic_components/CustomStepper';
 
 const FacilitySelect = React.lazy(() => import("~/components/forms/elements/FacilitySelect"));
 
@@ -34,8 +35,13 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
   const [otherDataCollectors, setOtherDataCollectors] = useState("");
 
   // Steps for the stepper - step indices:
-  // 0 => Meta, 1 => Section A, 2 => Section B, 3 => Comments
-  const steps = ['Meta Data', 'Section A: TB Screening Data', 'Section B: Contact Tracing Data', 'Comments'];
+  const stepz: StepObject[] = [
+    { label: "Metadata" },
+    { label: "Tb Screening Data" },
+    { label: "Contact Tracing Data" },
+    { label: "Comment(s)" }
+  ];
+  
 
   // Default rows data for Section A (kept exactly as in your original)
   const defaultSectionARows: ITbScreenRow[] = [
@@ -121,7 +127,7 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
       return true;
     },
     goToNextStep: () => {
-      if (activeStep < steps.length - 1) {
+      if (activeStep < stepz.length - 1) {
         const nextStep = activeStep + 1;
         setActiveStep(nextStep);
         onStepChange?.(nextStep);
@@ -523,14 +529,9 @@ const TbScreeningGridForm = forwardRef<TbScreeningGridRef, TbScreeningGridProps>
           borderRadius: '8px'
         }}
       >
-        <Stepper activeStep={activeStep} alternativeLabel>
-          {steps.map((label) => (
-            <Step key={label}>
-              <StepLabel>{label}</StepLabel>
-            </Step>
-          ))}
-        </Stepper>
+        <CustomStepper steps={stepz} activeStep={activeStep} className='px-3' size='sm'/>
       </Box>
+
 
       {/* Step Content */}
       <div className="step-content">
