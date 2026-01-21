@@ -19,6 +19,8 @@ export interface IMenuCardProps {
   onClick?: () => void;
   colors?: [string, string] | [string, string, string]; // Support 2 or 3 colors
   border?: boolean;
+  textColor?: string; 
+  gradientClasses?: string[]; // Array of gradient classes
 }
 
 export interface IMenuCardGridProps {
