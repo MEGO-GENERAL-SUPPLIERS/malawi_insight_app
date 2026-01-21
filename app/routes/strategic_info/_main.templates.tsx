@@ -24,7 +24,7 @@ const Templates: React.FC = () => {
       description: 'Templates upload monthly tracker',
       route: '/templates/layouts',
       colors: ['from-purple-400', 'to-pink-500'], // 2-color gradient
-      privileges: ['can_track_uoloaded_templates']
+      privileges: ['can_track_uploaded_templates']
     },
     {
       icon: 'Send',
@@ -60,11 +60,11 @@ const Templates: React.FC = () => {
     },
     {
       icon: 'Download',
-      name: 'Export Templates',
-      description: 'Export template configurations',
-      route: '/templates/export',
+      name: 'Get Latest Templates',
+      description: 'Get latest templates version',
+      route: '/templates/latest_versions',
       colors: ['from-cyan-400', 'to-blue-500'], // 2-color gradient
-      privileges: ['can_download_templates']
+      privileges: ['can_download_latest_templates_version']
     }
   ];
 

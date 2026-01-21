@@ -15,7 +15,7 @@ const Generic = () => {
       description: 'Activities related to facility visit for mentorship or support supervision',
       route: 'generic_facility_visitor',
       colors: ['blue-400', 'blue-500', 'blue-600'], 
-      privileges: []
+      privileges: ["can_access_facility_visitor"]
     }
   ];
 

@@ -17,8 +17,8 @@ const Templates: React.FC = () => {
       name: 'Care and Treatment',
       description: 'Care and Treatment Tools',
       route: 'programs_care_and_treatment',
-      colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      colors: ['blue-400', 'blue-500', 'blue-600'],
+      privileges: ['can_access_care_and_treatment']
     },
     {
       icon: 'Syringe',
@@ -26,7 +26,7 @@ const Templates: React.FC = () => {
       description: 'HIV Testing Services',
       route: 'programs_hts',
       colors: ['from-purple-400', 'to-pink-500'], // 2-color gradient
-      privileges: []
+      privileges: ['can_access_hts']
     },
     {
       icon: 'Droplets',
@@ -34,7 +34,7 @@ const Templates: React.FC = () => {
       description: 'Viral Load Management',
       route: 'programs_viral_load',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_access_viral_load']
     },
     {
       icon: 'Hand',
@@ -42,7 +42,7 @@ const Templates: React.FC = () => {
       description: 'Prevention Program',
       route: 'programs_prevention_dashboard',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_access_prevention']
     },
     {
       icon: 'Boxes',
@@ -50,7 +50,7 @@ const Templates: React.FC = () => {
       description: 'Health Systems Strengthing',
       route: 'programs_hss',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_access_hss']
     }
   ];
 

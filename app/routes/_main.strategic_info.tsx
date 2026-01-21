@@ -16,7 +16,7 @@ const Templates: React.FC = () => {
       description: 'Activities related to templates interactions',
       route: '/app/strategic_info/templates',
       colors: ['blue-400', 'blue-500', 'blue-600'], // 3-color gradient
-      privileges: []
+      privileges: ['can_access_templates_module']
     },
     {
       icon: 'ChartPie',

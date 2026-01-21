@@ -30,6 +30,7 @@ import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { privilegesUtils } from '../../utils/privilegesUtils';
 import { handleAppRefresh } from '~/utils/appUtils';
+import { HelpOutlineRounded } from "@mui/icons-material";
 
 interface SideMenuProps {
   mobileOpen: boolean;
@@ -52,12 +53,13 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
   const menuItems = [
     { label: "Dashboard", icon: LayoutDashboard, route: "/app/dashboard", privileges: [] },
-    { label: "Programs", icon: Boxes, route: "/app/programs", privileges: [] },
-    { label: "General Modules", icon: Globe, route: "/app/generic", privileges: [] },
-    { label: "SI Unit", icon: SquareLibrary, route: "/app/strategic_info", privileges: [] },
+    { label: "Programs", icon: Boxes, route: "/app/programs", privileges: ['can_access_main_modules'] },
+    { label: "General Modules", icon: Globe, route: "/app/generic", privileges: ['can_access_general_modules'] },
+    { label: "SI Unit", icon: SquareLibrary, route: "/app/strategic_info", privileges: ['can_access_si_unit'] },
     { label: "Settings", icon: SettingsIcon, route: "/app/settings", privileges: ['can_access_settings'] },
     { label: "Reports", icon: ChartArea, route: "/app/reports", privileges: ['can_access_reports'] },
     { label: "My Profile", icon: UserCircle2Icon, route: "/app/profile", privileges: [] },
+    { label: "Help", icon: HelpOutlineRounded, route: "/app/help", privileges: [] }
   ];
   
   // Get user privileges if not provided

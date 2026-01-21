@@ -32,7 +32,7 @@ const Settings: React.FC = () => {
       description: 'Configure roles and permissions',
       route: 'settings_roles',
       colors: ['from-purple-400', 'to-pink-500'],
-      privileges: ['can_manager_role_privileges']
+      privileges: ['can_manage_role_privileges']
     },
     {
       icon: 'User',
@@ -40,7 +40,7 @@ const Settings: React.FC = () => {
       description: 'Manage system users',
       route: 'settings_users',
       colors: ['from-blue-400', 'to-blue-600'],
-      privileges: ['can_manager_user_management']
+      privileges: ['can_manage_users']
     },
     {
       icon: 'Signature',
@@ -64,7 +64,7 @@ const Settings: React.FC = () => {
       description: 'Data backup and restoration',
       route: 'settings_backup',
       colors: ['from-indigo-400', 'to-purple-500'],
-      privileges: ['can_manage_backups']
+      privileges: ['can_manage_backup_settings']
     },
     {
       icon: 'Activity',
