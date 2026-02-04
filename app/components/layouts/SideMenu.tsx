@@ -24,13 +24,14 @@ import {
   Minimize2Icon,
   Globe,
   ChartArea,
-  Maximize2Icon
+  Maximize2Icon,
+  LucideSquareLibrary
 } from "lucide-react";
 import { useQuickAccess } from "~/context/QuickAccessContext";
 import { localStorageUtils } from "~/utils/localStorageUtils";
 import { privilegesUtils } from '../../utils/privilegesUtils';
 import { handleAppRefresh } from '~/utils/appUtils';
-import { HelpOutlineRounded } from "@mui/icons-material";
+import { ComputerTwoTone, HelpOutlineRounded } from "@mui/icons-material";
 
 interface SideMenuProps {
   mobileOpen: boolean;
@@ -56,6 +57,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
     { label: "Programs", icon: Boxes, route: "/app/programs", privileges: ['can_access_main_modules'] },
     { label: "General Modules", icon: Globe, route: "/app/generic", privileges: ['can_access_general_modules'] },
     { label: "SI Unit", icon: SquareLibrary, route: "/app/strategic_info", privileges: ['can_access_si_unit'] },
+    { label: "ICT Department", icon: ComputerTwoTone, route: "/app/ict", privileges: ['can_access_ict_modules'] },
     { label: "Settings", icon: SettingsIcon, route: "/app/settings", privileges: ['can_access_settings'] },
     { label: "Reports", icon: ChartArea, route: "/app/reports", privileges: ['can_access_reports'] },
     { label: "My Profile", icon: UserCircle2Icon, route: "/app/profile", privileges: [] },

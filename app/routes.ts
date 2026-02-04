@@ -49,6 +49,9 @@ export const routeDefinitions = {
     programs_prevention_dashboard: { path: "/app/programs/prevention", file: "routes/programs/prevention/_main.prevention_dashboard.tsx" },
     programs_prevention_tb_screening: { path: "/app/programs/prevention/tb_screening", file: "routes/programs/prevention/_main.prevention_tb_screening.tsx" },
     programs_prevention_tpt_report_form: { path: "/app/programs/prevention/tpt_report_form", file: "routes/programs/prevention/_main.prevention_tpt_report_form.tsx" },
+
+    /*ICT*/
+    ict: { path: "/app/ict", file: "routes/_main.ict.tsx" }
   },
 } as const;
 
