@@ -1,9 +1,11 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { ArrowLeft } from "lucide-react";
+import { useAuth } from "~/hooks/useAuth";
 
 const NotFoundPage: React.FC = () => {
   const navigate =  useNavigate();
+  const { isAuthenticated } = useAuth();
 
   return(
     <div className="flex flex-col items-center justify-center min-h-screen bg-white p-6">
@@ -33,12 +35,14 @@ const NotFoundPage: React.FC = () => {
         >
           <ArrowLeft size={16} /> Back
         </button>
-        <button
-          onClick={() => navigate("/app/dashboard")}
-          className="px-6 py-2 bg-emerald-500 text-white rounded hover:cursor-pointer hover:bg-emerald-700 transition"
-        >
-          Back to Dashboard
-        </button>
+        { isAuthenticated && 
+          <button
+            onClick={() => navigate("/app/dashboard")}
+            className="px-6 py-2 bg-emerald-500 text-white rounded hover:cursor-pointer hover:bg-emerald-700 transition"
+          >
+            Back to Dashboard
+          </button>
+        }
       </div>
     </div>
   );
