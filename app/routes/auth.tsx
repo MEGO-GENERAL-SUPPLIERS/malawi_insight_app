@@ -433,13 +433,9 @@ const Auth = () => {
                   </label> */}
                 </div>
 
-                {/* Api Config */}
-                <div
-                  onClick={() => setShowConfigModal(true)}
-                  className="flex text-sm text-primary-100 dark:text-gray-300 group-hover:text-primary-500 transition-colors cursor-pointer"
-                >
-                  <CogIcon className="h-5 w-5" />
-                  API Config
+                
+                <div className="justify-end-safe flex flex-1 items-center">
+                  <button className="text-green-700 hover:underline cursor-pointer" onClick={() => navigate("/forgot_password", { replace: true })}>Forgot Password?</button>
                 </div>
               </div>
 
@@ -459,6 +455,17 @@ const Auth = () => {
                 )}
               </button>
             </form>
+
+            {/* Api Config */}
+            <div className="flex flex-1 items-center justify-center mt-6">
+              <div
+                onClick={() => setShowConfigModal(true)}
+                className="flex text-sm text-primary-100 dark:text-gray-300 group-hover:text-primary-500 transition-colors cursor-pointer"
+              >
+                <CogIcon className="h-5 w-5" />
+                API Config
+              </div>
+            </div>
           </div>
           
           <div className="flex justify-center w-full pointer-events-auto mt-4">
