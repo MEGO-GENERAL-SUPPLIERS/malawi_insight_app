@@ -432,11 +432,6 @@ const Auth = () => {
                     <span className="text-sm text-gray-600 dark:text-gray-300 group-hover:text-green-600 transition-colors">Remember me</span>
                   </label> */}
                 </div>
-
-                
-                <div className="justify-end-safe flex flex-1 items-center">
-                  <button className="text-green-700 hover:underline cursor-pointer" onClick={() => navigate("/forgot_password", { replace: true })}>Forgot Password?</button>
-                </div>
               </div>
 
               {/* Login Button */}
@@ -464,6 +459,10 @@ const Auth = () => {
               >
                 <CogIcon className="h-5 w-5" />
                 API Config
+              </div>
+
+              <div className="justify-end-safe flex flex-1 items-center">
+                <button className="text-green-700 hover:underline cursor-pointer" onClick={() => navigate("/forgot_password", { replace: true })}>Forgot Password?</button>
               </div>
             </div>
           </div>
