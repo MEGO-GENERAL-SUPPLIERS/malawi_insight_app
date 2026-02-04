@@ -3,8 +3,22 @@ import { type RouteConfig, index, route } from "@react-router/dev/routes";
 
 // Single source of truth
 export const routeDefinitions = {
-  auth: { path: "/", file: "routes/auth.tsx" },
+   public: {
+    auth: {
+      path: "/",
+      file: "routes/auth.tsx"
+    },
+    forgot_password: {
+      path: "/forgot_password",
+      file: "routes/auth/_main.forgot_password.tsx"
+    },
+    reset_password: {
+      path: "/reset_password",
+      file: "routes/auth/_main.reset_password.tsx"
+    }
+  },
   app: {
+
     dashboard: { path: "/app/dashboard", file: "routes/_main.dashboard.tsx" },
     programs: { path: "/app/programs", file: "routes/_main.programs.tsx" },
     help: { path: "/app/help", file: "routes/_main.help.tsx" },
@@ -39,7 +53,9 @@ export const routeDefinitions = {
 } as const;
 
 // Type for safety
-export type RouteKey = keyof typeof routeDefinitions.app | "auth";
+export type RouteKey =
+  | keyof typeof routeDefinitions.public
+  | keyof typeof routeDefinitions.app;
 
 // Flexible route resolver
 export function resolveRoute(key: RouteKey | string): string {
@@ -47,7 +63,7 @@ export function resolveRoute(key: RouteKey | string): string {
   if (key.startsWith("/")) return key;
 
   // If it's "auth", return auth path
-  if (key === "auth") return routeDefinitions.auth.path;
+  if (key === "auth") return routeDefinitions.public.auth.path;
 
   // Otherwise, it must be a key of app
   return routeDefinitions.app[key as keyof typeof routeDefinitions.app].path;
@@ -57,17 +73,19 @@ export function resolveRoute(key: RouteKey | string): string {
 function generateRoutes(): RouteConfig {
   const config: RouteConfig = [];
 
-  // Auth route
-  config.push(index(routeDefinitions.auth.file));
+  // PUBLIC ROUTES (top-level, no layout)
+  Object.values(routeDefinitions.public).forEach(r => {
+    config.push(route(r.path, r.file));
+  });
 
-  // App routes under main layout
+  // APP ROUTES (under layout)
   const appChildren = Object.values(routeDefinitions.app).map(r =>
     route(r.path.replace("/app/", ""), r.file)
   );
 
   config.push(route("/app", "routes/_main.tsx", appChildren));
 
-  // Catch-all 404
+  // 404
   config.push(route("*", "routes/404.tsx"));
 
   return config;
