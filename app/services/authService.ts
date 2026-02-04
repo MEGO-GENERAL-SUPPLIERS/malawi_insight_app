@@ -65,3 +65,31 @@ export const createSuperUser = async (
     };
   }
 };
+
+
+export const passwordForgot = async(params: Record<string, any>): Promise<any> => {
+  try{
+    const response = await apiClient.post<any>("auth/forgot-password", params);
+    return response;
+  } catch(error: any){
+    return{
+      success: false,
+      message: (error.message || "Failed to initiated password reset process"),
+      data: null
+    };
+  }
+};
+
+
+export const passwordReset = async(params: Record<string, any>): Promise<any> => {
+  try{
+    const response = await apiClient.post<any>("auth/reset-password", params);
+    return response;
+  } catch(error: any){
+    return{
+      success: false,
+      message: (error.message || "Failed to reset password"),
+      data: null
+    };
+  }
+};
