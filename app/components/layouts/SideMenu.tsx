@@ -54,7 +54,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
 
   const menuItems = [
     { label: "Dashboard", icon: LayoutDashboard, route: "/app/dashboard", privileges: [] },
-    { label: "Programs", icon: Boxes, route: "/app/programs", privileges: ['can_access_main_modules'] },
+    { label: "Programs", icon: Boxes, route: "/app/programs", privileges: ['can_access_programs'] },
     { label: "General Modules", icon: Globe, route: "/app/generic", privileges: ['can_access_general_modules'] },
     { label: "SI Unit", icon: SquareLibrary, route: "/app/strategic_info", privileges: ['can_access_si_unit'] },
     { label: "ICT Department", icon: ComputerTwoTone, route: "/app/ict", privileges: ['can_access_ict_modules'] },
@@ -136,7 +136,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
       {/* Logo + App Name */}
       <Box display="flex" alignItems="center" p={1} borderBottom="1px solid rgba(148,163,184,0.3)">
         <div className="border p-3 rounded-5 bg-white/50 dark:bg-white/90 mr-2">
-          <img src="/public/img/rtc-logo.png" className="w-12" />
+          <img src="/img/rtc-logo.png" className="w-12" />
         </div>
         {!effectiveMinimised && <Box className="font-bold text-lg ml-2">MIDS</Box>}
       </Box>
