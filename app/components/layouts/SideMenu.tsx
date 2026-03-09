@@ -242,7 +242,7 @@ const SideMenu: React.FC<SideMenuProps> = ({
                   setBottomMenuAnchor(null);
                 }}
               >
-                <Maximize2Icon style={{ marginRight: 8 }} /> Minimize
+                <Maximize2Icon style={{ marginRight: 8 }} /> Expand Menu
               </MenuItem>
 
               {/* Folder Sync button */}
