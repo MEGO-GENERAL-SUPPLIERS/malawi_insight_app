@@ -3,6 +3,21 @@
  * Author: Your Excellency Emmanuel Zaph Nyondo 👑
  */
 
+export interface PasswordStrengthResult {
+  score: number;
+  label: string; 
+  color: string; 
+  requirements: {
+    length: boolean;
+    uppercase: boolean;
+    lowercase: boolean;
+    number: boolean;
+    specialChar: boolean;
+  };
+}
+
+//================ FUNCTIONS ====================
+
 export const validationUtils = {
   /** ✅ Check if a string is camelCase */
   isCamelCased(str: string): boolean {
@@ -103,4 +118,58 @@ export const validationUtils = {
       /^265(88|89|98|99)\d{6}$/.test(normalized) // without +
     );
   },
+
+  validatePassword(password: string): PasswordStrengthResult {
+    const requirements = {
+      length: password.length >= 8,
+      uppercase: /[A-Z]/.test(password),
+      lowercase: /[a-z]/.test(password),
+      number: /[0-9]/.test(password),
+      specialChar: /[!@#$%^&*(),.?":{}|<>]/.test(password)
+    };
+
+    const metCount = Object.values(requirements).filter(Boolean).length;
+
+    let score = 0; 
+    let label = "Very Weak";
+    let color = 'bg-gray-300';
+
+    if(password.length > 0){
+      if(metCount === 1) {
+        score = 1;
+        label = 'Weak';
+        color = 'bg-red-500';
+      } else if(metCount === 2) {
+        score = 2;
+        label = 'Fair';
+        color = 'bg-yellow-500';
+      } else if(metCount === 3) {
+        score = 3;
+        label = 'Good';
+        color = 'bg-blue-500';
+      } else if(metCount >= 4) {
+        score = 4;
+        label = 'Strong';
+        color = 'bg-green-500';
+      }
+    }
+
+    return { score, label, color, requirements };
+  },
+
+  checkPasswordMatch(newPass: string, confirmPass: string): boolean{
+    if(!confirmPass) return true;
+    return newPass === confirmPass;
+  },
+
+  validateCurrentPassword(password: string): string | null {
+    if(password) return 'Current password is required';
+    return null;
+  },
+
+  validateNewPassword(password: string): string | null {
+    if(!password) return 'New password is required';
+    if(password.length < 8) return 'Password must be at least 8 characters';
+    return null;
+  }
 };
