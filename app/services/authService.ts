@@ -93,3 +93,17 @@ export const passwordReset = async(params: Record<string, any>): Promise<any> =>
     };
   }
 };
+
+// Password change usong profile
+export const passwordChange = async(params: Record<string, any>): Promise<any> => {
+try{
+    const response = await apiClient.post<any>("auth/change-password", params);
+    return response;
+  } catch(error: any){
+    return{
+      success: false,
+      message: (error.message || "Failed to change password"),
+      data: null
+    };
+  }
+};
