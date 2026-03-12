@@ -22,7 +22,10 @@ export const routeDefinitions = {
     dashboard: { path: "/app/dashboard", file: "routes/_main.dashboard.tsx" },
     programs: { path: "/app/programs", file: "routes/_main.programs.tsx" },
     help: { path: "/app/help", file: "routes/_main.help.tsx" },
-    profile: { path: "/app/profile", file: "routes/_main.profile.tsx" },
+
+    /*Profile*/
+    profile: { path: "/app/profile", file: "routes/profile/_main.profile.tsx" },
+    password_change: { path: "/app/profile/password_change", file: "routes/profile/_main.password_change.tsx" },
 
     /*Settings*/
     settings: { path: "/app/settings", file: "routes/_main.settings.tsx" },
