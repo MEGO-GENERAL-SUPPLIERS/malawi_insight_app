@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { User, Mail, Phone, MapPin, Shield } from 'lucide-react';
-import { FaEdit, FaSignOutAlt } from 'react-icons/fa';
+import { FaEdit, FaSignOutAlt, FaUserLock } from 'react-icons/fa';
 import { localStorageUtils } from "~/utils/localStorageUtils";
+import { useNavigator } from "~/hooks/useNavigator";
 import { type IUser } from "~/types/interfaces/ILocalStorageInterfaces";
 
 interface Contact {
@@ -49,6 +50,7 @@ const Profile: React.FC = () => {
   const [user, setUser] = useState<ExtendedUser | null>(null);
   const [showAllPermissions, setShowAllPermissions] = useState<boolean>(false);
   const [expandedDistricts, setExpandedDistricts] = useState<ExpandedDistrictsState>({});
+  const { navigateTo } = useNavigator();
 
   useEffect(() => {
     const userData = localStorageUtils.getStoredUser();
@@ -131,6 +133,18 @@ const Profile: React.FC = () => {
               </div>
 
               <div className="flex gap-3 mt-4 sm:mt-0 justify-center sm:justify-start">
+                <div className="relative group">
+                  <button 
+                    className="flex items-center justify-center w-10 h-10 bg-slate-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-md cursor-pointer"
+                    onClick = {() => navigateTo("/app/profile/password_change")}  
+                  >
+                    <FaUserLock size={20} />
+                  </button>
+                  <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-1 bg-slate-900 text-white text-xs rounded opacity-0 group-hover:opacity-100 transition whitespace-nowrap pointer-events-none">
+                    Change Password
+                  </div>
+                </div>
+
                 <div className="relative group">
                   <button className="flex items-center justify-center w-10 h-10 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition shadow-md cursor-pointer">
                     <FaEdit size={20} />
